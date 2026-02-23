@@ -3,12 +3,364 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Kazi ni Kazi - Rwanda's Smart Job Marketplace</title>
+  <title>Kazi ni Kazi - Rwanda's Job Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Additional styles for new features (preserving original design) */
+    .main-nav {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+    .nav-item {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--gray-500);
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      transition: var(--transition);
+      position: relative;
+    }
+    .nav-item:hover {
+      color: var(--primary);
+      background: var(--gray-100);
+    }
+    .nav-item.active {
+      color: var(--primary);
+      background: rgba(255, 56, 92, 0.1);
+    }
+    .nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    /* Search container (keeping original style) */
+    .search-container {
+      position: relative;
+      max-width: 300px;
+      width: 100%;
+    }
+    .search-input-wrapper {
+      display: flex;
+      align-items: center;
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-full);
+      padding: 4px 4px 4px 16px;
+      transition: var(--transition);
+    }
+    .search-input-wrapper:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(255, 56, 92, 0.1);
+      background: white;
+    }
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 8px 0;
+      font-size: 0.95rem;
+      background: transparent;
+    }
+    .search-btn-small {
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius-full);
+      width: 36px;
+      height: 36px;
+      color: white;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .search-btn-small:active {
+      transform: scale(0.95);
+      background: var(--primary-dark);
+    }
+
+    /* Live search results (dropdown) */
+    .live-search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      margin-top: 8px;
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+      border: 1px solid var(--gray-200);
+    }
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--gray-200);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .search-result-item:hover {
+      background: var(--gray-100);
+    }
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+    .result-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .result-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--gray-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--primary);
+    }
+    .result-info {
+      flex: 1;
+    }
+    .result-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+      font-size: 0.95rem;
+    }
+    .result-subtitle {
+      font-size: 0.8rem;
+      color: var(--gray-500);
+    }
+    .result-badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+
+    /* Location banner (matching design) */
+    .location-banner {
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin: 20px 0 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .location-text {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .location-text i {
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+    .location-btn-small {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-full);
+      padding: 8px 20px;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .location-btn-small:active {
+      transform: scale(0.95);
+      background: var(--primary-dark);
+    }
+
+    /* Section headers with icons */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 40px 0 20px;
+    }
+    .section-header h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-header h2 i {
+      color: var(--primary);
+      font-size: 1.8rem;
+    }
+    .section-link {
+      color: var(--primary);
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    /* Category chips (new) */
+    .category-chips {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 16px 0 20px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .category-chips::-webkit-scrollbar {
+      display: none;
+    }
+    .category-chip {
+      padding: 8px 20px;
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .category-chip:hover {
+      background: var(--gray-200);
+    }
+    .category-chip.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Auth dropdown (preserving original style) */
+    .auth-dropdown {
+      position: relative;
+    }
+    .auth-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      min-width: 260px;
+      margin-top: 12px;
+      padding: 16px;
+      z-index: 1000;
+      display: none;
+      border: 1px solid var(--gray-200);
+    }
+    .auth-menu.show {
+      display: block;
+    }
+    .auth-option {
+      padding: 16px;
+      border: 2px solid var(--gray-200);
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .auth-option:last-child {
+      margin-bottom: 0;
+    }
+    .auth-option:hover {
+      border-color: var(--primary);
+    }
+    .auth-option h4 {
+      margin-bottom: 4px;
+      font-size: 1rem;
+    }
+    .auth-option p {
+      font-size: 0.85rem;
+      color: var(--gray-500);
+    }
+
+    /* Login form (preserving style) */
+    .login-form {
+      display: none;
+    }
+    .login-form.show {
+      display: block;
+    }
+    .login-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .login-tab {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid var(--gray-300);
+      border-radius: var(--radius-md);
+      background: white;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+    .login-tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Image upload (new but matching design) */
+    .image-upload-area {
+      border: 2px dashed var(--gray-300);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .image-upload-area:hover {
+      border-color: var(--primary);
+      background: var(--gray-50);
+    }
+    .image-preview {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 12px;
+      display: none;
+    }
+    .image-preview.show {
+      display: block;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .main-nav {
+        display: none;
+      }
+      .search-container {
+        max-width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
   <header class="sticky-header">
@@ -17,18 +369,18 @@
       <span>Kazi</span> ni Kazi
     </div>
 
-    <!-- Main Navigation -->
+    <!-- Main Navigation (Services, Jobs, Companies) -->
     <nav class="main-nav">
       <div class="nav-item active" onclick="switchTab('services')">Services</div>
       <div class="nav-item" onclick="switchTab('jobs')">Jobs</div>
       <div class="nav-item" onclick="switchTab('companies')">Companies</div>
     </nav>
 
-    <!-- Search Bar -->
+    <!-- Search Bar (keeping original style) -->
     <div class="search-container">
       <div class="search-input-wrapper">
         <input type="text" class="search-input" id="searchInput" placeholder="Search workers, jobs, companies..." autocomplete="off">
-        <button class="search-btn" onclick="performSearch()">
+        <button class="search-btn-small" onclick="performSearch()">
           <i class="fas fa-search"></i>
         </button>
       </div>
@@ -41,7 +393,7 @@
           <i class="fas fa-user"></i>
         </button>
         
-        <!-- Auth Dropdown Menu -->
+        <!-- Auth Dropdown Menu (Account Selection) -->
         <div class="auth-menu" id="authMenu">
           <div class="auth-option" onclick="showAccountType('worker')">
             <h4><i class="fas fa-hard-hat" style="color: var(--primary);"></i> I'm a Worker</h4>
@@ -60,7 +412,7 @@
           </div>
         </div>
 
-        <!-- Login Form -->
+        <!-- Login Form (hidden by default) -->
         <div class="login-form" id="loginForm">
           <div class="login-tabs">
             <button class="login-tab active" onclick="setLoginRole('worker')">Worker</button>
@@ -90,50 +442,52 @@
         <i class="fas fa-map-marker-alt"></i>
         <div>
           <strong>Find services near you</strong>
-          <p style="font-size: 0.9rem; opacity: 0.9;">Allow location access to see nearby workers and jobs</p>
+          <p style="font-size: 0.85rem; color: var(--gray-500);">Allow location access to see nearby workers and jobs</p>
         </div>
       </div>
-      <button class="location-btn" onclick="requestLocation()">Enable Location</button>
+      <button class="location-btn-small" onclick="requestLocation()">Enable Location</button>
     </div>
 
-    <!-- Dynamic Content Sections -->
+    <!-- Services Section (default visible) -->
     <div id="servicesSection">
-      <!-- Most Used -->
+      <!-- Most Used Section -->
       <div class="section-header">
-        <h2>🔥 Most Used Services</h2>
-        <span class="section-link">View all</span>
+        <h2><i class="fas fa-fire"></i> Most Used Services</h2>
+        <span class="section-link" onclick="loadMore('most')">View all →</span>
       </div>
       <div id="mostUsedGrid" class="card-grid"></div>
 
-      <!-- Recent -->
+      <!-- Recent Section -->
       <div class="section-header">
-        <h2>🕐 Recently Active</h2>
-        <span class="section-link">View all</span>
+        <h2><i class="fas fa-clock"></i> Recently Active</h2>
+        <span class="section-link" onclick="loadMore('recent')">View all →</span>
       </div>
       <div id="recentGrid" class="card-grid"></div>
 
       <!-- Suggested For You -->
       <div class="section-header">
-        <h2>🎯 Suggested For You</h2>
-        <span class="section-link">View all</span>
+        <h2><i class="fas fa-magic"></i> Suggested For You</h2>
+        <span class="section-link" onclick="loadMore('suggested')">View all →</span>
       </div>
       <div id="suggestedGrid" class="card-grid"></div>
 
-      <!-- Categories -->
+      <!-- Category Chips -->
       <div class="category-chips" id="categoryChips"></div>
       <div id="categoryResults" class="card-grid"></div>
     </div>
 
+    <!-- Jobs Section (hidden by default) -->
     <div id="jobsSection" style="display: none;">
       <div class="section-header">
-        <h2>💼 Available Jobs</h2>
+        <h2><i class="fas fa-briefcase"></i> Available Jobs</h2>
       </div>
       <div id="jobsGrid" class="card-grid"></div>
     </div>
 
+    <!-- Companies Section (hidden by default) -->
     <div id="companiesSection" style="display: none;">
       <div class="section-header">
-        <h2>🏢 Trusted Companies</h2>
+        <h2><i class="fas fa-building"></i> Trusted Companies</h2>
       </div>
       <div id="companiesGrid" class="card-grid"></div>
     </div>
@@ -141,7 +495,57 @@
     <div id="loadingSpinner" class="spinner hidden"></div>
   </main>
 
-  <!-- Signup Modals -->
+  <!-- Auth Modal (Original - preserved for backward compatibility) -->
+  <div id="authModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Join Kazi ni Kazi</h2>
+        <p>Select your account type</p>
+      </div>
+      <div class="modal-body">
+        <div class="account-grid">
+          <div class="account-card" onclick="selectRole('worker')" id="role-worker">
+            <i class="fas fa-hard-hat account-icon"></i>
+            <h3>Worker</h3>
+            <p>Find jobs, showcase skills, get hired</p>
+          </div>
+          <div class="account-card" onclick="selectRole('company')" id="role-company">
+            <i class="fas fa-building account-icon"></i>
+            <h3>Company</h3>
+            <p>Post jobs, hire workers, build your team</p>
+          </div>
+          <div class="account-card" onclick="selectRole('user')" id="role-user">
+            <i class="fas fa-user account-icon"></i>
+            <h3>User</h3>
+            <p>Browse and hire for personal projects</p>
+          </div>
+        </div>
+
+        <form id="authForm" onsubmit="handleAuth(event)" class="hidden">
+          <h3 id="authFormTitle">Create Worker Account</h3>
+          <div class="form-group">
+            <input type="text" id="fullName" placeholder="Full name" class="form-input" required>
+          </div>
+          <div class="form-group" id="uniqueNameGroup">
+            <input type="text" id="uniqueName" placeholder="Unique username" class="form-input">
+            <small class="form-help">One per device, cannot change</small>
+          </div>
+          <div class="form-group">
+            <input type="email" id="email" placeholder="Email" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <input type="password" id="password" placeholder="Password (min 6 chars)" class="form-input" required>
+          </div>
+          <button type="submit" class="btn-primary" id="authSubmit">Create Account</button>
+          <p class="text-center mt-4">
+            <a href="#" onclick="toggleAuthMode()">Already have an account? Sign in</a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Worker Signup Modal (New) -->
   <div id="workerSignupModal" class="modal-overlay hidden">
     <div class="modal-card">
       <h2>Worker Registration</h2>
@@ -184,6 +588,7 @@
     </div>
   </div>
 
+  <!-- Company Signup Modal (New) -->
   <div id="companySignupModal" class="modal-overlay hidden">
     <div class="modal-card">
       <h2>Company Registration</h2>
@@ -222,6 +627,7 @@
     </div>
   </div>
 
+  <!-- User Signup Modal (New) -->
   <div id="userSignupModal" class="modal-overlay hidden">
     <div class="modal-card">
       <h2>User Registration</h2>
@@ -253,7 +659,7 @@
       onAuthStateChanged 
     } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
     import { 
-      collection, getDocs, query, where, doc, setDoc, addDoc, orderBy, limit, getDoc 
+      collection, getDocs, query, where, doc, setDoc, addDoc, orderBy, limit, updateDoc 
     } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
 
     // ==================== STATE MANAGEMENT ====================
@@ -265,6 +671,9 @@
     let allCategories = [];
     let userInterests = JSON.parse(localStorage.getItem('userInterests')) || [];
     let searchTimeout = null;
+    let selectedRole = null;
+    let isLogin = false;
+    let loginRole = 'worker';
 
     // ==================== TRACKING SYSTEM ====================
     class UserTracker {
@@ -284,7 +693,6 @@
         this.interactions.push(event);
         localStorage.setItem('interactions', JSON.stringify(this.interactions.slice(-100)));
         
-        // Update interests based on views
         if (type === 'view_profile') {
           this.updateInterests(data.category, data.district);
         }
@@ -348,10 +756,10 @@
       document.getElementById('locationBanner').style.display = 'none';
     }
 
-    // ==================== SMART RECOMMENDATION ALGORITHMS ====================
+    // ==================== DISTANCE CALCULATION ====================
     function calculateDistance(lat1, lon1, lat2, lon2) {
       if (!lat1 || !lon1 || !lat2 || !lon2) return null;
-      const R = 6371; // km
+      const R = 6371;
       const dLat = (lat2 - lat1) * Math.PI / 180;
       const dLon = (lon2 - lon1) * Math.PI / 180;
       const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -361,8 +769,8 @@
       return R * c;
     }
 
+    // ==================== SMART ALGORITHMS ====================
     function getMostUsed() {
-      // Most viewed, highest rated, and verified first
       return [...allWorkers]
         .sort((a, b) => {
           const scoreA = (a.views || 0) * 0.3 + (a.avgRating || 0) * 0.5 + (a.verified ? 1 : 0) * 0.2;
@@ -373,7 +781,6 @@
     }
 
     function getRecent() {
-      // Recently active based on status and join date
       return [...allWorkers]
         .sort((a, b) => {
           if (a.status === 'Available' && b.status !== 'Available') return -1;
@@ -387,7 +794,6 @@
       let scored = allWorkers.map(worker => {
         let score = 0;
         
-        // Location score (30%)
         if (userLocation && worker.lat && worker.lng) {
           const distance = calculateDistance(
             userLocation.lat, userLocation.lng,
@@ -398,7 +804,6 @@
           }
         }
         
-        // Interest matching (40%)
         const topCategories = tracker.getTopInterests('category');
         if (worker.jobCategory) {
           const match = topCategories.find(c => c.value === worker.jobCategory);
@@ -411,7 +816,6 @@
           if (match) score += 20 * (match.count / 5);
         }
         
-        // Rating & verification (30%)
         score += (worker.avgRating || 0) * 3;
         if (worker.verified) score += 15;
         
@@ -428,12 +832,10 @@
       const categoryWorkers = allWorkers.filter(w => w.jobCategory === category);
       if (categoryWorkers.length < minCount) return [];
       
-      // Score each worker for this category
       return categoryWorkers
         .map(worker => {
           let score = 0;
           
-          // Location (30%)
           if (userLocation && worker.lat && worker.lng) {
             const distance = calculateDistance(
               userLocation.lat, userLocation.lng,
@@ -444,10 +846,7 @@
             }
           }
           
-          // Random factor for variety (20%)
           score += Math.random() * 20;
-          
-          // Rating and verification (50%)
           score += (worker.avgRating || 0) * 5;
           if (worker.verified) score += 20;
           
@@ -468,7 +867,6 @@
       
       const results = [];
       
-      // Search workers
       allWorkers.forEach(w => {
         if (w.fullName?.toLowerCase().includes(query) || 
             w.jobCategory?.toLowerCase().includes(query) ||
@@ -477,7 +875,6 @@
         }
       });
       
-      // Search companies
       allCompanies.forEach(c => {
         if (c.companyName?.toLowerCase().includes(query) ||
             c.district?.toLowerCase().includes(query)) {
@@ -485,7 +882,6 @@
         }
       });
       
-      // Search jobs
       allJobs.forEach(j => {
         if (j.title?.toLowerCase().includes(query) ||
             j.description?.toLowerCase().includes(query)) {
@@ -518,19 +914,19 @@
         
         if (r.type === 'worker') {
           div.innerHTML = `
-            <img src="${r.data.profilePicture || 'https://via.placeholder.com/40'}" class="result-avatar">
+            <img src="${r.data.profilePicture || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=50'}" class="result-avatar">
             <div class="result-info">
               <div class="result-title">${r.data.fullName}</div>
-              <div class="result-subtitle">${r.data.jobCategory} • ${r.data.district}</div>
+              <div class="result-subtitle">${r.data.jobCategory || 'Worker'} • ${r.data.district || ''}</div>
             </div>
             <span class="result-badge">Worker</span>
           `;
         } else if (r.type === 'company') {
           div.innerHTML = `
-            <img src="${r.data.logo || 'https://via.placeholder.com/40'}" class="result-avatar">
+            <img src="${r.data.logo || 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=50'}" class="result-avatar">
             <div class="result-info">
               <div class="result-title">${r.data.companyName}</div>
-              <div class="result-subtitle">${r.data.district}</div>
+              <div class="result-subtitle">${r.data.district || ''}</div>
             </div>
             <span class="result-badge">Company</span>
           `;
@@ -539,7 +935,7 @@
             <div class="result-icon"><i class="fas fa-briefcase"></i></div>
             <div class="result-info">
               <div class="result-title">${r.data.title}</div>
-              <div class="result-subtitle">${r.data.companyName} • ${r.data.district}</div>
+              <div class="result-subtitle">${r.data.companyName || ''} • ${r.data.district || ''}</div>
             </div>
             <span class="result-badge">Job</span>
           `;
@@ -570,19 +966,15 @@
       spinner.classList.remove('hidden');
       
       try {
-        // Load workers
         const workersSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'worker')));
         allWorkers = workersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
         
-        // Load companies
         const companiesSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'company')));
         allCompanies = companiesSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
         
-        // Load jobs
         const jobsSnap = await getDocs(collection(db, 'jobs'));
         allJobs = jobsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
         
-        // Load categories
         const categoriesSnap = await getDocs(collection(db, 'categories'));
         allCategories = categoriesSnap.docs.map(d => d.data().name).filter(c => {
           const count = allWorkers.filter(w => w.jobCategory === c).length;
@@ -646,11 +1038,13 @@
     }
 
     window.loadCategory = async (category) => {
+      document.querySelectorAll('.category-chip').forEach(chip => chip.classList.remove('active'));
+      event.target.classList.add('active');
+      
       const workers = getCategoryWorkers(category);
       const grid = document.getElementById('categoryResults');
       grid.innerHTML = workers.map(w => createWorkerCard(w)).join('');
       
-      // Scroll to results
       grid.scrollIntoView({ behavior: 'smooth' });
     };
 
@@ -659,18 +1053,16 @@
         <div class="card" onclick="location.href='profile.html?id=${worker.uid}'">
           <div class="card-image">
             <img src="${worker.profilePicture || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400'}" loading="lazy">
-            ${worker.verified ? '<span class="card-badge"><i class="fas fa-check-circle" style="color: var(--primary);"></i></span>' : ''}
+            ${worker.verified ? '<span class="card-badge"><i class="fas fa-check-circle card-verified"></i></span>' : ''}
           </div>
           <div class="card-content">
-            <div class="card-title">${worker.fullName}</div>
+            <div class="card-title">${worker.fullName || 'Worker'}</div>
             <div class="card-subtitle">${worker.jobCategory || 'General'} • ${worker.district || ''}</div>
             <div class="card-footer">
               <span class="card-rating">
                 <i class="fas fa-star"></i> ${(worker.avgRating || 0).toFixed(1)}
               </span>
-              <span class="status-badge status-${(worker.status || 'available').toLowerCase().replace(' ', '-')}">
-                ${worker.status || 'Available'}
-              </span>
+              ${worker.status ? `<span class="status-badge status-${worker.status.toLowerCase().replace(' ', '-')}">${worker.status}</span>` : ''}
             </div>
           </div>
         </div>
@@ -682,10 +1074,10 @@
         <div class="card" onclick="location.href='profile.html?id=${company.uid}'">
           <div class="card-image">
             <img src="${company.logo || 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400'}" loading="lazy">
-            ${company.verified ? '<span class="card-badge"><i class="fas fa-check-circle" style="color: var(--primary);"></i></span>' : ''}
+            ${company.verified ? '<span class="card-badge"><i class="fas fa-check-circle card-verified"></i></span>' : ''}
           </div>
           <div class="card-content">
-            <div class="card-title">${company.companyName}</div>
+            <div class="card-title">${company.companyName || 'Company'}</div>
             <div class="card-subtitle">${company.district || ''}</div>
             <div class="card-footer">
               <span class="card-rating">
@@ -700,20 +1092,20 @@
 
     function createJobCard(job) {
       return `
-        <div class="job-card" onclick="location.href='job.html?id=${job.id}'">
-          <div class="job-header">
-            <div class="job-company">
-              <img src="${job.companyLogo || 'https://via.placeholder.com/32'}" alt="">
-              <span>${job.companyName || 'Company'}</span>
+        <div class="card" onclick="location.href='job.html?id=${job.id}'">
+          <div class="card-image">
+            <img src="${job.companyLogo || 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?w=400'}" loading="lazy">
+          </div>
+          <div class="card-content">
+            <div class="card-title">${job.title}</div>
+            <div class="card-subtitle">${job.companyName || ''} • ${job.district || ''}</div>
+            <div class="card-footer">
+              <span><i class="fas fa-tag"></i> ${job.category || ''}</span>
+              <span class="card-rating">
+                <strong>RWF ${Number(job.budget || 0).toLocaleString()}</strong>
+              </span>
             </div>
-            <span class="job-budget">RWF ${Number(job.budget || 0).toLocaleString()}</span>
           </div>
-          <h3 class="job-title">${job.title}</h3>
-          <div class="job-meta">
-            <span><i class="fas fa-map-marker-alt"></i> ${job.district || ''}</span>
-            <span><i class="fas fa-tag"></i> ${job.category || ''}</span>
-          </div>
-          <p class="job-description">${job.description?.substring(0, 100)}...</p>
         </div>
       `;
     }
@@ -856,7 +1248,6 @@
       
       const uniqueName = document.getElementById('userName').value;
       
-      // Check unique name
       const q = query(collection(db, 'users'), where('uniqueName', '==', uniqueName));
       const snap = await getDocs(q);
       if (!snap.empty) {
@@ -886,8 +1277,6 @@
     };
 
     // ==================== LOGIN ====================
-    let loginRole = 'worker';
-    
     window.setLoginRole = (role) => {
       loginRole = role;
       document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
@@ -922,6 +1311,22 @@
       if (tab === 'jobs') renderJobs();
       if (tab === 'companies') renderCompanies();
     };
+
+    window.loadMore = (type) => {
+      showToast(`Loading more ${type}...`, 'info');
+    };
+
+    // Check auth state
+    onAuthStateChanged(auth, (user) => {
+      const authBtn = document.getElementById('authBtn');
+      if (user) {
+        authBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i>';
+        authBtn.onclick = () => location.href = 'dashboard.html';
+      } else {
+        authBtn.innerHTML = '<i class="fas fa-user"></i>';
+        authBtn.onclick = toggleAuthMenu;
+      }
+    });
 
     // Load districts and categories for dropdowns
     async function loadDropdowns() {
