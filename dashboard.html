@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Kazi ni Kazi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="sticky-header">
+    <div class="logo" onclick="location.href='/'">
+      <i class="fas fa-briefcase"></i>
+      <span>Kazi</span> ni Kazi
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </header>
+
+  <main class="container" id="dashboardContent">
+    <div class="spinner"></div>
+  </main>
+
+  <!-- Floating Action Button -->
+  <button class="fab" id="fab" onclick="openFabModal()">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- Job Post Modal (Company) -->
+  <div id="jobModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2>Post New Job</h2>
+      <form onsubmit="postJob(event)">
+        <div class="form-group">
+          <input type="text" id="jobTitle" placeholder="Job Title" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <textarea id="jobDesc" placeholder="Description" class="form-input" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <select id="jobCategory" class="form-input" required>
+            <option value="">Select Category</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <select id="jobDistrict" class="form-input" required>
+            <option value="">Select District</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <input type="number" id="jobBudget" placeholder="Budget (RWF)" class="form-input">
+        </div>
+        <button type="submit" class="btn-primary">Post Job</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Image Upload Modal -->
+  <div id="imageModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2>Upload Image</h2>
+      <div class="form-group">
+        <input type="file" id="imageUpload" accept="image/*" class="form-input">
+      </div>
+      <button onclick="uploadImage()" class="btn-primary">Upload to Portfolio</button>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2>Edit Profile</h2>
+      <form onsubmit="updateProfile(event)">
+        <div id="editFormFields"></div>
+        <button type="submit" class="btn-primary">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    // Import Firebase config
+    import { auth, db, IMGBB_API_KEY, IMGBB_URL, showToast } from './firebase-cfg.js';
+    import { signOut } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
+    import { 
+      doc, getDoc, updateDoc, collection, query, where, getDocs, addDoc, onSnapshot 
+    } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+
+    let currentUserData = null;
+    let currentRole = null;
+
+    // Check auth and load dashboard
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) {
+        location.href = '/';
+        return;
+      }
+      
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists()) {
+        await signOut(auth);
+        location.href = '/';
+        return;
+      }
+      
+      currentUserData = userDoc.data();
+      currentRole = currentUserData.role;
+      renderDashboard();
+      loadOptions();
+    });
+
+    // Render based on role
+    async function renderDashboard() {
+      const container = document.getElementById('dashboardContent');
+      
+      if (currentRole === 'company') {
+        container.innerHTML = `
+          <div class="profile-header">
+            <img src="${currentUserData.logo || 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=200'}" class="profile-avatar" id="profileImage">
+            <div class="profile-info">
+              <h1 class="profile-name">${currentUserData.companyName}</h1>
+              <div class="profile-meta">
+                <span><i class="fas fa-star" style="color: var(--primary);"></i> ${(currentUserData.avgRating || 0).toFixed(1)}</span>
+                <span><i class="fas fa-users"></i> ${currentUserData.followerCount || 0} followers</span>
+                <span><i class="fas fa-check-circle" style="color: ${currentUserData.verified ? 'var(--primary)' : 'var(--gray-400)'};"></i> ${currentUserData.verified ? 'Verified' : 'Not Verified'}</span>
+              </div>
+              <div class="profile-actions">
+                <button class="btn-outline" onclick="showEditModal()"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn-outline" onclick="boostProfile()"><i class="fas fa-bolt"></i> Boost</button>
+              </div>
+            </div>
+          </div>
+          
+          <h2 class="section-title">My Job Posts</h2>
+          <div id="jobList" class="card-grid"></div>
+          
+          <h2 class="section-title">Reviews (${currentUserData.reviewCount || 0})</h2>
+          <div id="reviewsList" class="card-grid"></div>
+        `;
+        
+        loadCompanyJobs();
+        loadReviews();
+        
+      } else if (currentRole === 'worker') {
+        container.innerHTML = `
+          <div class="profile-header">
+            <img src="${currentUserData.profilePicture || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200'}" class="profile-avatar" id="profileImage">
+            <div class="profile-info">
+              <h1 class="profile-name">${currentUserData.fullName}</h1>
+              <div class="profile-meta">
+                <span><i class="fas fa-star" style="color: var(--primary);"></i> ${(currentUserData.avgRating || 0).toFixed(1)}</span>
+                <span><i class="fas fa-users"></i> ${currentUserData.followerCount || 0} followers</span>
+                <span><i class="fas fa-check-circle" style="color: ${currentUserData.verified ? 'var(--primary)' : 'var(--gray-400)'};"></i> ${currentUserData.verified ? 'Verified' : 'Not Verified'}</span>
+              </div>
+              <div class="profile-actions">
+                <select class="status-select" onchange="updateStatus(this.value)">
+                  <option value="Available" ${currentUserData.status === 'Available' ? 'selected' : ''}>🟢 Available</option>
+                  <option value="Working" ${currentUserData.status === 'Working' ? 'selected' : ''}>🟡 Working</option>
+                  <option value="Not Available" ${currentUserData.status === 'Not Available' ? 'selected' : ''}>🔴 Not Available</option>
+                </select>
+                <button class="btn-outline" onclick="showEditModal()"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn-outline" onclick="boostProfile()"><i class="fas fa-bolt"></i> Boost</button>
+              </div>
+            </div>
+          </div>
+          
+          <h2 class="section-title">My Portfolio</h2>
+          <div id="portfolioGrid" class="image-gallery"></div>
+          
+          <h2 class="section-title">Reviews (${currentUserData.reviewCount || 0})</h2>
+          <div id="reviewsList" class="card-grid"></div>
+        `;
+        
+        loadPortfolio();
+        loadReviews();
+        
+      } else {
+        // User account
+        container.innerHTML = `
+          <div class="profile-header">
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200" class="profile-avatar">
+            <div class="profile-info">
+              <h1 class="profile-name">@${currentUserData.uniqueName}</h1>
+              <div class="profile-meta">
+                <span><i class="fas fa-eye"></i> Explorer Account</span>
+                <span><i class="fas fa-calendar"></i> Joined ${new Date(currentUserData.createdAt).toLocaleDateString()}</span>
+              </div>
+              <div class="profile-actions">
+                <button class="btn-outline" onclick="showEditModal()"><i class="fas fa-edit"></i> Edit Profile</button>
+              </div>
+            </div>
+          </div>
+          
+          <h2 class="section-title">Following</h2>
+          <div id="followingGrid" class="card-grid"></div>
+          
+          <h2 class="section-title">My Reviews</h2>
+          <div id="myReviews" class="card-grid"></div>
+        `;
+        
+        loadFollowing();
+        loadUserReviews();
+      }
+    }
+
+    // Load company jobs
+    async function loadCompanyJobs() {
+      const q = query(collection(db, 'jobs'), where('companyId', '==', auth.currentUser.uid));
+      const snap = await getDocs(q);
+      const list = document.getElementById('jobList');
+      
+      if (snap.empty) {
+        list.innerHTML = '<p class="text-center" style="grid-column: 1/-1; color: var(--gray-500);">No jobs posted yet</p>';
+        return;
+      }
+      
+      list.innerHTML = '';
+      snap.forEach(doc => {
+        const job = doc.data();
+        list.innerHTML += `
+          <div class="card">
+            <div class="card-content">
+              <h3 class="card-title">${job.title}</h3>
+              <p class="card-subtitle">${job.description}</p>
+              <div class="card-footer">
+                <span>${job.district || ''}</span>
+                <span><strong>${job.budget ? 'RWF ' + Number(job.budget).toLocaleString() : ''}</strong></span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Load portfolio
+    async function loadPortfolio() {
+      const grid = document.getElementById('portfolioGrid');
+      const images = currentUserData.portfolioImages || [];
+      
+      if (images.length === 0) {
+        grid.innerHTML = '<p class="text-center" style="grid-column: 1/-1; color: var(--gray-500);">No images yet. Click + to add.</p>';
+        return;
+      }
+      
+      grid.innerHTML = images.map(url => `
+        <img src="${url}" class="card-image" style="border-radius: var(--radius-md);">
+      `).join('');
+    }
+
+    // Load reviews
+    async function loadReviews() {
+      const q = query(collection(db, 'reviews'), where('targetId', '==', auth.currentUser.uid));
+      const snap = await getDocs(q);
+      const list = document.getElementById('reviewsList');
+      
+      if (snap.empty) {
+        list.innerHTML = '<p class="text-center" style="grid-column: 1/-1; color: var(--gray-500);">No reviews yet</p>';
+        return;
+      }
+      
+      list.innerHTML = '';
+      snap.forEach(doc => {
+        const r = doc.data();
+        list.innerHTML += `
+          <div class="card">
+            <div class="card-content">
+              <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                <img src="${r.reviewerPhoto || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=50'}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                <div>
+                  <strong>${r.reviewerName}</strong>
+                  <div style="color: var(--primary);">
+                    ${'★'.repeat(r.rating)}${'☆'.repeat(6 - r.rating)}
+                  </div>
+                </div>
+              </div>
+              <p>${r.comment}</p>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    // Load options for selects
+    async function loadOptions() {
+      try {
+        const categoriesSnap = await getDocs(collection(db, 'categories'));
+        const districtsSnap = await getDocs(collection(db, 'districts'));
+        
+        const categorySelect = document.getElementById('jobCategory');
+        const districtSelect = document.getElementById('jobDistrict');
+        
+        if (categorySelect) {
+          categorySelect.innerHTML = '<option value="">Select Category</option>';
+          categoriesSnap.forEach(d => {
+            categorySelect.innerHTML += `<option value="${d.data().name}">${d.data().name}</option>`;
+          });
+        }
+        
+        if (districtSelect) {
+          districtSelect.innerHTML = '<option value="">Select District</option>';
+          districtsSnap.forEach(d => {
+            districtSelect.innerHTML += `<option value="${d.data().name}">${d.data().name}</option>`;
+          });
+        }
+      } catch (error) {
+        console.error('Error loading options:', error);
+      }
+    }
+
+    // Global functions
+    window.logout = async () => {
+      await signOut(auth);
+      location.href = '/';
+    };
+
+    window.showEditModal = () => {
+      const modal = document.getElementById('editProfileModal');
+      const fields = document.getElementById('editFormFields');
+      
+      if (currentRole === 'company') {
+        fields.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Company Name</label>
+            <input type="text" id="editCompanyName" value="${currentUserData.companyName || ''}" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" id="editPhone" value="${currentUserData.phone || ''}" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">District</label>
+            <input type="text" id="editDistrict" value="${currentUserData.district || ''}" class="form-input">
+          </div>
+        `;
+      } else if (currentRole === 'worker') {
+        fields.innerHTML = `
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" id="editFullName" value="${currentUserData.fullName || ''}" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="tel" id="editPhone" value="${currentUserData.phone || ''}" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">District</label>
+            <input type="text" id="editDistrict" value="${currentUserData.district || ''}" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Job Category</label>
+            <input type="text" id="editCategory" value="${currentUserData.jobCategory || ''}" class="form-input">
+          </div>
+        `;
+      }
+      
+      modal.classList.remove('hidden');
+    };
+
+    window.updateProfile = async (e) => {
+      e.preventDefault();
+      const updates = {};
+      
+      if (currentRole === 'company') {
+        updates.companyName = document.getElementById('editCompanyName')?.value;
+        updates.phone = document.getElementById('editPhone')?.value;
+        updates.district = document.getElementById('editDistrict')?.value;
+      } else if (currentRole === 'worker') {
+        updates.fullName = document.getElementById('editFullName')?.value;
+        updates.phone = document.getElementById('editPhone')?.value;
+        updates.district = document.getElementById('editDistrict')?.value;
+        updates.jobCategory = document.getElementById('editCategory')?.value;
+      }
+      
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), updates);
+      showToast('Profile updated!', 'success');
+      document.getElementById('editProfileModal').classList.add('hidden');
+      renderDashboard();
+    };
+
+    window.boostProfile = () => {
+      showToast('✨ Profile boosted! (Demo feature)', 'success');
+    };
+
+    window.updateStatus = async (status) => {
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), { status });
+      showToast(`Status updated to ${status}`, 'success');
+    };
+
+    window.openFabModal = () => {
+      if (currentRole === 'company') {
+        document.getElementById('jobModal').classList.remove('hidden');
+      } else if (currentRole === 'worker') {
+        document.getElementById('imageModal').classList.remove('hidden');
+      } else {
+        showToast('Feature not available for user accounts', 'info');
+      }
+    };
+
+    window.postJob = async (e) => {
+      e.preventDefault();
+      
+      const jobData = {
+        companyId: auth.currentUser.uid,
+        companyName: currentUserData.companyName,
+        title: document.getElementById('jobTitle').value,
+        description: document.getElementById('jobDesc').value,
+        category: document.getElementById('jobCategory').value,
+        district: document.getElementById('jobDistrict').value,
+        budget: document.getElementById('jobBudget').value,
+        createdAt: new Date().toISOString()
+      };
+      
+      await addDoc(collection(db, 'jobs'), jobData);
+      showToast('Job posted!', 'success');
+      document.getElementById('jobModal').classList.add('hidden');
+      loadCompanyJobs();
+    };
+
+    window.uploadImage = async () => {
+      const file = document.getElementById('imageUpload').files[0];
+      if (!file) {
+        showToast('Please select an image', 'error');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('key', IMGBB_API_KEY);
+      
+      try {
+        const response = await fetch(IMGBB_URL, { method: 'POST', body: formData });
+        const data = await response.json();
+        
+        if (data.success) {
+          const imageUrl = data.data.url;
+          const userRef = doc(db, 'users', auth.currentUser.uid);
+          
+          if (currentRole === 'worker') {
+            const portfolio = currentUserData.portfolioImages || [];
+            portfolio.push(imageUrl);
+            await updateDoc(userRef, { portfolioImages: portfolio });
+          } else {
+            const images = currentUserData.images || [];
+            images.push(imageUrl);
+            await updateDoc(userRef, { images });
+          }
+          
+          showToast('Image uploaded!', 'success');
+          document.getElementById('imageModal').classList.add('hidden');
+          renderDashboard();
+        }
+      } catch (error) {
+        showToast('Upload failed', 'error');
+      }
+    };
+
+    // Close modals when clicking overlay
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
