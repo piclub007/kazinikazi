@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-  <title>Kazi ni Kazi - Rwanda's Job Marketplace</title>
+  <title>Kazi ni Kazi - Rwanda's Smart Job Marketplace</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
@@ -16,313 +16,950 @@
       <i class="fas fa-briefcase"></i>
       <span>Kazi</span> ni Kazi
     </div>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+      <div class="nav-item active" onclick="switchTab('services')">Services</div>
+      <div class="nav-item" onclick="switchTab('jobs')">Jobs</div>
+      <div class="nav-item" onclick="switchTab('companies')">Companies</div>
+    </nav>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <input type="text" class="search-input" id="searchInput" placeholder="Search workers, jobs, companies..." autocomplete="off">
+        <button class="search-btn" onclick="performSearch()">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+      <div class="live-search-results" id="liveSearchResults"></div>
+    </div>
+
     <div class="header-actions">
-      <button class="btn-icon" id="authBtn" onclick="showAuthModal()"><i class="fas fa-user"></i></button>
+      <div class="auth-dropdown">
+        <button class="btn-icon" id="authBtn" onclick="toggleAuthMenu()">
+          <i class="fas fa-user"></i>
+        </button>
+        
+        <!-- Auth Dropdown Menu -->
+        <div class="auth-menu" id="authMenu">
+          <div class="auth-option" onclick="showAccountType('worker')">
+            <h4><i class="fas fa-hard-hat" style="color: var(--primary);"></i> I'm a Worker</h4>
+            <p>Find jobs and get hired</p>
+          </div>
+          <div class="auth-option" onclick="showAccountType('company')">
+            <h4><i class="fas fa-building" style="color: var(--primary);"></i> I'm a Company</h4>
+            <p>Post jobs and hire workers</p>
+          </div>
+          <div class="auth-option" onclick="showAccountType('user')">
+            <h4><i class="fas fa-user" style="color: var(--primary);"></i> I'm a User</h4>
+            <p>Browse and hire for personal projects</p>
+          </div>
+          <div style="text-align: center; margin-top: 12px;">
+            <button class="btn-outline" style="width: auto; padding: 8px 20px;" onclick="showLoginForm()">Login</button>
+          </div>
+        </div>
+
+        <!-- Login Form -->
+        <div class="login-form" id="loginForm">
+          <div class="login-tabs">
+            <button class="login-tab active" onclick="setLoginRole('worker')">Worker</button>
+            <button class="login-tab" onclick="setLoginRole('company')">Company</button>
+          </div>
+          <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+              <input type="email" id="loginEmail" placeholder="Email" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <input type="password" id="loginPassword" placeholder="Password" class="form-input" required>
+            </div>
+            <button type="submit" class="btn-primary">Login</button>
+          </form>
+          <p class="text-center mt-4">
+            <a href="#" onclick="showSignupForm()">Create an account</a>
+          </p>
+        </div>
+      </div>
     </div>
   </header>
 
   <main class="container">
-    <section class="hero">
-      <h1>Find work. Hire talent.<br><span>In Rwanda.</span></h1>
-      <p>Connect with verified workers and companies in your area</p>
-    </section>
-
-    <div class="search-section">
-      <div class="search-tabs">
-        <button class="search-tab active" onclick="filterBrowse('workers')">Workers</button>
-        <button class="search-tab" onclick="filterBrowse('companies')">Companies</button>
+    <!-- Location Request Banner -->
+    <div class="location-banner" id="locationBanner">
+      <div class="location-text">
+        <i class="fas fa-map-marker-alt"></i>
+        <div>
+          <strong>Find services near you</strong>
+          <p style="font-size: 0.9rem; opacity: 0.9;">Allow location access to see nearby workers and jobs</p>
+        </div>
       </div>
-      <div class="search-bar">
-        <select id="filterDistrict" class="search-select">
-          <option value="">All Districts</option>
-        </select>
-        <select id="filterCategory" class="search-select">
-          <option value="">All Categories</option>
-        </select>
-        <button class="search-btn" onclick="applyFilters()">
-          <i class="fas fa-search"></i> Search
-        </button>
-      </div>
+      <button class="location-btn" onclick="requestLocation()">Enable Location</button>
     </div>
 
-    <h2 class="section-title" id="resultsTitle">Popular Workers</h2>
-    <div id="resultsGrid" class="card-grid"></div>
+    <!-- Dynamic Content Sections -->
+    <div id="servicesSection">
+      <!-- Most Used -->
+      <div class="section-header">
+        <h2>🔥 Most Used Services</h2>
+        <span class="section-link">View all</span>
+      </div>
+      <div id="mostUsedGrid" class="card-grid"></div>
+
+      <!-- Recent -->
+      <div class="section-header">
+        <h2>🕐 Recently Active</h2>
+        <span class="section-link">View all</span>
+      </div>
+      <div id="recentGrid" class="card-grid"></div>
+
+      <!-- Suggested For You -->
+      <div class="section-header">
+        <h2>🎯 Suggested For You</h2>
+        <span class="section-link">View all</span>
+      </div>
+      <div id="suggestedGrid" class="card-grid"></div>
+
+      <!-- Categories -->
+      <div class="category-chips" id="categoryChips"></div>
+      <div id="categoryResults" class="card-grid"></div>
+    </div>
+
+    <div id="jobsSection" style="display: none;">
+      <div class="section-header">
+        <h2>💼 Available Jobs</h2>
+      </div>
+      <div id="jobsGrid" class="card-grid"></div>
+    </div>
+
+    <div id="companiesSection" style="display: none;">
+      <div class="section-header">
+        <h2>🏢 Trusted Companies</h2>
+      </div>
+      <div id="companiesGrid" class="card-grid"></div>
+    </div>
+
     <div id="loadingSpinner" class="spinner hidden"></div>
   </main>
 
-  <!-- Auth Modal -->
-  <div id="authModal" class="modal-overlay hidden">
+  <!-- Signup Modals -->
+  <div id="workerSignupModal" class="modal-overlay hidden">
     <div class="modal-card">
-      <div class="modal-header">
-        <h2>Join Kazi ni Kazi</h2>
-        <p>Select your account type</p>
-      </div>
-      <div class="modal-body">
-        <div class="account-grid">
-          <div class="account-card" onclick="selectRole('worker')" id="role-worker">
-            <i class="fas fa-hard-hat account-icon"></i>
-            <h3>Worker</h3>
-            <p>Find jobs, showcase skills, get hired</p>
-          </div>
-          <div class="account-card" onclick="selectRole('company')" id="role-company">
-            <i class="fas fa-building account-icon"></i>
-            <h3>Company</h3>
-            <p>Post jobs, hire workers, build your team</p>
-          </div>
-          <div class="account-card" onclick="selectRole('user')" id="role-user">
-            <i class="fas fa-user account-icon"></i>
-            <h3>User</h3>
-            <p>Browse and hire for personal projects</p>
-          </div>
+      <h2>Worker Registration</h2>
+      <form onsubmit="registerWorker(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="workerName" class="form-input" required>
         </div>
+        <div class="form-group">
+          <label class="form-label">Profile Picture</label>
+          <div class="image-upload-area" onclick="document.getElementById('workerImage').click()">
+            <img id="workerImagePreview" class="image-preview">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary);"></i>
+            <p>Click to upload</p>
+          </div>
+          <input type="file" id="workerImage" accept="image/*" style="display: none;" onchange="previewImage(this, 'workerImagePreview')">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" id="workerPhone" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="workerEmail" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="workerPassword" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">District</label>
+          <select id="workerDistrict" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Category</label>
+          <select id="workerCategory" class="form-select" required></select>
+        </div>
+        <button type="submit" class="btn-primary">Register</button>
+      </form>
+    </div>
+  </div>
 
-        <form id="authForm" onsubmit="handleAuth(event)" class="hidden">
-          <h3 id="authFormTitle">Create Worker Account</h3>
-          <div class="form-group">
-            <input type="text" id="fullName" placeholder="Full name" class="form-input" required>
+  <div id="companySignupModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2>Company Registration</h2>
+      <form onsubmit="registerCompany(event)">
+        <div class="form-group">
+          <label class="form-label">Company Name</label>
+          <input type="text" id="companyName" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Company Logo</label>
+          <div class="image-upload-area" onclick="document.getElementById('companyLogo').click()">
+            <img id="logoPreview" class="image-preview">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--primary);"></i>
+            <p>Click to upload</p>
           </div>
-          <div class="form-group" id="uniqueNameGroup">
-            <input type="text" id="uniqueName" placeholder="Unique username" class="form-input">
-            <small class="form-help">One per device, cannot change</small>
-          </div>
-          <div class="form-group">
-            <input type="email" id="email" placeholder="Email" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <input type="password" id="password" placeholder="Password (min 6 chars)" class="form-input" required>
-          </div>
-          <button type="submit" class="btn-primary" id="authSubmit">Create Account</button>
-          <p class="text-center mt-4">
-            <a href="#" onclick="toggleAuthMode()">Already have an account? Sign in</a>
-          </p>
-        </form>
-      </div>
+          <input type="file" id="companyLogo" accept="image/*" style="display: none;" onchange="previewImage(this, 'logoPreview')">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone</label>
+          <input type="tel" id="companyPhone" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="companyEmail" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="companyPassword" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">District</label>
+          <select id="companyDistrict" class="form-select" required></select>
+        </div>
+        <button type="submit" class="btn-primary">Register</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="userSignupModal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2>User Registration</h2>
+      <form onsubmit="registerUser(event)">
+        <div class="form-group">
+          <label class="form-label">Unique Username</label>
+          <input type="text" id="userName" class="form-input" required>
+          <small class="form-help">Must be unique, one account per device</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="userEmail" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="userPassword" class="form-input" required>
+        </div>
+        <button type="submit" class="btn-primary">Register</button>
+      </form>
     </div>
   </div>
 
   <script type="module">
     // Import Firebase config
-    import { auth, db, deviceId, showToast } from './firebase-cfg.js';
+    import { auth, db, deviceId, sessionId, IMGBB_API_KEY, IMGBB_URL, showToast } from './firebase-cfg.js';
     import { 
       signInWithEmailAndPassword, 
       createUserWithEmailAndPassword,
-      onAuthStateChanged
+      onAuthStateChanged 
     } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
     import { 
-      collection, getDocs, query, where, doc, setDoc 
+      collection, getDocs, query, where, doc, setDoc, addDoc, orderBy, limit, getDoc 
     } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
 
-    // State
-    let selectedRole = null;
-    let isLogin = false;
-    let currentFilter = 'workers';
+    // ==================== STATE MANAGEMENT ====================
+    let currentTab = 'services';
+    let userLocation = null;
+    let allWorkers = [];
+    let allCompanies = [];
+    let allJobs = [];
+    let allCategories = [];
+    let userInterests = JSON.parse(localStorage.getItem('userInterests')) || [];
+    let searchTimeout = null;
 
-    // Check auth state
-    onAuthStateChanged(auth, (user) => {
-      const authBtn = document.getElementById('authBtn');
-      if (user) {
-        authBtn.innerHTML = '<i class="fas fa-tachometer-alt"></i>';
-        authBtn.onclick = () => location.href = 'dashboard.html';
-      } else {
-        authBtn.innerHTML = '<i class="fas fa-user"></i>';
-        authBtn.onclick = showAuthModal;
+    // ==================== TRACKING SYSTEM ====================
+    class UserTracker {
+      constructor() {
+        this.startTime = Date.now();
+        this.interactions = JSON.parse(localStorage.getItem('interactions')) || [];
       }
-    });
 
-    // Load filters
-    async function loadFilters() {
-      try {
-        const districtsSnap = await getDocs(collection(db, 'districts'));
-        const categoriesSnap = await getDocs(collection(db, 'categories'));
+      trackEvent(type, data) {
+        const event = {
+          type,
+          data,
+          timestamp: new Date().toISOString(),
+          sessionId,
+          deviceId
+        };
+        this.interactions.push(event);
+        localStorage.setItem('interactions', JSON.stringify(this.interactions.slice(-100)));
         
-        const districtSelect = document.getElementById('filterDistrict');
-        const categorySelect = document.getElementById('filterCategory');
-        
-        districtsSnap.forEach(d => {
-          districtSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
-        });
-        
-        categoriesSnap.forEach(c => {
-          categorySelect.innerHTML += `<option value="${c.id}">${c.data().name}</option>`;
-        });
-      } catch (error) {
-        console.error('Error loading filters:', error);
-      }
-    }
-
-    // Load profiles
-    async function loadProfiles(type = 'workers') {
-      const grid = document.getElementById('resultsGrid');
-      const spinner = document.getElementById('loadingSpinner');
-      const title = document.getElementById('resultsTitle');
-      
-      spinner.classList.remove('hidden');
-      grid.innerHTML = '';
-      
-      title.textContent = type === 'workers' ? 'Popular Workers' : 'Trusted Companies';
-      currentFilter = type;
-      
-      try {
-        const role = type === 'workers' ? 'worker' : 'company';
-        let q = query(collection(db, 'users'), where('role', '==', role));
-        
-        // Apply district filter if selected
-        const district = document.getElementById('filterDistrict').value;
-        if (district) {
-          q = query(q, where('district', '==', district));
+        // Update interests based on views
+        if (type === 'view_profile') {
+          this.updateInterests(data.category, data.district);
         }
-        
-        // Apply category filter for workers
-        const category = document.getElementById('filterCategory').value;
-        if (category && role === 'worker') {
-          q = query(q, where('jobCategory', '==', category));
-        }
-        
-        const snap = await getDocs(q);
-        
-        if (snap.empty) {
-          grid.innerHTML = '<p class="text-center" style="grid-column: 1/-1; color: var(--gray-500);">No profiles found</p>';
-        } else {
-          snap.forEach(doc => {
-            const data = doc.data();
-            grid.innerHTML += `
-              <div class="card" onclick="location.href='profile.html?id=${doc.id}'">
-                <div class="card-image">
-                  <img src="${data.profilePicture || data.logo || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400'}" loading="lazy">
-                  ${data.verified ? '<span class="card-badge"><i class="fas fa-check-circle card-verified"></i></span>' : ''}
-                </div>
-                <div class="card-content">
-                  <div class="card-title">${data.fullName || data.companyName}</div>
-                  <div class="card-subtitle">${data.district || ''}</div>
-                  <div class="card-footer">
-                    <span class="card-rating">
-                      <i class="fas fa-star"></i> ${(data.avgRating || 0).toFixed(1)}
-                    </span>
-                    ${data.status ? `<span class="status-badge status-${data.status.toLowerCase().replace(' ', '-')}">${data.status}</span>` : ''}
-                  </div>
-                </div>
-              </div>
-            `;
-          });
-        }
-      } catch (error) {
-        showToast('Error loading profiles', 'error');
-      } finally {
-        spinner.classList.add('hidden');
       }
-    }
 
-    // Auth functions
-    window.showAuthModal = () => {
-      document.getElementById('authModal').classList.remove('hidden');
-    };
-
-    window.selectRole = (role) => {
-      selectedRole = role;
-      document.querySelectorAll('.account-card').forEach(c => c.classList.remove('selected'));
-      document.getElementById(`role-${role}`).classList.add('selected');
-      
-      const form = document.getElementById('authForm');
-      form.classList.remove('hidden');
-      document.getElementById('authFormTitle').textContent = 
-        `Create ${role.charAt(0).toUpperCase() + role.slice(1)} Account`;
-      
-      document.getElementById('uniqueNameGroup').style.display = role === 'user' ? 'block' : 'none';
-    };
-
-    window.handleAuth = async (e) => {
-      e.preventDefault();
-      
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      const fullName = document.getElementById('fullName').value;
-      const uniqueName = document.getElementById('uniqueName')?.value;
-      
-      if (!email || !password) {
-        showToast('Please fill all fields', 'error');
-        return;
-      }
-      
-      try {
-        if (isLogin) {
-          await signInWithEmailAndPassword(auth, email, password);
-          showToast('Logged in!', 'success');
-          document.getElementById('authModal').classList.add('hidden');
-          location.href = 'dashboard.html';
-        } else {
-          if (!selectedRole) {
-            showToast('Please select account type', 'error');
-            return;
+      updateInterests(category, district) {
+        if (category) {
+          const catInterest = userInterests.find(i => i.type === 'category' && i.value === category);
+          if (catInterest) {
+            catInterest.count = (catInterest.count || 0) + 1;
+          } else {
+            userInterests.push({ type: 'category', value: category, count: 1 });
           }
+        }
+        if (district) {
+          const distInterest = userInterests.find(i => i.type === 'district' && i.value === district);
+          if (distInterest) {
+            distInterest.count = (distInterest.count || 0) + 1;
+          } else {
+            userInterests.push({ type: 'district', value: district, count: 1 });
+          }
+        }
+        localStorage.setItem('userInterests', JSON.stringify(userInterests.slice(-20)));
+      }
+
+      getTopInterests(type, limit = 3) {
+        return userInterests
+          .filter(i => i.type === type)
+          .sort((a, b) => (b.count || 0) - (a.count || 0))
+          .slice(0, limit);
+      }
+    }
+
+    const tracker = new UserTracker();
+
+    // ==================== LOCATION SERVICES ====================
+    window.requestLocation = () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            userLocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            localStorage.setItem('userLocation', JSON.stringify(userLocation));
+            document.getElementById('locationBanner').style.display = 'none';
+            showToast('Location enabled! Showing nearby services', 'success');
+            loadAllData();
+          },
+          (error) => {
+            showToast('Please enable location for better results', 'info');
+          }
+        );
+      }
+    };
+
+    // Load saved location
+    const savedLocation = localStorage.getItem('userLocation');
+    if (savedLocation) {
+      userLocation = JSON.parse(savedLocation);
+      document.getElementById('locationBanner').style.display = 'none';
+    }
+
+    // ==================== SMART RECOMMENDATION ALGORITHMS ====================
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+      if (!lat1 || !lon1 || !lat2 || !lon2) return null;
+      const R = 6371; // km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    function getMostUsed() {
+      // Most viewed, highest rated, and verified first
+      return [...allWorkers]
+        .sort((a, b) => {
+          const scoreA = (a.views || 0) * 0.3 + (a.avgRating || 0) * 0.5 + (a.verified ? 1 : 0) * 0.2;
+          const scoreB = (b.views || 0) * 0.3 + (b.avgRating || 0) * 0.5 + (b.verified ? 1 : 0) * 0.2;
+          return scoreB - scoreA;
+        })
+        .slice(0, 8);
+    }
+
+    function getRecent() {
+      // Recently active based on status and join date
+      return [...allWorkers]
+        .sort((a, b) => {
+          if (a.status === 'Available' && b.status !== 'Available') return -1;
+          if (a.status !== 'Available' && b.status === 'Available') return 1;
+          return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+        })
+        .slice(0, 8);
+    }
+
+    function getSuggested() {
+      let scored = allWorkers.map(worker => {
+        let score = 0;
+        
+        // Location score (30%)
+        if (userLocation && worker.lat && worker.lng) {
+          const distance = calculateDistance(
+            userLocation.lat, userLocation.lng,
+            worker.lat, worker.lng
+          );
+          if (distance !== null) {
+            score += Math.max(0, 30 * (1 - Math.min(distance, 50) / 50));
+          }
+        }
+        
+        // Interest matching (40%)
+        const topCategories = tracker.getTopInterests('category');
+        if (worker.jobCategory) {
+          const match = topCategories.find(c => c.value === worker.jobCategory);
+          if (match) score += 20 * (match.count / 5);
+        }
+        
+        const topDistricts = tracker.getTopInterests('district');
+        if (worker.district) {
+          const match = topDistricts.find(d => d.value === worker.district);
+          if (match) score += 20 * (match.count / 5);
+        }
+        
+        // Rating & verification (30%)
+        score += (worker.avgRating || 0) * 3;
+        if (worker.verified) score += 15;
+        
+        return { worker, score };
+      });
+      
+      return scored
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map(s => s.worker);
+    }
+
+    function getCategoryWorkers(category, minCount = 5) {
+      const categoryWorkers = allWorkers.filter(w => w.jobCategory === category);
+      if (categoryWorkers.length < minCount) return [];
+      
+      // Score each worker for this category
+      return categoryWorkers
+        .map(worker => {
+          let score = 0;
           
-          // Check unique name for users
-          if (selectedRole === 'user' && uniqueName) {
-            const q = query(collection(db, 'users'), where('uniqueName', '==', uniqueName));
-            const snap = await getDocs(q);
-            if (!snap.empty) {
-              showToast('Username taken', 'error');
-              return;
+          // Location (30%)
+          if (userLocation && worker.lat && worker.lng) {
+            const distance = calculateDistance(
+              userLocation.lat, userLocation.lng,
+              worker.lat, worker.lng
+            );
+            if (distance !== null) {
+              score += 30 * (1 - Math.min(distance, 30) / 30);
             }
           }
           
-          const userCred = await createUserWithEmailAndPassword(auth, email, password);
+          // Random factor for variety (20%)
+          score += Math.random() * 20;
           
-          const userData = {
-            uid: userCred.user.uid,
-            email,
-            role: selectedRole,
-            deviceId: selectedRole === 'user' ? deviceId : null,
-            createdAt: new Date().toISOString(),
-            verified: false,
-            boosted: false,
-            avgRating: 0,
-            reviewCount: 0,
-            followerCount: 0
-          };
+          // Rating and verification (50%)
+          score += (worker.avgRating || 0) * 5;
+          if (worker.verified) score += 20;
           
-          if (selectedRole === 'worker') {
-            userData.fullName = fullName;
-            userData.status = 'Available';
-            userData.portfolioImages = [];
-          } else if (selectedRole === 'company') {
-            userData.companyName = fullName;
-            userData.images = [];
-          } else {
-            userData.uniqueName = uniqueName;
-          }
-          
-          await setDoc(doc(db, 'users', userCred.user.uid), userData);
-          showToast('Account created!', 'success');
-          document.getElementById('authModal').classList.add('hidden');
-          location.href = 'dashboard.html';
+          return { worker, score };
+        })
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 8)
+        .map(s => s.worker);
+    }
+
+    // ==================== LIVE SEARCH ====================
+    window.performSearch = () => {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      if (query.length < 2) {
+        document.getElementById('liveSearchResults').style.display = 'none';
+        return;
+      }
+      
+      const results = [];
+      
+      // Search workers
+      allWorkers.forEach(w => {
+        if (w.fullName?.toLowerCase().includes(query) || 
+            w.jobCategory?.toLowerCase().includes(query) ||
+            w.district?.toLowerCase().includes(query)) {
+          results.push({ type: 'worker', data: w, id: w.uid });
         }
+      });
+      
+      // Search companies
+      allCompanies.forEach(c => {
+        if (c.companyName?.toLowerCase().includes(query) ||
+            c.district?.toLowerCase().includes(query)) {
+          results.push({ type: 'company', data: c, id: c.uid });
+        }
+      });
+      
+      // Search jobs
+      allJobs.forEach(j => {
+        if (j.title?.toLowerCase().includes(query) ||
+            j.description?.toLowerCase().includes(query)) {
+          results.push({ type: 'job', data: j, id: j.id });
+        }
+      });
+      
+      displaySearchResults(results.slice(0, 10));
+    };
+
+    function displaySearchResults(results) {
+      const container = document.getElementById('liveSearchResults');
+      container.innerHTML = '';
+      
+      if (results.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+      
+      results.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'search-result-item';
+        div.onclick = () => {
+          if (r.type === 'job') {
+            window.location.href = `job.html?id=${r.id}`;
+          } else {
+            window.location.href = `profile.html?id=${r.id}`;
+          }
+        };
+        
+        if (r.type === 'worker') {
+          div.innerHTML = `
+            <img src="${r.data.profilePicture || 'https://via.placeholder.com/40'}" class="result-avatar">
+            <div class="result-info">
+              <div class="result-title">${r.data.fullName}</div>
+              <div class="result-subtitle">${r.data.jobCategory} • ${r.data.district}</div>
+            </div>
+            <span class="result-badge">Worker</span>
+          `;
+        } else if (r.type === 'company') {
+          div.innerHTML = `
+            <img src="${r.data.logo || 'https://via.placeholder.com/40'}" class="result-avatar">
+            <div class="result-info">
+              <div class="result-title">${r.data.companyName}</div>
+              <div class="result-subtitle">${r.data.district}</div>
+            </div>
+            <span class="result-badge">Company</span>
+          `;
+        } else {
+          div.innerHTML = `
+            <div class="result-icon"><i class="fas fa-briefcase"></i></div>
+            <div class="result-info">
+              <div class="result-title">${r.data.title}</div>
+              <div class="result-subtitle">${r.data.companyName} • ${r.data.district}</div>
+            </div>
+            <span class="result-badge">Job</span>
+          `;
+        }
+        
+        container.appendChild(div);
+      });
+      
+      container.style.display = 'block';
+    }
+
+    // Debounced search
+    document.getElementById('searchInput').addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(performSearch, 300);
+    });
+
+    // Close search results when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-container')) {
+        document.getElementById('liveSearchResults').style.display = 'none';
+      }
+    });
+
+    // ==================== LOAD DATA ====================
+    async function loadAllData() {
+      const spinner = document.getElementById('loadingSpinner');
+      spinner.classList.remove('hidden');
+      
+      try {
+        // Load workers
+        const workersSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'worker')));
+        allWorkers = workersSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+        
+        // Load companies
+        const companiesSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'company')));
+        allCompanies = companiesSnap.docs.map(d => ({ uid: d.id, ...d.data() }));
+        
+        // Load jobs
+        const jobsSnap = await getDocs(collection(db, 'jobs'));
+        allJobs = jobsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        
+        // Load categories
+        const categoriesSnap = await getDocs(collection(db, 'categories'));
+        allCategories = categoriesSnap.docs.map(d => d.data().name).filter(c => {
+          const count = allWorkers.filter(w => w.jobCategory === c).length;
+          return count >= 5;
+        });
+        
+        renderCurrentTab();
+        renderCategoryChips();
       } catch (error) {
-        showToast(error.message, 'error');
+        showToast('Error loading data', 'error');
+      }
+      
+      spinner.classList.add('hidden');
+    }
+
+    function renderCurrentTab() {
+      if (currentTab === 'services') {
+        renderMostUsed();
+        renderRecent();
+        renderSuggested();
+      } else if (currentTab === 'jobs') {
+        renderJobs();
+      } else if (currentTab === 'companies') {
+        renderCompanies();
+      }
+    }
+
+    function renderMostUsed() {
+      const grid = document.getElementById('mostUsedGrid');
+      const workers = getMostUsed();
+      grid.innerHTML = workers.map(w => createWorkerCard(w)).join('');
+    }
+
+    function renderRecent() {
+      const grid = document.getElementById('recentGrid');
+      const workers = getRecent();
+      grid.innerHTML = workers.map(w => createWorkerCard(w)).join('');
+    }
+
+    function renderSuggested() {
+      const grid = document.getElementById('suggestedGrid');
+      const workers = getSuggested();
+      grid.innerHTML = workers.map(w => createWorkerCard(w)).join('');
+    }
+
+    function renderJobs() {
+      const grid = document.getElementById('jobsGrid');
+      grid.innerHTML = allJobs.map(j => createJobCard(j)).join('');
+    }
+
+    function renderCompanies() {
+      const grid = document.getElementById('companiesGrid');
+      grid.innerHTML = allCompanies.map(c => createCompanyCard(c)).join('');
+    }
+
+    function renderCategoryChips() {
+      const chips = document.getElementById('categoryChips');
+      chips.innerHTML = allCategories.map(c => `
+        <div class="category-chip" onclick="loadCategory('${c}')">${c}</div>
+      `).join('');
+    }
+
+    window.loadCategory = async (category) => {
+      const workers = getCategoryWorkers(category);
+      const grid = document.getElementById('categoryResults');
+      grid.innerHTML = workers.map(w => createWorkerCard(w)).join('');
+      
+      // Scroll to results
+      grid.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    function createWorkerCard(worker) {
+      return `
+        <div class="card" onclick="location.href='profile.html?id=${worker.uid}'">
+          <div class="card-image">
+            <img src="${worker.profilePicture || 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400'}" loading="lazy">
+            ${worker.verified ? '<span class="card-badge"><i class="fas fa-check-circle" style="color: var(--primary);"></i></span>' : ''}
+          </div>
+          <div class="card-content">
+            <div class="card-title">${worker.fullName}</div>
+            <div class="card-subtitle">${worker.jobCategory || 'General'} • ${worker.district || ''}</div>
+            <div class="card-footer">
+              <span class="card-rating">
+                <i class="fas fa-star"></i> ${(worker.avgRating || 0).toFixed(1)}
+              </span>
+              <span class="status-badge status-${(worker.status || 'available').toLowerCase().replace(' ', '-')}">
+                ${worker.status || 'Available'}
+              </span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createCompanyCard(company) {
+      return `
+        <div class="card" onclick="location.href='profile.html?id=${company.uid}'">
+          <div class="card-image">
+            <img src="${company.logo || 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=400'}" loading="lazy">
+            ${company.verified ? '<span class="card-badge"><i class="fas fa-check-circle" style="color: var(--primary);"></i></span>' : ''}
+          </div>
+          <div class="card-content">
+            <div class="card-title">${company.companyName}</div>
+            <div class="card-subtitle">${company.district || ''}</div>
+            <div class="card-footer">
+              <span class="card-rating">
+                <i class="fas fa-star"></i> ${(company.avgRating || 0).toFixed(1)}
+              </span>
+              <span>${allJobs.filter(j => j.companyId === company.uid).length} jobs</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createJobCard(job) {
+      return `
+        <div class="job-card" onclick="location.href='job.html?id=${job.id}'">
+          <div class="job-header">
+            <div class="job-company">
+              <img src="${job.companyLogo || 'https://via.placeholder.com/32'}" alt="">
+              <span>${job.companyName || 'Company'}</span>
+            </div>
+            <span class="job-budget">RWF ${Number(job.budget || 0).toLocaleString()}</span>
+          </div>
+          <h3 class="job-title">${job.title}</h3>
+          <div class="job-meta">
+            <span><i class="fas fa-map-marker-alt"></i> ${job.district || ''}</span>
+            <span><i class="fas fa-tag"></i> ${job.category || ''}</span>
+          </div>
+          <p class="job-description">${job.description?.substring(0, 100)}...</p>
+        </div>
+      `;
+    }
+
+    // ==================== AUTH UI ====================
+    window.toggleAuthMenu = () => {
+      document.getElementById('authMenu').classList.toggle('show');
+      document.getElementById('loginForm').classList.remove('show');
+    };
+
+    window.showLoginForm = () => {
+      document.getElementById('authMenu').classList.remove('show');
+      document.getElementById('loginForm').classList.add('show');
+    };
+
+    window.showSignupForm = () => {
+      document.getElementById('loginForm').classList.remove('show');
+      document.getElementById('authMenu').classList.add('show');
+    };
+
+    window.showAccountType = (type) => {
+      document.getElementById('authMenu').classList.remove('show');
+      if (type === 'worker') {
+        document.getElementById('workerSignupModal').classList.remove('hidden');
+      } else if (type === 'company') {
+        document.getElementById('companySignupModal').classList.remove('hidden');
+      } else {
+        document.getElementById('userSignupModal').classList.remove('hidden');
       }
     };
 
-    window.toggleAuthMode = () => {
-      isLogin = !isLogin;
-      document.getElementById('authSubmit').textContent = isLogin ? 'Sign In' : 'Create Account';
-      document.getElementById('authFormTitle').textContent = isLogin ? 'Sign In' : 'Create Account';
+    // ==================== REGISTRATION ====================
+    async function uploadImage(file) {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('key', IMGBB_API_KEY);
       
-      // Hide role selection in login mode
-      document.querySelector('.account-grid').style.display = isLogin ? 'none' : 'grid';
+      const response = await fetch(IMGBB_URL, { method: 'POST', body: formData });
+      const data = await response.json();
+      return data.success ? data.data.url : null;
+    }
+
+    window.previewImage = (input, previewId) => {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const preview = document.getElementById(previewId);
+          preview.src = e.target.result;
+          preview.classList.add('show');
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
     };
 
-    window.filterBrowse = (type) => {
-      document.querySelectorAll('.search-tab').forEach(t => t.classList.remove('active'));
+    window.registerWorker = async (e) => {
+      e.preventDefault();
+      
+      const file = document.getElementById('workerImage').files[0];
+      let imageUrl = '';
+      
+      if (file) {
+        imageUrl = await uploadImage(file);
+      }
+      
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        document.getElementById('workerEmail').value,
+        document.getElementById('workerPassword').value
+      );
+      
+      const userData = {
+        uid: userCred.user.uid,
+        fullName: document.getElementById('workerName').value,
+        profilePicture: imageUrl,
+        phone: document.getElementById('workerPhone').value,
+        email: document.getElementById('workerEmail').value,
+        district: document.getElementById('workerDistrict').value,
+        jobCategory: document.getElementById('workerCategory').value,
+        role: 'worker',
+        status: 'Available',
+        verified: false,
+        boosted: false,
+        avgRating: 0,
+        reviewCount: 0,
+        followerCount: 0,
+        views: 0,
+        portfolioImages: [],
+        createdAt: new Date().toISOString(),
+        deviceId
+      };
+      
+      await setDoc(doc(db, 'users', userCred.user.uid), userData);
+      showToast('Registration successful!', 'success');
+      document.getElementById('workerSignupModal').classList.add('hidden');
+      location.href = 'dashboard.html';
+    };
+
+    window.registerCompany = async (e) => {
+      e.preventDefault();
+      
+      const file = document.getElementById('companyLogo').files[0];
+      let imageUrl = '';
+      
+      if (file) {
+        imageUrl = await uploadImage(file);
+      }
+      
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        document.getElementById('companyEmail').value,
+        document.getElementById('companyPassword').value
+      );
+      
+      const userData = {
+        uid: userCred.user.uid,
+        companyName: document.getElementById('companyName').value,
+        logo: imageUrl,
+        phone: document.getElementById('companyPhone').value,
+        email: document.getElementById('companyEmail').value,
+        district: document.getElementById('companyDistrict').value,
+        role: 'company',
+        verified: false,
+        boosted: false,
+        avgRating: 0,
+        reviewCount: 0,
+        followerCount: 0,
+        images: [],
+        createdAt: new Date().toISOString(),
+        deviceId
+      };
+      
+      await setDoc(doc(db, 'users', userCred.user.uid), userData);
+      showToast('Registration successful!', 'success');
+      document.getElementById('companySignupModal').classList.add('hidden');
+      location.href = 'dashboard.html';
+    };
+
+    window.registerUser = async (e) => {
+      e.preventDefault();
+      
+      const uniqueName = document.getElementById('userName').value;
+      
+      // Check unique name
+      const q = query(collection(db, 'users'), where('uniqueName', '==', uniqueName));
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        showToast('Username already taken', 'error');
+        return;
+      }
+      
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        document.getElementById('userEmail').value,
+        document.getElementById('userPassword').value
+      );
+      
+      const userData = {
+        uid: userCred.user.uid,
+        uniqueName,
+        email: document.getElementById('userEmail').value,
+        role: 'user',
+        deviceId,
+        createdAt: new Date().toISOString()
+      };
+      
+      await setDoc(doc(db, 'users', userCred.user.uid), userData);
+      showToast('Registration successful!', 'success');
+      document.getElementById('userSignupModal').classList.add('hidden');
+      location.href = 'dashboard.html';
+    };
+
+    // ==================== LOGIN ====================
+    let loginRole = 'worker';
+    
+    window.setLoginRole = (role) => {
+      loginRole = role;
+      document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
       event.target.classList.add('active');
-      loadProfiles(type);
     };
 
-    window.applyFilters = () => {
-      loadProfiles(currentFilter);
+    window.handleLogin = async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        showToast('Login successful!', 'success');
+        location.href = 'dashboard.html';
+      } catch (error) {
+        showToast('Invalid credentials', 'error');
+      }
     };
+
+    // ==================== NAVIGATION ====================
+    window.switchTab = (tab) => {
+      currentTab = tab;
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      document.getElementById('servicesSection').style.display = tab === 'services' ? 'block' : 'none';
+      document.getElementById('jobsSection').style.display = tab === 'jobs' ? 'block' : 'none';
+      document.getElementById('companiesSection').style.display = tab === 'companies' ? 'block' : 'none';
+      
+      if (tab === 'jobs') renderJobs();
+      if (tab === 'companies') renderCompanies();
+    };
+
+    // Load districts and categories for dropdowns
+    async function loadDropdowns() {
+      const districtsSnap = await getDocs(collection(db, 'districts'));
+      const categoriesSnap = await getDocs(collection(db, 'categories'));
+      
+      const districtSelects = ['workerDistrict', 'companyDistrict'];
+      districtSelects.forEach(id => {
+        const select = document.getElementById(id);
+        if (select) {
+          select.innerHTML = '<option value="">Select District</option>';
+          districtsSnap.forEach(d => {
+            select.innerHTML += `<option value="${d.data().name}">${d.data().name}</option>`;
+          });
+        }
+      });
+      
+      const categorySelect = document.getElementById('workerCategory');
+      if (categorySelect) {
+        categorySelect.innerHTML = '<option value="">Select Category</option>';
+        categoriesSnap.forEach(c => {
+          categorySelect.innerHTML += `<option value="${c.data().name}">${c.data().name}</option>`;
+        });
+      }
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.add('hidden');
+        }
+      });
+    });
 
     // Initialize
-    loadFilters();
-    loadProfiles('workers');
+    loadDropdowns();
+    loadAllData();
   </script>
 </body>
 </html>
