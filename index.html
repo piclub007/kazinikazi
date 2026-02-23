@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Kazi ni Kazi - Rwanda Job Marketplace</title>
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* MODERN RESET */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    :root {
+      --primary: #FF385C;
+      --primary-dark: #E31C5F;
+      --secondary: #00A699;
+      --gray-bg: #F7F7F7;
+      --gray-border: #EBEBEB;
+      --gray-text: #717171;
+      --dark-text: #222222;
+      --shadow-sm: 0 6px 16px rgba(0,0,0,0.08);
+      --shadow-hover: 0 12px 24px rgba(0,0,0,0.12);
+      --radius-card: 16px;
+      --radius-button: 40px;
+      --transition: all 0.2s ease;
+    }
+
+    body {
+      background: white;
+      color: var(--dark-text);
+      line-height: 1.5;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* STICKY HEADER */
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1000;
+      border-bottom: 1px solid var(--gray-border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.95);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+      font-size: 1.4rem;
+      color: var(--primary);
+    }
+    .logo i { font-size: 1.8rem; }
+    .logo span { color: var(--dark-text); }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-icon {
+      background: white;
+      border: 1px solid var(--gray-border);
+      border-radius: 40px;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--dark-text);
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-icon:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius-button);
+      padding: 12px 24px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: scale(1.02);
+    }
+    .btn-outline {
+      background: white;
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius-button);
+      padding: 12px 24px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .btn-outline:hover {
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* MAIN CONTAINER */
+    .container {
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* SEARCH BAR (Airbnb style) */
+    .search-section {
+      margin: 20px 0 30px;
+    }
+    .search-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 8px;
+    }
+    .search-tab {
+      padding: 8px 20px;
+      border-radius: 30px;
+      background: var(--gray-bg);
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .search-tab.active {
+      background: var(--dark-text);
+      color: white;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      background: white;
+      border: 1px solid var(--gray-border);
+      border-radius: 60px;
+      padding: 8px 8px 8px 20px;
+      box-shadow: var(--shadow-sm);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .search-input {
+      flex: 1;
+      min-width: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+    .search-input label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .search-input input, .search-input select {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.9rem;
+      padding: 4px 0;
+      width: 100%;
+    }
+    .search-btn {
+      background: var(--primary);
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* CARD GRID (Airbnb style) */
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin: 32px 0 20px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: white;
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+      border: 1px solid var(--gray-border);
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-hover);
+    }
+    .card-image {
+      position: relative;
+      aspect-ratio: 1/1;
+      background: var(--gray-bg);
+      overflow: hidden;
+    }
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s;
+    }
+    .card:hover .card-image img {
+      transform: scale(1.05);
+    }
+    .card-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-content {
+      padding: 16px;
+    }
+    .card-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+    .card-subtitle {
+      color: var(--gray-text);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .card-rating {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+    }
+    .card-rating i {
+      color: var(--primary);
+    }
+    .card-price {
+      font-weight: 600;
+      color: var(--dark-text);
+    }
+
+    /* PROFILE VIEW */
+    .profile-header {
+      background: white;
+      border-radius: var(--radius-card);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      align-items: center;
+    }
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid white;
+      box-shadow: var(--shadow-sm);
+    }
+    .profile-info {
+      flex: 1;
+    }
+    .profile-name {
+      font-size: 2rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .profile-meta {
+      display: flex;
+      gap: 20px;
+      color: var(--gray-text);
+      margin-bottom: 16px;
+    }
+    .profile-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .floating-call-btn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--primary);
+      color: white;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      box-shadow: var(--shadow-hover);
+      z-index: 900;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .floating-call-btn:hover {
+      transform: scale(1.1);
+    }
+
+    /* FORMS */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-content {
+      background: white;
+      border-radius: 32px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-hover);
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .form-control {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--gray-border);
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(255,56,92,0.1);
+    }
+    .image-preview {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+    .image-preview img {
+      width: 80px;
+      height: 80px;
+      border-radius: 12px;
+      object-fit: cover;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--dark-text);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 50px;
+      box-shadow: var(--shadow-hover);
+      z-index: 3000;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translate(-50%, 100%); opacity: 0; }
+      to { transform: translate(-50%, 0); opacity: 1; }
+    }
+
+    /* LOADING */
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--gray-border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* HIDDEN CLASS */
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <!-- STICKY HEADER -->
+  <header class="sticky-header">
+    <div class="logo" onclick="navigateTo('home')">
+      <i class="fas fa-briefcase"></i>
+      <span>Kazi</span> ni Kazi
+    </div>
+    <div class="header-actions" id="headerActions">
+      <button class="btn-icon" onclick="toggleSearch()"><i class="fas fa-search"></i></button>
+      <button class="btn-icon" id="authBtn" onclick="showAuthModal()"><i class="fas fa-user"></i></button>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <main id="app" class="container">
+    <!-- DYNAMIC CONTENT WILL BE RENDERED HERE -->
+    <div class="spinner"></div>
+  </main>
+
+  <!-- FLOATING CALL BUTTON (visible on profiles) -->
+  <div id="floatingCall" class="floating-call-btn hidden" onclick="callProfile()">
+    <i class="fas fa-phone"></i>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="authTitle">Sign In</h2>
+      <div id="authError" style="color: var(--primary); margin-bottom: 16px;"></div>
+      <form id="authForm" onsubmit="handleAuth(event)">
+        <div class="form-group" id="nameGroup">
+          <label>Full Name / Company Name</label>
+          <input type="text" class="form-control" id="regName">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" class="form-control" id="email" required>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" class="form-control" id="password" required>
+        </div>
+        <div class="form-group" id="roleGroup">
+          <label>I am a</label>
+          <select class="form-control" id="role">
+            <option value="user">User (browse only)</option>
+            <option value="worker">Worker (look for jobs)</option>
+            <option value="company">Company (hire workers)</option>
+          </select>
+        </div>
+        <div class="form-group" id="uniqueNameGroup">
+          <label>Unique Username (for users)</label>
+          <input type="text" class="form-control" id="uniqueName" placeholder="one per device">
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%;">Continue</button>
+      </form>
+      <p style="text-align: center; margin: 20px 0;">
+        <a href="#" onclick="toggleAuthMode()" id="authToggle">Create an account</a>
+      </p>
+      <button class="btn-outline" style="width: 100%;" onclick="closeModal('authModal')">Close</button>
+    </div>
+  </div>
+
+  <!-- PROFILE EDIT MODAL -->
+  <div id="profileModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Edit Profile</h2>
+      <form id="profileForm" onsubmit="updateProfile(event)">
+        <div id="profileFormFields"></div>
+        <button type="submit" class="btn-primary" style="width: 100%;">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- POST JOB MODAL -->
+  <div id="jobModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Post a Job</h2>
+      <form id="jobForm" onsubmit="postJob(event)">
+        <div class="form-group">
+          <label>Job Title</label>
+          <input type="text" class="form-control" id="jobTitle" required>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea class="form-control" id="jobDesc" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select class="form-control" id="jobCategory" required></select>
+        </div>
+        <div class="form-group">
+          <label>District</label>
+          <select class="form-control" id="jobDistrict" required></select>
+        </div>
+        <div class="form-group">
+          <label>Budget (RWF)</label>
+          <input type="number" class="form-control" id="jobBudget">
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%;">Post Job</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- REVIEW MODAL -->
+  <div id="reviewModal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Leave a Review</h2>
+      <div class="form-group">
+        <label>Rating (1-6 stars)</label>
+        <select class="form-control" id="reviewRating">
+          <option value="1">1 star</option>
+          <option value="2">2 stars</option>
+          <option value="3">3 stars</option>
+          <option value="4">4 stars</option>
+          <option value="5">5 stars</option>
+          <option value="6">6 stars</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Comment</label>
+        <textarea class="form-control" id="reviewText" rows="3"></textarea>
+      </div>
+      <button class="btn-primary" onclick="submitReview()">Submit Review</button>
+    </div>
+  </div>
+
+  <!-- Firebase & ImgBB SDKs -->
+  <script type="importmap">
+    {
+      "imports": {
+        "firebase/app": "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js",
+        "firebase/auth": "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js",
+        "firebase/firestore": "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    // -------------------- FIREBASE INIT --------------------
+    import { initializeApp } from 'firebase/app';
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, addDoc, onSnapshot, orderBy, limit } from 'firebase/firestore';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAtHa9wAryji3EdWwhxT7tUwZquRD-LJvI",
+      authDomain: "project-k-dbaef.firebaseapp.com",
+      projectId: "project-k-dbaef",
+      storageBucket: "project-k-dbaef.firebasestorage.app",
+      messagingSenderId: "356936578912",
+      appId: "1:356936578912:web:056bdbf8625b33d79e1005",
+      measurementId: "G-PXB6QYYV3Z"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // ImgBB API Key
+    const IMGBB_API_KEY = 'ba8023ca74166460c442e8e703d2a1b0';
+
+    // -------------------- GLOBAL STATE --------------------
+    window.currentUser = null;
+    window.userRole = null;
+    window.userData = null;
+    window.currentProfileId = null;
+    window.deviceId = localStorage.getItem('deviceId') || 'device_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('deviceId', window.deviceId);
+
+    // Toast function
+    window.showToast = (msg, type = 'info') => {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    };
+
+    // Modal helpers
+    window.showModal = (id) => document.getElementById(id).classList.remove('hidden');
+    window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+
+    // -------------------- AUTH UI --------------------
+    let isLoginMode = true;
+    window.toggleAuthMode = () => {
+      isLoginMode = !isLoginMode;
+      document.getElementById('authTitle').textContent = isLoginMode ? 'Sign In' : 'Create Account';
+      document.getElementById('authToggle').textContent = isLoginMode ? 'Create an account' : 'Sign in instead';
+      document.getElementById('nameGroup').style.display = isLoginMode ? 'none' : 'block';
+      document.getElementById('roleGroup').style.display = isLoginMode ? 'none' : 'block';
+      document.getElementById('uniqueNameGroup').style.display = isLoginMode ? 'none' : 'block';
+    };
+
+    window.showAuthModal = () => {
+      isLoginMode = true;
+      document.getElementById('authTitle').textContent = 'Sign In';
+      document.getElementById('authToggle').textContent = 'Create an account';
+      document.getElementById('nameGroup').style.display = 'none';
+      document.getElementById('roleGroup').style.display = 'none';
+      document.getElementById('uniqueNameGroup').style.display = 'none';
+      showModal('authModal');
+    };
+
+    // Handle Auth
+    window.handleAuth = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        if (isLoginMode) {
+          // LOGIN
+          const userCred = await signInWithEmailAndPassword(auth, email, password);
+          showToast('Logged in successfully!');
+          closeModal('authModal');
+        } else {
+          // REGISTER
+          if (!document.getElementById('regName').value) {
+            showToast('Please enter your name', 'error');
+            return;
+          }
+          
+          const userCred = await createUserWithEmailAndPassword(auth, email, password);
+          const role = document.getElementById('role').value;
+          const uniqueName = document.getElementById('uniqueName').value;
+          
+          // Check unique name if role is user
+          if (role === 'user') {
+            if (!uniqueName) {
+              showToast('Unique name required for users', 'error');
+              return;
+            }
+            const q = query(collection(db, 'users'), where('uniqueName', '==', uniqueName));
+            const snap = await getDocs(q);
+            if (!snap.empty) {
+              showToast('Unique name already taken', 'error');
+              return;
+            }
+          }
+          
+          // Prepare user data
+          const userData = {
+            uid: userCred.user.uid,
+            email,
+            role,
+            deviceId: window.deviceId,
+            createdAt: new Date().toISOString(),
+            verified: false,
+            boosted: false
+          };
+          
+          if (role === 'company') {
+            userData.companyName = document.getElementById('regName').value;
+            userData.phone = '';
+            userData.district = '';
+          } else if (role === 'worker') {
+            userData.fullName = document.getElementById('regName').value;
+            userData.phone = '';
+            userData.district = '';
+            userData.jobCategory = '';
+            userData.status = 'Available';
+          } else {
+            userData.uniqueName = uniqueName;
+          }
+          
+          await setDoc(doc(db, 'users', userCred.user.uid), userData);
+          showToast('Account created!');
+          closeModal('authModal');
+        }
+      } catch (err) {
+        document.getElementById('authError').textContent = err.message;
+      }
+    };
+
+    // Logout
+    window.logout = async () => {
+      await signOut(auth);
+      showToast('Logged out');
+      navigateTo('home');
+    };
+
+    // -------------------- NAVIGATION & RENDERING --------------------
+    window.navigateTo = (page, id = null) => {
+      if (id) window.currentProfileId = id;
+      renderPage(page);
+    };
+
+    async function renderPage(page) {
+      const app = document.getElementById('app');
+      app.innerHTML = '<div class="spinner"></div>';
+      
+      if (!auth.currentUser) {
+        // Public landing / browse
+        await renderBrowse(app);
+      } else {
+        // Logged in - role based dashboard
+        const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+        if (!userDoc.exists()) {
+          await logout();
+          return;
+        }
+        window.userData = userDoc.data();
+        window.userRole = userDoc.data().role;
+        
+        if (page === 'home' || !page) {
+          await renderDashboard(app);
+        } else if (page === 'profile') {
+          await renderProfile(app, window.currentProfileId || auth.currentUser.uid);
+        }
+      }
+    }
+
+    // Render Browse (Airbnb style landing)
+    async function renderBrowse(container) {
+      // Fetch workers and companies for cards
+      const workersSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'worker'), limit(6)));
+      const companiesSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'company'), limit(6)));
+      
+      let html = `
+        <div class="search-section">
+          <div class="search-tabs">
+            <div class="search-tab active" onclick="filterBrowse('workers')">Workers</div>
+            <div class="search-tab" onclick="filterBrowse('companies')">Companies</div>
+            <div class="search-tab" onclick="filterBrowse('jobs')">Jobs</div>
+          </div>
+          <div class="search-bar">
+            <div class="search-input">
+              <label>WHERE</label>
+              <select id="browseDistrict">
+                <option value="">All Rwanda</option>
+              </select>
+            </div>
+            <div class="search-input">
+              <label>CATEGORY</label>
+              <select id="browseCategory">
+                <option value="">Any work</option>
+              </select>
+            </div>
+            <button class="search-btn" onclick="applyBrowseFilters()"><i class="fas fa-search"></i></button>
+          </div>
+        </div>
+        <h2 class="section-title">Popular workers near you</h2>
+        <div class="card-grid" id="browseGrid">
+      `;
+      
+      workersSnap.forEach(doc => {
+        const w = doc.data();
+        html += `
+          <div class="card" onclick="navigateTo('profile', '${doc.id}')">
+            <div class="card-image">
+              <img src="${w.profilePicture || 'https://via.placeholder.com/400?text=Worker'}" alt="${w.fullName}">
+              ${w.verified ? '<span class="card-badge"><i class="fas fa-check-circle"></i> Verified</span>' : ''}
+            </div>
+            <div class="card-content">
+              <div class="card-title">${w.fullName || 'Worker'}</div>
+              <div class="card-subtitle">${w.jobCategory || 'General'} · ${w.district || 'Kigali'}</div>
+              <div class="card-footer">
+                <span class="card-rating"><i class="fas fa-star"></i> ${w.avgRating || '5.0'}</span>
+                <span class="card-price">${w.status || 'Available'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += `</div><h2 class="section-title">Trusted companies</h2><div class="card-grid">`;
+      
+      companiesSnap.forEach(doc => {
+        const c = doc.data();
+        html += `
+          <div class="card" onclick="navigateTo('profile', '${doc.id}')">
+            <div class="card-image">
+              <img src="${c.logo || 'https://via.placeholder.com/400?text=Company'}" alt="${c.companyName}">
+              ${c.verified ? '<span class="card-badge"><i class="fas fa-check-circle"></i> Verified</span>' : ''}
+            </div>
+            <div class="card-content">
+              <div class="card-title">${c.companyName || 'Company'}</div>
+              <div class="card-subtitle">${c.district || 'Kigali'}</div>
+              <div class="card-footer">
+                <span class="card-rating"><i class="fas fa-star"></i> ${c.avgRating || '4.8'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      container.innerHTML = html;
+      
+      // Load districts & categories into filters
+      loadFilterOptions();
+    }
+
+    // Load districts and categories from Firestore
+    async function loadFilterOptions() {
+      const districtsSnap = await getDocs(collection(db, 'districts'));
+      const catSnap = await getDocs(collection(db, 'categories'));
+      
+      const districtSelects = document.querySelectorAll('#browseDistrict, #jobDistrict');
+      districtSelects.forEach(select => {
+        if (select) {
+          select.innerHTML = '<option value="">All Rwanda</option>';
+          districtsSnap.forEach(d => {
+            select.innerHTML += `<option value="${d.id}">${d.data().name || d.id}</option>`;
+          });
+        }
+      });
+      
+      const catSelects = document.querySelectorAll('#browseCategory, #jobCategory');
+      catSelects.forEach(select => {
+        if (select) {
+          select.innerHTML = '<option value="">Any category</option>';
+          catSnap.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.data().name || c.id}</option>`;
+          });
+        }
+      });
+    }
+
+    // Render Dashboard (role based)
+    async function renderDashboard(container) {
+      if (!window.userData) return;
+      
+      let html = '';
+      
+      if (window.userRole === 'company') {
+        html = `
+          <div class="profile-header">
+            <img src="${window.userData.logo || 'https://via.placeholder.com/200'}" class="profile-avatar">
+            <div class="profile-info">
+              <div class="profile-name">${window.userData.companyName}</div>
+              <div class="profile-meta">
+                <span><i class="fas fa-map-marker-alt"></i> ${window.userData.district || 'Set district'}</span>
+                <span><i class="fas fa-phone"></i> ${window.userData.phone || 'Add phone'}</span>
+              </div>
+              <div class="profile-actions">
+                <button class="btn-primary" onclick="showModal('jobModal')"><i class="fas fa-plus"></i> Post Job</button>
+                <button class="btn-outline" onclick="editProfile()">Edit Profile</button>
+                <button class="btn-outline" onclick="boostProfile()">Boost ⚡</button>
+              </div>
+            </div>
+          </div>
+          <h2 class="section-title">My Job Posts</h2>
+          <div id="companyJobs" class="card-grid"></div>
+        `;
+        container.innerHTML = html;
+        loadCompanyJobs();
+        
+      } else if (window.userRole === 'worker') {
+        html = `
+          <div class="profile-header">
+            <img src="${window.userData.profilePicture || 'https://via.placeholder.com/200'}" class="profile-avatar">
+            <div class="profile-info">
+              <div class="profile-name">${window.userData.fullName}</div>
+              <div class="profile-meta">
+                <span><i class="fas fa-briefcase"></i> ${window.userData.jobCategory || 'Set category'}</span>
+                <span><i class="fas fa-map-marker-alt"></i> ${window.userData.district || 'Set district'}</span>
+              </div>
+              <div class="profile-actions">
+                <select onchange="updateWorkerStatus(this.value)" class="btn-outline" style="padding: 12px;">
+                  <option ${window.userData.status === 'Available' ? 'selected' : ''}>Available</option>
+                  <option ${window.userData.status === 'Working' ? 'selected' : ''}>Working</option>
+                  <option ${window.userData.status === 'Not Available' ? 'selected' : ''}>Not Available</option>
+                </select>
+                <button class="btn-outline" onclick="editProfile()">Edit Profile</button>
+                <button class="btn-outline" onclick="boostProfile()">Boost ⚡</button>
+              </div>
+            </div>
+          </div>
+          <h2 class="section-title">Available Jobs</h2>
+          <div id="availableJobs" class="card-grid"></div>
+        `;
+        container.innerHTML = html;
+        loadAvailableJobs();
+        
+      } else {
+        // User role
+        html = `
+          <div class="profile-header">
+            <div class="profile-info">
+              <div class="profile-name">@${window.userData.uniqueName}</div>
+              <div class="profile-meta">
+                <span><i class="fas fa-user"></i> Explorer</span>
+              </div>
+            </div>
+          </div>
+          <h2 class="section-title">Browse Workers & Companies</h2>
+          <div class="card-grid" id="browseGrid"></div>
+        `;
+        container.innerHTML = html;
+        loadBrowseForUser();
+      }
+      
+      // Add floating call button if viewing someone else's profile
+      if (window.currentProfileId && window.currentProfileId !== auth.currentUser?.uid) {
+        document.getElementById('floatingCall').classList.remove('hidden');
+      } else {
+        document.getElementById('floatingCall').classList.add('hidden');
+      }
+    }
+
+    // Profile view (public)
+    window.renderProfile = async (container, userId) => {
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      if (!userDoc.exists()) return;
+      
+      const profile = userDoc.data();
+      const isOwner = auth.currentUser?.uid === userId;
+      
+      let html = `
+        <div class="profile-header">
+          <img src="${profile.profilePicture || profile.logo || 'https://via.placeholder.com/200'}" class="profile-avatar">
+          <div class="profile-info">
+            <div class="profile-name">${profile.companyName || profile.fullName || '@' + profile.uniqueName}</div>
+            <div class="profile-meta">
+              ${profile.district ? `<span><i class="fas fa-map-marker-alt"></i> ${profile.district}</span>` : ''}
+              ${profile.phone ? `<span><i class="fas fa-phone"></i> ${profile.phone}</span>` : ''}
+              ${profile.email ? `<span><i class="fas fa-envelope"></i> ${profile.email}</span>` : ''}
+            </div>
+            <div class="profile-actions">
+              ${!isOwner ? `<button class="btn-primary" onclick="toggleFollow('${userId}')"><i class="fas fa-user-plus"></i> Follow</button>` : ''}
+              ${!isOwner ? `<button class="btn-outline" onclick="showReviewModal('${userId}')">Review</button>` : ''}
+            </div>
+          </div>
+        </div>
+        <h2 class="section-title">Reviews</h2>
+        <div id="reviewsList" class="card-grid"></div>
+      `;
+      
+      container.innerHTML = html;
+      loadReviews(userId);
+      
+      // Floating call button
+      if (!isOwner) {
+        document.getElementById('floatingCall').classList.remove('hidden');
+        window.currentCallProfile = profile;
+      }
+    };
+
+    // Utility functions (to be implemented)
+    window.filterBrowse = (type) => { showToast('Filter by ' + type); };
+    window.applyBrowseFilters = () => { showToast('Applying filters...'); };
+    window.editProfile = () => { showModal('profileModal'); };
+    window.boostProfile = () => { showToast('✨ Boosted! (Fake feature)'); };
+    window.updateWorkerStatus = (status) => { showToast('Status updated to ' + status); };
+    window.toggleFollow = (id) => { showToast('Followed!'); };
+    window.showReviewModal = (id) => { window.reviewTarget = id; showModal('reviewModal'); };
+    window.submitReview = () => { showToast('Review submitted'); closeModal('reviewModal'); };
+    window.callProfile = () => {
+      if (window.currentCallProfile?.phone) {
+        window.location.href = `tel:${window.currentCallProfile.phone}`;
+      } else {
+        showToast('No phone number available');
+      }
+    };
+
+    // Load jobs, reviews, etc
+    async function loadCompanyJobs() {
+      // Implementation
+    }
+    async function loadAvailableJobs() {}
+    async function loadBrowseForUser() {}
+    async function loadReviews(userId) {}
+
+    // -------------------- INIT --------------------
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        window.currentUser = user;
+        renderPage('home');
+      } else {
+        window.currentUser = null;
+        renderPage('home');
+      }
+    });
+
+    // Load initial districts/categories
+    loadFilterOptions();
+
+  </script>
+</body>
+</html>
