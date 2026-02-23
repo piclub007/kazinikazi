@@ -9,7 +9,6 @@ const firebaseConfig = {
   measurementId: "G-PXB6QYYV3Z"
 };
 
-// Initialize Firebase
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
@@ -22,12 +21,15 @@ export const db = getFirestore(app);
 export const IMGBB_API_KEY = 'ba8023ca74166460c442e8e703d2a1b0';
 export const IMGBB_URL = 'https://api.imgbb.com/1/upload';
 
-// Device ID for user accounts
+// Device ID for tracking
 export const deviceId = localStorage.getItem('deviceId') || 
   'device_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
 localStorage.setItem('deviceId', deviceId);
 
-// Global Toast Function
+// Session ID for tracking
+export const sessionId = 'session_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+
+// Toast function
 export function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
