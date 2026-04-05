@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Kazi ni Kazi · Real Estate Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f2ef;
+            color: #191919;
+        }
+
+        /* LinkedIn-style navbar */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #e0e4e8;
+            padding: 0.8rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .logo-area img {
+            height: 40px;
+            width: auto;
+        }
+        .logo-text {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #0a66c2, #00a3ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 1rem;
+            border: 1px solid #e0e4e8;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card h2 {
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: block;
+            margin-bottom: 0.3rem;
+            color: #1e293b;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: #0a66c2;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 2rem;
+            cursor: pointer;
+        }
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        /* Homes grid */
+        .homes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        .home-card {
+            border: 1px solid #e0e4e8;
+            border-radius: 1rem;
+            overflow: hidden;
+            background: white;
+        }
+        .home-img {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            background-color: #eef3fc;
+        }
+        .home-info {
+            padding: 0.8rem;
+        }
+        .home-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .home-location {
+            font-size: 0.75rem;
+            color: #5e6f8d;
+        }
+        .home-price {
+            font-weight: 700;
+            color: #0a66c2;
+            margin-top: 0.3rem;
+        }
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .toggle-btn {
+            flex: 1;
+            text-align: center;
+            padding: 0.6rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+        .toggle-btn.active {
+            background: #0a66c2;
+            color: white;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1f2937;
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 40px;
+            z-index: 1000;
+        }
+        @media (max-width: 700px) {
+            .container { padding: 0 1rem; }
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="logo-area">
+        <img src="images/logo.png" alt="Kazi ni Kazi" onerror="this.src='https://placehold.co/140x40'">
+        <span class="logo-text">Kazi ni Kazi · Real Estate</span>
+    </div>
+    <div class="user-info" id="userInfo">
+        <span id="userNameDisplay"></span>
+        <button class="btn-secondary" id="logoutBtn" style="display:none;">Logout</button>
+    </div>
+</nav>
+
+<div class="container">
+    <!-- Auth Section (Login / Signup) -->
+    <div id="authSection" class="card">
+        <div class="toggle-buttons">
+            <div class="toggle-btn active" id="showLoginBtn">Sign In</div>
+            <div class="toggle-btn" id="showSignupBtn">Create Account</div>
+        </div>
+        <div id="loginForm">
+            <h2>Sign in to Real Estate Dashboard</h2>
+            <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="agent@realestate.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••"></div>
+            <button class="btn-primary" id="doLoginBtn">Sign In</button>
+        </div>
+        <div id="signupForm" style="display:none;">
+            <h2>Create Real Estate Account</h2>
+            <p style="font-size:0.8rem; color:#5e6f8d;">This account is hidden from public. Only you can manage home listings.</p>
+            <div class="form-group"><label>Full Name</label><input type="text" id="signupName" placeholder="Agency Name or Agent Name"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="signupEmail" placeholder="agent@realestate.com"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="signupPassword" placeholder="Min 6 characters"></div>
+            <button class="btn-primary" id="doSignupBtn">Create Account</button>
+        </div>
+    </div>
+
+    <!-- Homes Management Section (visible after login) -->
+    <div id="homesSection" style="display:none;">
+        <div class="card">
+            <h2><i class="fas fa-plus-circle"></i> Add New Home</h2>
+            <form id="addHomeForm">
+                <div class="form-group"><label>Title *</label><input type="text" id="homeTitle" required placeholder="e.g., Modern 2BR Apartment"></div>
+                <div class="form-group"><label>Location *</label><input type="text" id="homeLocation" required placeholder="Kigali, Gasabo"></div>
+                <div class="form-group"><label>Price *</label><input type="text" id="homePrice" required placeholder="$45/night or $500/month"></div>
+                <div class="form-group"><label>Description</label><textarea id="homeDesc" rows="3" placeholder="Describe the property..."></textarea></div>
+                <div class="form-group"><label>Image URL</label><input type="url" id="homeImage" placeholder="https://... (optional)"></div>
+                <div class="form-group"><label>Bedrooms</label><input type="number" id="homeBedrooms" placeholder="2"></div>
+                <div class="form-group"><label>Bathrooms</label><input type="number" id="homeBathrooms" placeholder="1"></div>
+                <button type="submit" class="btn-primary">Add Home</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-home"></i> My Listed Homes</h2>
+            <div id="homesListContainer">
+                <p style="text-align:center; color:#5e6f8d;">Loading...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- REAL ESTATE ACCOUNT SYSTEM (hidden, localStorage) ----------
+    // Storage keys
+    const RE_USERS_KEY = 'knk_re_users';
+    const RE_SESSION_KEY = 'knk_re_session';
+    const RE_HOMES_KEY = 'knk_re_homes';
+
+    // Helper: show toast
+    function showToast(msg, isErr = false) {
+        let t = document.createElement('div');
+        t.className = 'toast';
+        t.style.background = isErr ? '#dc2626' : '#1f2937';
+        t.innerText = msg;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 3000);
+    }
+
+    // Initialize storage if empty
+    if (!localStorage.getItem(RE_USERS_KEY)) {
+        localStorage.setItem(RE_USERS_KEY, JSON.stringify([]));
+    }
+    if (!localStorage.getItem(RE_HOMES_KEY)) {
+        localStorage.setItem(RE_HOMES_KEY, JSON.stringify([]));
+    }
+
+    // Get current logged in real estate user
+    function getCurrentUser() {
+        const session = localStorage.getItem(RE_SESSION_KEY);
+        if (!session) return null;
+        try {
+            return JSON.parse(session);
+        } catch(e) { return null; }
+    }
+
+    function setCurrentUser(user) {
+        localStorage.setItem(RE_SESSION_KEY, JSON.stringify(user));
+    }
+
+    function clearSession() {
+        localStorage.removeItem(RE_SESSION_KEY);
+    }
+
+    // Get all homes (filter by user if needed)
+    function getUserHomes(userId) {
+        const allHomes = JSON.parse(localStorage.getItem(RE_HOMES_KEY));
+        return allHomes.filter(h => h.userId === userId);
+    }
+
+    function saveHome(home) {
+        const homes = JSON.parse(localStorage.getItem(RE_HOMES_KEY));
+        homes.push(home);
+        localStorage.setItem(RE_HOMES_KEY, JSON.stringify(homes));
+    }
+
+    function updateHome(updatedHome) {
+        let homes = JSON.parse(localStorage.getItem(RE_HOMES_KEY));
+        const index = homes.findIndex(h => h.id === updatedHome.id);
+        if (index !== -1) {
+            homes[index] = updatedHome;
+            localStorage.setItem(RE_HOMES_KEY, JSON.stringify(homes));
+        }
+    }
+
+    function deleteHome(homeId) {
+        let homes = JSON.parse(localStorage.getItem(RE_HOMES_KEY));
+        homes = homes.filter(h => h.id !== homeId);
+        localStorage.setItem(RE_HOMES_KEY, JSON.stringify(homes));
+    }
+
+    // UI state
+    function renderAuthUI() {
+        const user = getCurrentUser();
+        if (user) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('homesSection').style.display = 'block';
+            document.getElementById('userNameDisplay').innerText = user.name;
+            document.getElementById('logoutBtn').style.display = 'inline-block';
+            renderHomesList();
+        } else {
+            document.getElementById('authSection').style.display = 'block';
+            document.getElementById('homesSection').style.display = 'none';
+            document.getElementById('userNameDisplay').innerText = '';
+            document.getElementById('logoutBtn').style.display = 'none';
+        }
+    }
+
+    function renderHomesList() {
+        const user = getCurrentUser();
+        if (!user) return;
+        const homes = getUserHomes(user.id);
+        const container = document.getElementById('homesListContainer');
+        if (homes.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#5e6f8d;">No homes added yet. Use the form above to list your first property.</p>';
+            return;
+        }
+        let html = `<div class="homes-grid">`;
+        homes.forEach(home => {
+            html += `
+                <div class="home-card" data-id="${home.id}">
+                    <div class="home-img" style="background-image: url('${home.image_url || 'https://placehold.co/400x200?text=No+Image'}');"></div>
+                    <div class="home-info">
+                        <div class="home-title">${escapeHtml(home.title)}</div>
+                        <div class="home-location"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(home.location)}</div>
+                        <div class="home-price">${escapeHtml(home.price)}</div>
+                        <div style="font-size:0.75rem;">🛏️ ${home.bedrooms || '?'} beds · 🛁 ${home.bathrooms || '?'} baths</div>
+                        <div class="card-actions">
+                            <button class="btn-secondary edit-home" data-id="${home.id}">Edit</button>
+                            <button class="btn-danger delete-home" data-id="${home.id}">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+        // attach edit/delete events
+        document.querySelectorAll('.edit-home').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.getAttribute('data-id'));
+                editHomeById(id);
+            });
+        });
+        document.querySelectorAll('.delete-home').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = parseInt(btn.getAttribute('data-id'));
+                if (confirm('Delete this home listing?')) {
+                    deleteHome(id);
+                    renderHomesList();
+                    showToast('Home deleted');
+                }
+            });
+        });
+    }
+
+    function editHomeById(id) {
+        const user = getCurrentUser();
+        const homes = getUserHomes(user.id);
+        const home = homes.find(h => h.id === id);
+        if (!home) return;
+        document.getElementById('homeTitle').value = home.title;
+        document.getElementById('homeLocation').value = home.location;
+        document.getElementById('homePrice').value = home.price;
+        document.getElementById('homeDesc').value = home.description || '';
+        document.getElementById('homeImage').value = home.image_url || '';
+        document.getElementById('homeBedrooms').value = home.bedrooms || '';
+        document.getElementById('homeBathrooms').value = home.bathrooms || '';
+        // change submit behavior to update instead of add
+        const form = document.getElementById('addHomeForm');
+        const originalSubmit = form.onsubmit;
+        form.onsubmit = (e) => {
+            e.preventDefault();
+            const updatedHome = {
+                id: home.id,
+                userId: user.id,
+                title: document.getElementById('homeTitle').value,
+                location: document.getElementById('homeLocation').value,
+                price: document.getElementById('homePrice').value,
+                description: document.getElementById('homeDesc').value,
+                image_url: document.getElementById('homeImage').value,
+                bedrooms: document.getElementById('homeBedrooms').value,
+                bathrooms: document.getElementById('homeBathrooms').value,
+                updated_at: new Date().toISOString()
+            };
+            updateHome(updatedHome);
+            renderHomesList();
+            showToast('Home updated');
+            form.reset();
+            form.onsubmit = originalSubmit; // restore
+        };
+        showToast('Editing: modify and click Add Home (will update)');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // Auth logic
+    function signup(name, email, password) {
+        const users = JSON.parse(localStorage.getItem(RE_USERS_KEY));
+        if (users.find(u => u.email === email)) {
+            showToast('Email already registered', true);
+            return false;
+        }
+        if (password.length < 6) {
+            showToast('Password must be at least 6 characters', true);
+            return false;
+        }
+        const newUser = {
+            id: Date.now(),
+            name: name,
+            email: email,
+            password: password, // In real app, hash this
+            type: 'real_estate',
+            created_at: new Date().toISOString()
+        };
+        users.push(newUser);
+        localStorage.setItem(RE_USERS_KEY, JSON.stringify(users));
+        // auto login
+        setCurrentUser({ id: newUser.id, name: newUser.name, email: newUser.email });
+        showToast('Account created successfully!');
+        renderAuthUI();
+        return true;
+    }
+
+    function login(email, password) {
+        const users = JSON.parse(localStorage.getItem(RE_USERS_KEY));
+        const user = users.find(u => u.email === email && u.password === password);
+        if (!user) {
+            showToast('Invalid email or password', true);
+            return false;
+        }
+        setCurrentUser({ id: user.id, name: user.name, email: user.email });
+        showToast(`Welcome back, ${user.name}`);
+        renderAuthUI();
+        return true;
+    }
+
+    function logout() {
+        clearSession();
+        renderAuthUI();
+        showToast('Logged out');
+    }
+
+    // DOM Elements
+    const loginFormDiv = document.getElementById('loginForm');
+    const signupFormDiv = document.getElementById('signupForm');
+    const showLoginBtn = document.getElementById('showLoginBtn');
+    const showSignupBtn = document.getElementById('showSignupBtn');
+
+    showLoginBtn.addEventListener('click', () => {
+        showLoginBtn.classList.add('active');
+        showSignupBtn.classList.remove('active');
+        loginFormDiv.style.display = 'block';
+        signupFormDiv.style.display = 'none';
+    });
+    showSignupBtn.addEventListener('click', () => {
+        showSignupBtn.classList.add('active');
+        showLoginBtn.classList.remove('active');
+        loginFormDiv.style.display = 'none';
+        signupFormDiv.style.display = 'block';
+    });
+
+    document.getElementById('doLoginBtn').addEventListener('click', () => {
+        const email = document.getElementById('loginEmail').value.trim();
+        const pwd = document.getElementById('loginPassword').value;
+        login(email, pwd);
+    });
+    document.getElementById('doSignupBtn').addEventListener('click', () => {
+        const name = document.getElementById('signupName').value.trim();
+        const email = document.getElementById('signupEmail').value.trim();
+        const pwd = document.getElementById('signupPassword').value;
+        if (!name || !email) {
+            showToast('Name and email required', true);
+            return;
+        }
+        signup(name, email, pwd);
+    });
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    // Add home form submission
+    document.getElementById('addHomeForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const user = getCurrentUser();
+        if (!user) {
+            showToast('Please login first', true);
+            return;
+        }
+        const title = document.getElementById('homeTitle').value.trim();
+        const location = document.getElementById('homeLocation').value.trim();
+        const price = document.getElementById('homePrice').value.trim();
+        if (!title || !location || !price) {
+            showToast('Title, location and price are required', true);
+            return;
+        }
+        const newHome = {
+            id: Date.now(),
+            userId: user.id,
+            title: title,
+            location: location,
+            price: price,
+            description: document.getElementById('homeDesc').value,
+            image_url: document.getElementById('homeImage').value,
+            bedrooms: document.getElementById('homeBedrooms').value,
+            bathrooms: document.getElementById('homeBathrooms').value,
+            created_at: new Date().toISOString()
+        };
+        saveHome(newHome);
+        renderHomesList();
+        document.getElementById('addHomeForm').reset();
+        showToast('Home added successfully');
+    });
+
+    // initial render
+    renderAuthUI();
+</script>
+</body>
+</html>
