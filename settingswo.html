@@ -1,1 +1,387 @@
-hello
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Kazi ni Kazi · Freelancer Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#f3f2ef;color:#191919;overflow-x:hidden;}
+        .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:0.8rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;position:sticky;top:0;z-index:100;}
+        .logo-area{display:flex;align-items:center;gap:0.75rem;}
+        .logo-area img{height:40px;width:auto;}
+        .logo-text{font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#0a66c2,#00a3ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .user-menu{display:flex;align-items:center;gap:1rem;}
+        .avatar-sm{width:40px;height:40px;background:#0a66c2;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;cursor:pointer;}
+        .dashboard-container{display:flex;max-width:1400px;margin:2rem auto;padding:0 1.5rem;gap:2rem;}
+        .sidebar{width:280px;background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1rem;height:fit-content;position:sticky;top:90px;}
+        .sidebar-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;border-radius:0.8rem;cursor:pointer;transition:all 0.2s;margin-bottom:0.3rem;color:#334155;}
+        .sidebar-item i{width:24px;}
+        .sidebar-item:hover{background:#eef2ff;}
+        .sidebar-item.active{background:#0a66c2;color:white;}
+        .logout-item{color:#dc2626;margin-top:1rem;border-top:1px solid #e2e8f0;padding-top:1rem;}
+        .main-content{flex:1;background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1.5rem;min-height:70vh;}
+        .tab-content{display:none;}
+        .tab-content.active{display:block;}
+        .form-group{margin-bottom:1.2rem;}
+        label{font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.3rem;}
+        input,select,textarea{width:100%;padding:0.7rem;border:1px solid #cbd5e1;border-radius:0.5rem;font-family:inherit;}
+        button.btn-primary{background:#0a66c2;color:white;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;font-weight:600;}
+        button.btn-secondary{background:#e2e8f0;color:#334155;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;}
+        .stat-card{background:#f8fafc;padding:1rem;border-radius:1rem;text-align:center;}
+        .stat-number{font-size:2rem;font-weight:800;color:#0a66c2;}
+        .availability-schedule{background:#f8fafc;padding:1rem;border-radius:1rem;margin-top:1rem;}
+        .day-row{display:flex;align-items:center;gap:1rem;margin-bottom:0.8rem;flex-wrap:wrap;}
+        .day-label{width:80px;font-weight:600;}
+        .time-input{display:flex;gap:0.5rem;align-items:center;}
+        .review-card{border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;margin-bottom:1rem;}
+        .stars{color:#fbbf24;}
+        .badge{background:#eef2ff;padding:0.2rem 0.6rem;border-radius:20px;font-size:0.7rem;}
+        .points-display{font-size:1.5rem;font-weight:800;color:#0a66c2;}
+        @media(max-width:800px){.dashboard-container{flex-direction:column;}.sidebar{width:100%;position:static;}}
+        .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;}
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="logo-area"><img src="images/logo.png" alt="Kazi ni Kazi" onerror="this.src='https://placehold.co/140x40'"><span class="logo-text">Kazi ni Kazi</span></div>
+    <div class="user-menu"><span id="workerNameDisplay">Freelancer</span><div class="avatar-sm" id="profileAvatar"><i class="fas fa-user"></i></div></div>
+</nav>
+<div class="dashboard-container">
+    <div class="sidebar">
+        <div class="sidebar-item" data-tab="profile"><i class="fas fa-user-edit"></i> Edit Profile</div>
+        <div class="sidebar-item" data-tab="status"><i class="fas fa-calendar-alt"></i> Status & Schedule</div>
+        <div class="sidebar-item" data-tab="analytics"><i class="fas fa-chart-line"></i> Analytics</div>
+        <div class="sidebar-item" data-tab="notifications"><i class="fas fa-bell"></i> Notifications</div>
+        <div class="sidebar-item" data-tab="verification"><i class="fas fa-check-circle"></i> Verification</div>
+        <div class="sidebar-item" data-tab="reviews"><i class="fas fa-star"></i> Reviews & Points</div>
+        <div class="sidebar-item logout-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Log out</div>
+    </div>
+    <div class="main-content">
+        <!-- Edit Profile Tab -->
+        <div id="profileTab" class="tab-content">
+            <h2>Edit Profile</h2>
+            <form id="profileForm">
+                <div class="form-group"><label>Profile Picture</label><input type="file" id="avatarUpload" accept="image/*"><div id="avatarPreview" style="margin-top:0.5rem;"></div></div>
+                <div class="form-group"><label>Full Name</label><input type="text" id="workerFullName" required></div>
+                <div class="form-group"><label>Username</label><input type="text" id="workerUsername"></div>
+                <div class="form-group"><label>Portfolio URL</label><input type="url" id="workerPortfolio"></div>
+                <div class="form-group"><label>Primary Skill</label><input type="text" id="primarySkill" readonly></div>
+                <div class="form-group"><label>General Skills (comma separated)</label><input type="text" id="generalSkills"></div>
+                <div class="form-group"><label>Address</label><input type="text" id="workerAddress"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="workerEmail" required></div>
+                <div class="form-group"><label>Earning Range</label><select id="earningRange"><option>10$-30$</option><option>40$-80$</option><option>100$-350$</option><option>400$-700$</option><option>800$-1000$</option><option>1000$+</option></select></div>
+                <button type="submit" class="btn-primary">Save Changes</button>
+            </form>
+        </div>
+        
+        <!-- Status & Schedule Tab -->
+        <div id="statusTab" class="tab-content">
+            <h2>Availability Status</h2>
+            <div class="form-group"><label>Current Status</label><select id="availabilityStatus"><option value="available">Available</option><option value="in_break">In Break</option><option value="not_available">Not Available</option></select></div>
+            <div class="availability-schedule">
+                <h3>Weekly Schedule (off-hours)</h3>
+                <p style="font-size:0.8rem;">Set hours when you are NOT working (e.g., 18:00-08:00)</p>
+                <div id="scheduleContainer"></div>
+                <button id="saveScheduleBtn" class="btn-secondary" style="margin-top:1rem;">Save Schedule</button>
+            </div>
+        </div>
+        
+        <!-- Analytics Tab -->
+        <div id="analyticsTab" class="tab-content">
+            <h2>Freelancer Analytics</h2>
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-number" id="profileViews">0</div><div>Profile Views</div></div>
+                <div class="stat-card"><div class="stat-number" id="totalEarned">$0</div><div>Total Earned</div></div>
+                <div class="stat-card"><div class="stat-number" id="completedJobs">0</div><div>Completed Jobs</div></div>
+                <div class="stat-card"><div class="stat-number" id="responseRate">0%</div><div>Response Rate</div></div>
+            </div>
+            <canvas id="analyticsChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas>
+        </div>
+        
+        <!-- Notifications Tab -->
+        <div id="notificationsTab" class="tab-content">
+            <h2>Notifications</h2>
+            <div id="notificationsList"></div>
+            <button id="requestPushBtn" class="btn-secondary">Enable Push Notifications</button>
+        </div>
+        
+        <!-- Verification Tab -->
+        <div id="verificationTab" class="tab-content">
+            <h2>Verification Badge</h2>
+            <div id="verificationStatus"></div>
+            <button id="requestVerifyBtn" class="btn-primary">Request Verification</button>
+            <p style="margin-top:1rem; font-size:0.8rem;">Verification increases trust and visibility. Admin reviews your profile.</p>
+        </div>
+        
+        <!-- Reviews & Points Tab -->
+        <div id="reviewsTab" class="tab-content">
+            <h2>Reviews & Reputation Points</h2>
+            <div style="background:#f8fafc; padding:1rem; border-radius:1rem; margin-bottom:1rem; text-align:center;">
+                <div class="points-display" id="totalPoints">0</div>
+                <div>Reputation Points</div>
+                <div id="starRatingDisplay" class="stars" style="font-size:1.2rem;">☆☆☆☆☆</div>
+                <div id="recommendationText"></div>
+            </div>
+            <h3>Recent Reviews</h3>
+            <div id="reviewsList"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- CHECK USER TYPE & REDIRECT IF COMPANY ----------
+    const currentUser = JSON.parse(localStorage.getItem('knk_current_user') || '{}');
+    if (!currentUser.email || currentUser.type !== 'worker') {
+        window.location.href = 'settingsco.html';
+    }
+    
+    // ---------- MOCK DATA STORAGE ----------
+    let workerData = {
+        name: currentUser.name || 'Freelancer Name',
+        email: currentUser.email,
+        username: '',
+        portfolio: '',
+        primarySkill: currentUser.primarySkill || 'Web Developer',
+        generalSkills: ['React', 'Python'],
+        address: '',
+        earningRange: '100$-350$',
+        avatar: ''
+    };
+    let availabilityStatus = localStorage.getItem('knk_worker_status') || 'available';
+    let weeklySchedule = JSON.parse(localStorage.getItem('knk_worker_schedule')) || {
+        monday: {enabled: false, start: '18:00', end: '08:00'},
+        tuesday: {enabled: false, start: '18:00', end: '08:00'},
+        wednesday: {enabled: false, start: '18:00', end: '08:00'},
+        thursday: {enabled: false, start: '18:00', end: '08:00'},
+        friday: {enabled: false, start: '18:00', end: '08:00'},
+        saturday: {enabled: false, start: '18:00', end: '08:00'},
+        sunday: {enabled: false, start: '18:00', end: '08:00'}
+    };
+    let notifications = JSON.parse(localStorage.getItem('knk_worker_notifications') || '[]');
+    let verificationRequested = localStorage.getItem('knk_worker_verified_request') === 'true';
+    let isVerified = localStorage.getItem('knk_worker_verified') === 'true';
+    let reviews = JSON.parse(localStorage.getItem('knk_worker_reviews') || '[]');
+    
+    // Helper functions
+    function showToast(msg, isErr=false){
+        let t=document.createElement('div');t.className='toast';t.style.background=isErr?'#dc2626':'#1f2937';t.innerText=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);
+    }
+    function saveAllWorkerData(){
+        localStorage.setItem('knk_worker_data', JSON.stringify(workerData));
+        localStorage.setItem('knk_worker_status', availabilityStatus);
+        localStorage.setItem('knk_worker_schedule', JSON.stringify(weeklySchedule));
+        localStorage.setItem('knk_worker_notifications', JSON.stringify(notifications));
+        localStorage.setItem('knk_worker_verified_request', verificationRequested);
+        localStorage.setItem('knk_worker_verified', isVerified);
+        localStorage.setItem('knk_worker_reviews', JSON.stringify(reviews));
+    }
+    
+    // Load saved worker data
+    const savedData = localStorage.getItem('knk_worker_data');
+    if(savedData) workerData = {...workerData, ...JSON.parse(savedData)};
+    if(workerData.generalSkills && !Array.isArray(workerData.generalSkills)) workerData.generalSkills = [];
+    
+    function updateProfileForm(){
+        document.getElementById('workerFullName').value = workerData.name;
+        document.getElementById('workerUsername').value = workerData.username || '';
+        document.getElementById('workerPortfolio').value = workerData.portfolio || '';
+        document.getElementById('primarySkill').value = workerData.primarySkill;
+        document.getElementById('generalSkills').value = workerData.generalSkills.join(', ');
+        document.getElementById('workerAddress').value = workerData.address || '';
+        document.getElementById('workerEmail').value = workerData.email;
+        document.getElementById('earningRange').value = workerData.earningRange;
+        if(workerData.avatar) document.getElementById('avatarPreview').innerHTML = `<img src="${workerData.avatar}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`;
+        document.getElementById('workerNameDisplay').innerText = workerData.name;
+    }
+    
+    document.getElementById('profileForm')?.addEventListener('submit', (e)=>{
+        e.preventDefault();
+        workerData.name = document.getElementById('workerFullName').value;
+        workerData.username = document.getElementById('workerUsername').value;
+        workerData.portfolio = document.getElementById('workerPortfolio').value;
+        workerData.generalSkills = document.getElementById('generalSkills').value.split(',').map(s=>s.trim()).filter(s=>s);
+        workerData.address = document.getElementById('workerAddress').value;
+        workerData.email = document.getElementById('workerEmail').value;
+        workerData.earningRange = document.getElementById('earningRange').value;
+        saveAllWorkerData();
+        updateProfileForm();
+        showToast("Profile updated successfully");
+    });
+    document.getElementById('avatarUpload')?.addEventListener('change', (e)=>{
+        const file = e.target.files[0];
+        if(file){
+            const reader = new FileReader();
+            reader.onload = (ev)=>{ workerData.avatar = ev.target.result; saveAllWorkerData(); updateProfileForm(); showToast("Avatar updated"); };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Status & Schedule
+    function renderSchedule(){
+        const container = document.getElementById('scheduleContainer');
+        if(!container) return;
+        const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+        container.innerHTML = days.map(day => `
+            <div class="day-row">
+                <div class="day-label">${day.charAt(0).toUpperCase()+day.slice(1)}</div>
+                <label style="display:flex; align-items:center; gap:0.5rem;"><input type="checkbox" class="schedule-enable" data-day="${day}" ${weeklySchedule[day].enabled ? 'checked' : ''}> Enable off-hours</label>
+                <div class="time-input">
+                    <input type="time" class="schedule-start" data-day="${day}" value="${weeklySchedule[day].start}" ${!weeklySchedule[day].enabled ? 'disabled' : ''}>
+                    <span>to</span>
+                    <input type="time" class="schedule-end" data-day="${day}" value="${weeklySchedule[day].end}" ${!weeklySchedule[day].enabled ? 'disabled' : ''}>
+                </div>
+            </div>
+        `).join('');
+        // attach events
+        document.querySelectorAll('.schedule-enable').forEach(chk => {
+            chk.addEventListener('change', (e) => {
+                const day = chk.getAttribute('data-day');
+                weeklySchedule[day].enabled = chk.checked;
+                const row = chk.closest('.day-row');
+                row.querySelector('.schedule-start').disabled = !chk.checked;
+                row.querySelector('.schedule-end').disabled = !chk.checked;
+            });
+        });
+        document.querySelectorAll('.schedule-start').forEach(inp => {
+            inp.addEventListener('change', (e) => { weeklySchedule[inp.getAttribute('data-day')].start = inp.value; });
+        });
+        document.querySelectorAll('.schedule-end').forEach(inp => {
+            inp.addEventListener('change', (e) => { weeklySchedule[inp.getAttribute('data-day')].end = inp.value; });
+        });
+    }
+    document.getElementById('availabilityStatus').value = availabilityStatus;
+    document.getElementById('availabilityStatus')?.addEventListener('change', (e)=>{ availabilityStatus = e.target.value; saveAllWorkerData(); });
+    document.getElementById('saveScheduleBtn')?.addEventListener('click', ()=>{ saveAllWorkerData(); showToast("Schedule saved"); });
+    
+    // Analytics (mock dynamic)
+    function updateAnalytics(){
+        document.getElementById('profileViews').innerText = Math.floor(Math.random()*300 + 50);
+        const totalEarned = reviews.length * 120 + Math.floor(Math.random()*500);
+        document.getElementById('totalEarned').innerText = `$${totalEarned}`;
+        document.getElementById('completedJobs').innerText = reviews.length;
+        document.getElementById('responseRate').innerText = Math.floor(Math.random()*30 + 70)+'%';
+        const ctx = document.getElementById('analyticsChart')?.getContext('2d');
+        if(ctx){
+            ctx.clearRect(0,0,400,200);
+            ctx.fillStyle = '#0a66c2';
+            for(let i=0;i<7;i++) ctx.fillRect(i*50+20, 180 - Math.random()*120, 30, Math.random()*100);
+        }
+    }
+    
+    // Notifications
+    function renderNotifications(){
+        const container = document.getElementById('notificationsList');
+        if(notifications.length===0){ container.innerHTML='<p>No notifications yet.</p>'; return; }
+        container.innerHTML = notifications.map(n=>`<div class="review-card">${n.message}<br><small>${new Date(n.date).toLocaleString()}</small></div>`).join('');
+    }
+    function addNotification(msg){ notifications.unshift({message:msg, date:new Date()}); saveAllWorkerData(); renderNotifications(); }
+    document.getElementById('requestPushBtn')?.addEventListener('click', ()=>{
+        if("Notification" in window && Notification.permission !== "granted"){
+            Notification.requestPermission().then(perm=>{ if(perm==='granted') showToast("Notifications enabled"); });
+        } else if(Notification.permission === "granted"){ new Notification("Kazi ni Kazi", {body:"You will receive updates here"}); }
+        else { showToast("Push not supported or denied"); }
+    });
+    
+    // Verification
+    function updateVerificationUI(){
+        const statusDiv = document.getElementById('verificationStatus');
+        if(isVerified){
+            statusDiv.innerHTML = '<div style="color:#059669;"><i class="fas fa-check-circle"></i> Your profile is verified! Blue badge active.</div>';
+            document.getElementById('requestVerifyBtn').disabled = true;
+        } else if(verificationRequested){
+            statusDiv.innerHTML = '<div style="color:#eab308;">Verification request pending admin approval.</div>';
+            document.getElementById('requestVerifyBtn').disabled = true;
+        } else {
+            statusDiv.innerHTML = '<div>No verification badge. Request one below.</div>';
+            document.getElementById('requestVerifyBtn').disabled = false;
+        }
+    }
+    document.getElementById('requestVerifyBtn')?.addEventListener('click', ()=>{
+        verificationRequested = true;
+        saveAllWorkerData();
+        updateVerificationUI();
+        addNotification("Verification request submitted. Admin will review within 48h.");
+        showToast("Request sent!");
+    });
+    
+    // Reviews & Points system
+    function calculatePoints(){
+        if(reviews.length === 0) return { points: 0, avgRating: 0, recommendation: 'No reviews yet' };
+        let totalStars = 0;
+        reviews.forEach(r => totalStars += r.rating);
+        const avg = totalStars / reviews.length;
+        let points = Math.floor(avg * 20) + (reviews.length * 5); // base: avg*20 + 5 per review
+        let recommendation = '';
+        if(points >= 100) recommendation = '🏆 Highly Recommended Top Talent';
+        else if(points >= 50) recommendation = '⭐ Recommended Professional';
+        else recommendation = '📈 Building reputation, keep going!';
+        return { points, avgRating: avg, recommendation };
+    }
+    function renderReviews(){
+        const container = document.getElementById('reviewsList');
+        if(reviews.length === 0){ container.innerHTML = '<p>No reviews yet. Complete jobs to receive feedback.</p>'; }
+        else {
+            container.innerHTML = reviews.map(r => `
+                <div class="review-card">
+                    <div class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+                    <p><strong>${r.author || 'Client'}</strong> - ${new Date(r.date).toLocaleDateString()}</p>
+                    <p>${r.comment}</p>
+                </div>
+            `).join('');
+        }
+        const stats = calculatePoints();
+        document.getElementById('totalPoints').innerText = stats.points;
+        const starDisplay = '★'.repeat(Math.round(stats.avgRating)) + '☆'.repeat(5-Math.round(stats.avgRating));
+        document.getElementById('starRatingDisplay').innerHTML = starDisplay + ` (${stats.avgRating.toFixed(1)})`;
+        document.getElementById('recommendationText').innerText = stats.recommendation;
+    }
+    
+    // Logout
+    document.getElementById('logoutBtn')?.addEventListener('click', ()=>{
+        localStorage.removeItem('knk_current_user');
+        window.location.href = 'auth.html';
+    });
+    
+    // Tab switching
+    const tabs = ['profile','status','analytics','notifications','verification','reviews'];
+    function switchTab(tabId){
+        tabs.forEach(t=>{ document.getElementById(t+'Tab').classList.remove('active'); });
+        document.getElementById(tabId+'Tab').classList.add('active');
+        document.querySelectorAll('.sidebar-item').forEach(el=>el.classList.remove('active'));
+        document.querySelector(`.sidebar-item[data-tab="${tabId}"]`).classList.add('active');
+        if(tabId === 'analytics') updateAnalytics();
+        if(tabId === 'notifications') renderNotifications();
+        if(tabId === 'verification') updateVerificationUI();
+        if(tabId === 'reviews') renderReviews();
+        if(tabId === 'status') renderSchedule();
+    }
+    document.querySelectorAll('.sidebar-item[data-tab]').forEach(el=>{
+        el.addEventListener('click',()=>switchTab(el.getAttribute('data-tab')));
+    });
+    
+    // Initial load
+    updateProfileForm();
+    renderSchedule();
+    updateAnalytics();
+    renderNotifications();
+    updateVerificationUI();
+    renderReviews();
+    if(notifications.length === 0){
+        addNotification("Welcome to your freelancer dashboard! Complete your profile to attract clients.");
+        addNotification("New: You can now set your working hours schedule.");
+    }
+    // Add sample reviews for demo if empty
+    if(reviews.length === 0){
+        reviews.push({ rating: 5, comment: "Excellent work! Very professional.", author: "TechCorp", date: new Date(Date.now()-86400000).toISOString() });
+        reviews.push({ rating: 4, comment: "Good communication, delivered on time.", author: "StartupX", date: new Date(Date.now()-172800000).toISOString() });
+        saveAllWorkerData();
+        renderReviews();
+    }
+    switchTab('profile'); // default
+</script>
+</body>
+</html>
