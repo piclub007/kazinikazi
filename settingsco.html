@@ -39,6 +39,7 @@
         window.firebaseWhere = where;
         window.firebaseCollection = collection;
         window.firebaseDeleteDoc = deleteDoc;
+        window.firebaseInitialized = true;
     </script>
     <script src="config.js"></script>
     <style>
@@ -65,7 +66,8 @@
         label{font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.3rem;color:#1e293b;}
         input,select,textarea{width:100%;padding:0.7rem;border:1px solid #cbd5e1;border-radius:0.5rem;font-family:inherit;font-size:0.9rem;}
         .inline-row{display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center;}
-        button.btn-primary{background:#0a66c2;color:white;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;font-weight:600;}
+        button.btn-primary{background:#0a66c2;color:white;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;font-weight:600;transition:0.2s;}
+        button.btn-primary:hover{background:#004182;}
         button.btn-secondary{background:#e2e8f0;color:#334155;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;}
         .job-card,.submission-card{border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;margin-bottom:1rem;}
         .flex-between{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;}
@@ -78,11 +80,12 @@
         .searchable-option:hover{background:#eef2ff;}
         .form-builder-layout{display:flex;gap:1.5rem;flex-wrap:wrap;}
         .components-panel{width:240px;background:#f8fafc;border-radius:1rem;padding:1rem;border:1px solid #e2e8f0;}
-        .component-item{background:white;border:1px solid #cbd5e1;border-radius:0.5rem;padding:0.5rem;margin-bottom:0.5rem;cursor:grab;display:flex;align-items:center;gap:0.5rem;}
+        .component-item{background:white;border:1px solid #cbd5e1;border-radius:0.5rem;padding:0.5rem;margin-bottom:0.5rem;cursor:grab;display:flex;align-items:center;gap:0.5rem;user-select:none;}
+        .component-item:active{cursor:grabbing;}
         .form-builder-area{flex:1;background:#fefefe;border-radius:1rem;border:2px dashed #cbd5e1;min-height:400px;padding:1rem;}
         .form-field{background:white;border:1px solid #cbd5e1;border-radius:0.8rem;padding:0.8rem;margin-bottom:0.8rem;display:flex;justify-content:space-between;align-items:center;}
         .drag-handle{cursor:grab;margin-right:0.5rem;color:#64748b;}
-        .field-tools button{background:none;border:none;cursor:pointer;margin-left:0.5rem;color:#64748b;}
+        .field-tools button{background:none;border:none;cursor:pointer;margin-left:0.5rem;color:#64748b;font-size:1rem;}
         .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;}
         .stat-card{background:#f8fafc;padding:1rem;border-radius:1rem;text-align:center;}
         .stat-number{font-size:2rem;font-weight:800;color:#0a66c2;}
@@ -105,7 +108,7 @@
 <nav class="navbar">
     <div style="display:flex; align-items:center; gap:1rem;">
         <i class="fas fa-bars menu-icon" id="menuIcon"></i>
-        <div class="logo-area"><img src="images/logo.png" alt="Kazi ni Kazi" onerror="this.src='https://placehold.co/140x40'"><span class="logo-text">Kazi ni Kazi</span></div>
+        <div class="logo-area"><img src="images/logo.png" alt="Kazi ni Kazi" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 100 100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%230a66c2\'/%3E%3Ctext x=\'50\' y=\'67\' font-size=\'50\' text-anchor=\'middle\' fill=\'white\'%3EKNK%3C/text%3E%3C/svg%3E'"><span class="logo-text">Kazi ni Kazi</span></div>
     </div>
     <div class="user-menu"><span id="companyNameDisplay">Company</span><div class="avatar-sm" id="profileAvatar"><i class="fas fa-building"></i></div></div>
 </nav>
@@ -121,7 +124,9 @@
         <div class="sidebar-item" data-tab="verified"><i class="fas fa-check-circle"></i> Verified</div>
         <div class="sidebar-item logout-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Log out</div>
     </div>
-    <div class="main-content" id="mainContent"></div>
+    <div class="main-content" id="mainContent">
+        <div class="loader" style="text-align:center; padding:2rem;">Loading dashboard...</div>
+    </div>
 </div>
 
 <script>
@@ -147,14 +152,13 @@
         let notifications = [];
         let verificationRequested = false;
         let isVerified = false;
+        let companyData = { name: '', email: '', category: '', logo: '', website: '', ceo: '', phone: '', address: '' };
         
-        // Company data
-        let companyData = {
-            name: '', email: '', category: '', logo: '',
-            website: '', ceo: '', phone: '', address: ''
-        };
+        // Form builder state
+        let currentFormFields = [];
+        let selectedFormJobId = null;
         
-        // Categories list
+        // Categories
         const COMPANY_CATEGORIES = [
             "Food & Hospitality","Retail & Shops","Construction","Real Estate","Technology & IT Services",
             "Digital Agencies","Marketing & Advertising","Events & Entertainment","Transportation & Logistics",
@@ -170,6 +174,20 @@
             let t=document.createElement('div'); t.className='toast'; t.style.background=isErr?'#dc2626':'#1f2937'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
         }
         function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g, m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+        
+        // Image upload to ImgBB
+        async function uploadToImgBB(base64Image){
+            if(!base64Image) return null;
+            let raw = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
+            const formData = new FormData();
+            formData.append('image', raw);
+            formData.append('key', KAZI_CONFIG.imgbb.apiKey);
+            try{
+                const res = await fetch(KAZI_CONFIG.imgbb.uploadUrl, { method:'POST', body:formData });
+                const data = await res.json();
+                return data.success ? data.data.url : null;
+            } catch(e){ return null; }
+        }
         
         // ---------- FIREBASE DATA LOADING ----------
         async function loadCompanyProfile(){
@@ -195,44 +213,36 @@
             const q = queryFn(collectionFn(db, "jobs"), whereFn("companyId", "==", companyId));
             const snapshot = await getDocsFn(q);
             jobs = [];
-            snapshot.forEach(docSnap => {
-                jobs.push({ id: docSnap.id, ...docSnap.data() });
-            });
+            snapshot.forEach(docSnap => { jobs.push({ id: docSnap.id, ...docSnap.data() }); });
             jobs.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-            if(window.renderManageJobs) window.renderManageJobs();
-            if(window.updateJobSelects) window.updateJobSelects();
-            if(window.updateAnalytics) window.updateAnalytics();
+            renderManageJobs();
+            updateJobSelects();
+            updateAnalytics();
         }
         
         async function loadJobForms(){
             const q = queryFn(collectionFn(db, "jobForms"), whereFn("companyId", "==", companyId));
             const snapshot = await getDocsFn(q);
             jobForms = {};
-            snapshot.forEach(docSnap => {
-                jobForms[docSnap.data().jobId] = docSnap.data().formFields;
-            });
-            if(window.updateJobSelects) window.updateJobSelects();
+            snapshot.forEach(docSnap => { jobForms[docSnap.data().jobId] = docSnap.data().formFields; });
+            updateJobSelects();
         }
         
         async function loadSubmissions(){
             const q = queryFn(collectionFn(db, "submissions"), whereFn("companyId", "==", companyId));
             const snapshot = await getDocsFn(q);
             submissions = [];
-            snapshot.forEach(docSnap => {
-                submissions.push({ id: docSnap.id, ...docSnap.data() });
-            });
-            if(window.renderSubmissions) window.renderSubmissions();
+            snapshot.forEach(docSnap => { submissions.push({ id: docSnap.id, ...docSnap.data() }); });
+            renderSubmissions();
         }
         
         async function loadNotifications(){
             const q = queryFn(collectionFn(db, "notifications"), whereFn("userId", "==", companyId));
             const snapshot = await getDocsFn(q);
             notifications = [];
-            snapshot.forEach(docSnap => {
-                notifications.push({ id: docSnap.id, ...docSnap.data() });
-            });
+            snapshot.forEach(docSnap => { notifications.push({ id: docSnap.id, ...docSnap.data() }); });
             notifications.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-            if(window.renderNotifications) window.renderNotifications();
+            renderNotifications();
         }
         
         async function loadVerificationStatus(){
@@ -244,7 +254,7 @@
                 verificationRequested = false;
                 isVerified = false;
             }
-            if(window.updateVerifiedUI) window.updateVerifiedUI();
+            updateVerifiedUI();
         }
         
         // ---------- SAVE OPERATIONS ----------
@@ -270,15 +280,14 @@
             });
         }
         
-        async function deleteJob(jobId){
+        async function deleteJobById(jobId){
             await deleteDocFn(docRef(db, "jobs", jobId));
-            // Delete associated form
             const formQuery = queryFn(collectionFn(db, "jobForms"), whereFn("jobId", "==", jobId));
             const formSnapshot = await getDocsFn(formQuery);
             formSnapshot.forEach(async (f) => await deleteDocFn(docRef(db, "jobForms", f.id)));
         }
         
-        async function saveJobForm(jobId, formFields){
+        async function saveJobFormToDb(jobId, formFields){
             const q = queryFn(collectionFn(db, "jobForms"), whereFn("jobId", "==", jobId));
             const snapshot = await getDocsFn(q);
             if(!snapshot.empty){
@@ -309,7 +318,7 @@
                 requestedAt: new Date().toISOString()
             });
             verificationRequested = true;
-            if(window.updateVerifiedUI) window.updateVerifiedUI();
+            updateVerifiedUI();
             await addNotification("Verification request submitted. Admin will review within 48h.");
             showToast("Request sent!");
         }
@@ -325,48 +334,46 @@
                     <p>${escapeHtml(job.description?.substring(0,100)||'')}...</p>
                     <p><strong>💰 ${job.payout?.amount || '?'} ${job.payout?.currency || 'USD'} ${job.payout?.period || ''}</strong></p>
                     <div style="margin-top:0.5rem;">
-                        <button class="btn-secondary" onclick="window.editJob('${job.id}')">Edit</button>
-                        <button class="btn-secondary" style="background:#fee2e2;" onclick="window.deleteJob('${job.id}')">Delete</button>
+                        <button class="btn-secondary" onclick="window.editJobById('${job.id}')">Edit</button>
+                        <button class="btn-secondary" style="background:#fee2e2;" onclick="window.deleteJobById('${job.id}')">Delete</button>
                     </div>
                 </div>
             `).join('');
         }
         
-        window.editJob = async (jobId) => {
+        window.editJobById = async (jobId) => {
             const job = jobs.find(j => j.id === jobId);
             if(job){
-                const titleInput = document.getElementById('jobTitle');
-                const roleInput = document.getElementById('jobRole');
+                const titleInp = document.getElementById('jobTitle');
+                const roleInp = document.getElementById('jobRole');
                 const catSearch = document.getElementById('categorySearchInput');
                 const catHidden = document.getElementById('jobCategory');
-                const skillsInput = document.getElementById('jobSkills');
-                const descInput = document.getElementById('jobDesc');
-                const reqInput = document.getElementById('jobRequirements');
-                const amountInput = document.getElementById('payoutAmount');
-                const currencySelect = document.getElementById('payoutCurrency');
-                const periodSelect = document.getElementById('payoutPeriod');
-                const deadlineInput = document.getElementById('jobDeadline');
-                
-                if(titleInput) titleInput.value = job.title;
-                if(roleInput) roleInput.value = job.role;
+                const skillsInp = document.getElementById('jobSkills');
+                const descInp = document.getElementById('jobDesc');
+                const reqInp = document.getElementById('jobRequirements');
+                const amountInp = document.getElementById('payoutAmount');
+                const currencySel = document.getElementById('payoutCurrency');
+                const periodSel = document.getElementById('payoutPeriod');
+                const deadlineInp = document.getElementById('jobDeadline');
+                if(titleInp) titleInp.value = job.title;
+                if(roleInp) roleInp.value = job.role;
                 if(catSearch) catSearch.value = job.category;
                 if(catHidden) catHidden.value = job.category;
-                if(skillsInput) skillsInput.value = (job.skills || []).join(', ');
-                if(descInput) descInput.value = job.description;
-                if(reqInput) reqInput.value = job.requirements || '';
-                if(amountInput) amountInput.value = job.payout?.amount || '';
-                if(currencySelect) currencySelect.value = job.payout?.currency || 'USD';
-                if(periodSelect) periodSelect.value = job.payout?.period || 'per hour';
-                if(deadlineInput) deadlineInput.value = job.deadline || '';
-                
-                await window.deleteJob(jobId);
+                if(skillsInp) skillsInp.value = (job.skills || []).join(', ');
+                if(descInp) descInp.value = job.description;
+                if(reqInp) reqInp.value = job.requirements || '';
+                if(amountInp) amountInp.value = job.payout?.amount || '';
+                if(currencySel) currencySel.value = job.payout?.currency || 'USD';
+                if(periodSel) periodSel.value = job.payout?.period || 'per hour';
+                if(deadlineInp) deadlineInp.value = job.deadline || '';
+                await window.deleteJobById(jobId);
                 switchTab('postjob');
                 showToast("Edit mode: modify and repost");
             }
         };
         
-        window.deleteJob = async (jobId) => {
-            await deleteJob(jobId);
+        window.deleteJobById = async (jobId) => {
+            await deleteJobById(jobId);
             await loadJobs();
             await loadJobForms();
             showToast("Job deleted");
@@ -379,15 +386,15 @@
             if(selectForm){
                 selectForm.innerHTML = '<option value="">-- Select Job --</option>' + options;
                 selectForm.onchange = () => {
-                    const selected = selectForm.value;
-                    if(selected && jobForms[selected]) currentFormFields = jobForms[selected];
+                    selectedFormJobId = selectForm.value ? selectForm.value : null;
+                    if(selectedFormJobId && jobForms[selectedFormJobId]) currentFormFields = jobForms[selectedFormJobId];
                     else currentFormFields = [];
-                    if(window.renderFormBuilder) window.renderFormBuilder();
+                    renderFormBuilder();
                 };
             }
             if(selectSub){
                 selectSub.innerHTML = '<option value="">All Jobs</option>' + options;
-                selectSub.onchange = () => { if(window.renderSubmissions) window.renderSubmissions(); };
+                selectSub.onchange = () => renderSubmissions();
             }
         }
         
@@ -446,14 +453,50 @@
             }
         }
         
-        // ---------- FORM BUILDER ----------
-        let currentFormFields = [];
-        let selectedFormJobId = null;
-        const formContainer = document.getElementById('formFieldsContainer');
+        function updateProfileUI(){
+            const nameInp = document.getElementById('compName');
+            if(nameInp) nameInp.value = companyData.name || '';
+            const webInp = document.getElementById('compWebsite');
+            if(webInp) webInp.value = companyData.website || '';
+            const ceoInp = document.getElementById('compCeo');
+            if(ceoInp) ceoInp.value = companyData.ceo || '';
+            const catInp = document.getElementById('compCategory');
+            if(catInp) catInp.value = companyData.category || '';
+            const phoneInp = document.getElementById('compPhone');
+            if(phoneInp) phoneInp.value = companyData.phone || '';
+            const addrInp = document.getElementById('compAddress');
+            if(addrInp) addrInp.value = companyData.address || '';
+            const emailInp = document.getElementById('compEmail');
+            if(emailInp) emailInp.value = companyData.email || '';
+            const previewDiv = document.getElementById('logoPreview');
+            if(previewDiv && companyData.logo){
+                previewDiv.innerHTML = `<img src="${companyData.logo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`;
+            } else if(previewDiv){
+                previewDiv.innerHTML = '';
+            }
+            const nameDisplay = document.getElementById('companyNameDisplay');
+            if(nameDisplay) nameDisplay.innerText = companyData.name || 'Company';
+            const avatarDiv = document.getElementById('profileAvatar');
+            if(avatarDiv && companyData.logo){
+                avatarDiv.style.backgroundImage = `url(${companyData.logo})`;
+                avatarDiv.style.backgroundSize = 'cover';
+                avatarDiv.style.backgroundPosition = 'center';
+                avatarDiv.innerHTML = '';
+            } else if(avatarDiv){
+                avatarDiv.style.backgroundImage = '';
+                avatarDiv.innerHTML = '<i class="fas fa-building"></i>';
+            }
+        }
         
+        // ---------- FORM BUILDER ----------
         function renderFormBuilder(){
-            if(!formContainer) return;
-            formContainer.innerHTML = currentFormFields.map((field, idx) => `
+            const container = document.getElementById('formFieldsContainer');
+            if(!container) return;
+            if(!currentFormFields.length){
+                container.innerHTML = '<div style="text-align:center; padding:2rem; color:#999;">Drag components here to build your form</div>';
+                return;
+            }
+            container.innerHTML = currentFormFields.map((field, idx) => `
                 <div class="form-field" data-idx="${idx}">
                     <div style="display:flex; align-items:center; gap:0.5rem; flex:1; flex-wrap:wrap;">
                         <i class="fas fa-grip-vertical drag-handle"></i>
@@ -479,24 +522,39 @@
             const modal = document.createElement('div'); modal.className = 'modal'; modal.style.display = 'flex';
             modal.innerHTML = `<div class="modal-content">${html}</div>`;
             document.body.appendChild(modal);
-            document.getElementById('saveParamsBtn').onclick = () => {
-                field.label = document.getElementById('paramLabel').value;
-                if(field.type === 'text' || field.type === 'number') { field.min = document.getElementById('paramMin')?.value; field.max = document.getElementById('paramMax')?.value; }
-                if(field.type === 'textarea') field.max = document.getElementById('paramMax')?.value;
-                if(field.type === 'dropdown' || field.type === 'checkbox') field.options = document.getElementById('paramOptions').value.split('\n').filter(o=>o.trim());
-                if(field.type === 'file') field.maxFiles = document.getElementById('paramMaxFiles')?.value;
-                modal.remove(); renderFormBuilder();
-            };
+            const saveBtn = document.getElementById('saveParamsBtn');
+            if(saveBtn){
+                saveBtn.onclick = () => {
+                    field.label = document.getElementById('paramLabel').value;
+                    if(field.type === 'text' || field.type === 'number') {
+                        field.min = document.getElementById('paramMin')?.value;
+                        field.max = document.getElementById('paramMax')?.value;
+                    }
+                    if(field.type === 'textarea') field.max = document.getElementById('paramMax')?.value;
+                    if(field.type === 'dropdown' || field.type === 'checkbox') {
+                        field.options = document.getElementById('paramOptions').value.split('\n').filter(o=>o.trim());
+                    }
+                    if(field.type === 'file') field.maxFiles = document.getElementById('paramMaxFiles')?.value;
+                    modal.remove();
+                    renderFormBuilder();
+                };
+            }
             modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
         };
         
-        window.removeField = (idx) => { currentFormFields.splice(idx,1); renderFormBuilder(); };
+        window.removeField = (idx) => {
+            currentFormFields.splice(idx,1);
+            renderFormBuilder();
+        };
         
         function attachDragSort(){
             const items = document.querySelectorAll('.form-field');
             items.forEach(item => {
                 item.setAttribute('draggable', 'true');
-                item.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', item.getAttribute('data-idx')); item.classList.add('dragging'); });
+                item.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', item.getAttribute('data-idx'));
+                    item.classList.add('dragging');
+                });
                 item.addEventListener('dragend', (e) => { item.classList.remove('dragging'); });
                 item.addEventListener('dragover', (e) => e.preventDefault());
                 item.addEventListener('drop', (e) => {
@@ -512,57 +570,13 @@
             });
         }
         
-        async function uploadToImgBB(base64Image){
-            if(!base64Image) return null;
-            let raw = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
-            const formData = new FormData();
-            formData.append('image', raw);
-            formData.append('key', KAZI_CONFIG.imgbb.apiKey);
-            try{
-                const res = await fetch(KAZI_CONFIG.imgbb.uploadUrl, { method:'POST', body:formData });
-                const data = await res.json();
-                return data.success ? data.data.url : null;
-            } catch(e){ return null; }
-        }
-        
-        // ---------- PROFILE UI UPDATE ----------
-        function updateProfileUI(){
-            const nameInput = document.getElementById('compName');
-            if(nameInput) nameInput.value = companyData.name || '';
-            const websiteInput = document.getElementById('compWebsite');
-            if(websiteInput) websiteInput.value = companyData.website || '';
-            const ceoInput = document.getElementById('compCeo');
-            if(ceoInput) ceoInput.value = companyData.ceo || '';
-            const categoryInput = document.getElementById('compCategory');
-            if(categoryInput) categoryInput.value = companyData.category || '';
-            const phoneInput = document.getElementById('compPhone');
-            if(phoneInput) phoneInput.value = companyData.phone || '';
-            const addressInput = document.getElementById('compAddress');
-            if(addressInput) addressInput.value = companyData.address || '';
-            const emailInput = document.getElementById('compEmail');
-            if(emailInput) emailInput.value = companyData.email || '';
-            const logoPreview = document.getElementById('logoPreview');
-            if(logoPreview && companyData.logo){
-                logoPreview.innerHTML = `<img src="${companyData.logo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`;
-            }
-            const nameDisplay = document.getElementById('companyNameDisplay');
-            if(nameDisplay) nameDisplay.innerText = companyData.name || 'Company';
-            const profileAvatar = document.getElementById('profileAvatar');
-            if(profileAvatar && companyData.logo){
-                profileAvatar.style.backgroundImage = `url(${companyData.logo})`;
-                profileAvatar.style.backgroundSize = 'cover';
-                profileAvatar.style.backgroundPosition = 'center';
-                profileAvatar.innerHTML = '';
-            }
-        }
-        
         // ---------- TAB RENDERING ----------
         function renderTabs() {
             const main = document.getElementById('mainContent');
             if(!main) return;
             main.innerHTML = `
                 <div id="profileTab" class="tab-content"><h2>Edit Company Profile</h2><form id="profileForm"><div class="form-group"><label>Company Logo</label><input type="file" id="logoUpload" accept="image/*"><div id="logoPreview" style="margin-top:0.5rem;"></div></div><div class="form-group"><label>Company Name *</label><input type="text" id="compName" required></div><div class="form-group"><label>Website</label><input type="url" id="compWebsite"></div><div class="form-group"><label>CEO / Social Name</label><input type="text" id="compCeo"></div><div class="form-group"><label>Category</label><input type="text" id="compCategory" readonly></div><div class="form-group"><label>Phone</label><input type="tel" id="compPhone"></div><div class="form-group"><label>Address</label><input type="text" id="compAddress"></div><div class="form-group"><label>Email *</label><input type="email" id="compEmail" required></div><button type="submit" class="btn-primary">Save Changes</button></form></div>
-                <div id="postjobTab" class="tab-content"><h2>Post a New Job</h2><form id="jobPostForm"><div class="form-group"><label>Job Title *</label><input type="text" id="jobTitle" required></div><div class="form-group"><label>Role *</label><input type="text" id="jobRole" required></div><div class="form-group"><label>Category *</label><div class="searchable-select"><input type="text" id="categorySearchInput" placeholder="Search category..."><div id="categoryDropdown" class="searchable-dropdown"></div></div><input type="hidden" id="jobCategory" required></div><div class="form-group"><label>Main Skills (comma separated)</label><input type="text" id="jobSkills" placeholder="React, Python, UI Design"></div><div class="form-group"><label>Description *</label><textarea id="jobDesc" rows="4" required></textarea></div><div class="form-group"><label>Requirements *</label><textarea id="jobRequirements" rows="3" placeholder="List specific requirements..."></textarea></div><div class="form-group"><label>Estimated Payout</label><div class="inline-row"><input type="number" id="payoutAmount" placeholder="Amount" style="flex:2;"><select id="payoutCurrency" style="flex:1;"><option value="USD">USD</option><option value="EUR">EUR</option><option value="RWF">RWF</option></select><select id="payoutPeriod" style="flex:1;"><option>per hour</option><option>per month</option><option>per year</option></select></div></div><div class="form-group"><label>Deadline (optional)</label><input type="date" id="jobDeadline"></div><button type="submit" class="btn-primary" id="postJobBtn">Post Job</button></form></div>
+                <div id="postjobTab" class="tab-content"><h2>Post a New Job</h2><form id="jobPostForm"><div class="form-group"><label>Job Title *</label><input type="text" id="jobTitle" required></div><div class="form-group"><label>Role *</label><input type="text" id="jobRole" required></div><div class="form-group"><label>Category *</label><div class="searchable-select"><input type="text" id="categorySearchInput" placeholder="Search category..."><div id="categoryDropdown" class="searchable-dropdown"></div></div><input type="hidden" id="jobCategory" required></div><div class="form-group"><label>Main Skills (comma separated)</label><input type="text" id="jobSkills" placeholder="React, Python, UI Design"></div><div class="form-group"><label>Description *</label><textarea id="jobDesc" rows="4" required></textarea></div><div class="form-group"><label>Requirements *</label><textarea id="jobRequirements" rows="3" placeholder="List specific requirements..."></textarea></div><div class="form-group"><label>Estimated Payout</label><div class="inline-row"><input type="number" id="payoutAmount" placeholder="Amount" style="flex:2;"><select id="payoutCurrency" style="flex:1;"><option value="USD">USD</option><option value="EUR">EUR</option><option value="RWF">RWF</option></select><select id="payoutPeriod" style="flex:1;"><option>per hour</option><option>per month</option><option>per year</option></select></div></div><div class="form-group"><label>Deadline (optional)</label><input type="date" id="jobDeadline"></div><button type="submit" class="btn-primary">Post Job</button></form></div>
                 <div id="analyticsTab" class="tab-content"><h2>Analytics</h2><div class="stats-grid"><div class="stat-card"><div class="stat-number" id="profileViews">0</div><div>Profile Views</div></div><div class="stat-card"><div class="stat-number" id="totalJobsPosted">0</div><div>Jobs Posted</div></div><div class="stat-card"><div class="stat-number" id="totalSubmissions">0</div><div>Applications Received</div></div><div class="stat-card"><div class="stat-number" id="activeJobs">0</div><div>Active Jobs</div></div></div><canvas id="analyticsChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas></div>
                 <div id="formbuilderTab" class="tab-content"><h2>Application Form Builder</h2><p>Select a job to attach this form:</p><select id="formJobSelect" style="margin-bottom:1rem;"></select><div class="form-builder-layout"><div class="components-panel"><h4><i class="fas fa-puzzle-piece"></i> Drag components</h4><div class="component-item" draggable="true" data-type="text"><i class="fas fa-font"></i> Text Input</div><div class="component-item" draggable="true" data-type="textarea"><i class="fas fa-align-left"></i> Textarea</div><div class="component-item" draggable="true" data-type="number"><i class="fas fa-calculator"></i> Number</div><div class="component-item" draggable="true" data-type="date"><i class="fas fa-calendar"></i> Date</div><div class="component-item" draggable="true" data-type="dropdown"><i class="fas fa-caret-down"></i> Dropdown</div><div class="component-item" draggable="true" data-type="checkbox"><i class="fas fa-check-square"></i> Checkbox</div><div class="component-item" draggable="true" data-type="file"><i class="fas fa-image"></i> File Upload</div></div><div class="form-builder-area" id="formFieldsContainer"></div></div><div style="margin-top:1rem; display:flex; gap:1rem;"><button id="saveFormBtn" class="btn-primary">Save Form</button><button id="previewFormBtn" class="btn-secondary">Preview Form</button></div></div>
                 <div id="submissionsTab" class="tab-content"><h2>Job Submissions</h2><select id="submissionJobSelect"></select><div id="submissionsList"></div></div>
@@ -574,7 +588,7 @@
         }
         
         function attachTabEvents(){
-            // Profile form submit
+            // Profile form
             const profileForm = document.getElementById('profileForm');
             if(profileForm){
                 profileForm.addEventListener('submit', async (e) => {
@@ -622,15 +636,17 @@
             const catHidden = document.getElementById('jobCategory');
             function filterCategories(filter){
                 const filtered = COMPANY_CATEGORIES.filter(c => c.toLowerCase().includes(filter.toLowerCase()));
-                if(catDropdown) catDropdown.innerHTML = filtered.map(c => `<div class="searchable-option" data-cat="${c}">${c}</div>`).join('');
-                if(catDropdown) catDropdown.classList.add('show');
-                document.querySelectorAll('.searchable-option').forEach(opt => {
-                    opt.addEventListener('click', () => {
-                        if(catInput) catInput.value = opt.getAttribute('data-cat');
-                        if(catHidden) catHidden.value = opt.getAttribute('data-cat');
-                        if(catDropdown) catDropdown.classList.remove('show');
+                if(catDropdown){
+                    catDropdown.innerHTML = filtered.map(c => `<div class="searchable-option" data-cat="${c}">${c}</div>`).join('');
+                    catDropdown.classList.add('show');
+                    document.querySelectorAll('.searchable-option').forEach(opt => {
+                        opt.addEventListener('click', () => {
+                            if(catInput) catInput.value = opt.getAttribute('data-cat');
+                            if(catHidden) catHidden.value = opt.getAttribute('data-cat');
+                            if(catDropdown) catDropdown.classList.remove('show');
+                        });
                     });
-                });
+                }
             }
             if(catInput){
                 catInput.addEventListener('input', (e) => filterCategories(e.target.value));
@@ -642,7 +658,7 @@
                 }
             });
             
-            // Post Job
+            // Post job
             const jobForm = document.getElementById('jobPostForm');
             if(jobForm){
                 jobForm.addEventListener('submit', async (e) => {
@@ -661,10 +677,7 @@
                         showToast("Required fields missing", true);
                         return;
                     }
-                    const newJob = {
-                        title, role, category, skills, description, requirements,
-                        payout: { amount, currency, period }, deadline
-                    };
+                    const newJob = { title, role, category, skills, description, requirements, payout: { amount, currency, period }, deadline };
                     await addJob(newJob);
                     showToast("Job posted!");
                     if(jobForm) jobForm.reset();
@@ -675,12 +688,12 @@
                 });
             }
             
-            // Form builder save
+            // Save form
             const saveFormBtn = document.getElementById('saveFormBtn');
             if(saveFormBtn){
                 saveFormBtn.addEventListener('click', async () => {
                     if(!selectedFormJobId){ showToast("Select a job first", true); return; }
-                    await saveJobForm(selectedFormJobId, currentFormFields);
+                    await saveJobFormToDb(selectedFormJobId, currentFormFields);
                     await loadJobForms();
                     showToast("Form saved");
                 });
@@ -721,9 +734,7 @@
             // Request verification
             const verifyBtn = document.getElementById('requestVerifyBtn');
             if(verifyBtn){
-                verifyBtn.addEventListener('click', async () => {
-                    await requestVerification();
-                });
+                verifyBtn.addEventListener('click', async () => { await requestVerification(); });
             }
             
             // Drag & drop components
@@ -731,13 +742,16 @@
             components.forEach(comp => {
                 comp.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', comp.getAttribute('data-type')));
             });
-            if(formContainer){
-                formContainer.addEventListener('dragover', (e) => e.preventDefault());
-                formContainer.addEventListener('drop', (e) => {
+            const formArea = document.getElementById('formFieldsContainer');
+            if(formArea){
+                formArea.addEventListener('dragover', (e) => e.preventDefault());
+                formArea.addEventListener('drop', (e) => {
                     e.preventDefault();
                     const type = e.dataTransfer.getData('text/plain');
-                    if(type) currentFormFields.push({ type, label: `New ${type}`, options: [], min: '', max: '', maxFiles: 1 });
-                    renderFormBuilder();
+                    if(type){
+                        currentFormFields.push({ type, label: `New ${type}`, options: [], min: '', max: '', maxFiles: 1 });
+                        renderFormBuilder();
+                    }
                 });
             }
         }
@@ -750,7 +764,6 @@
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             const activeSidebar = document.querySelector(`.sidebar-item[data-tab="${tabId}"]`);
             if(activeSidebar) activeSidebar.classList.add('active');
-            
             if(tabId === 'managejobs') renderManageJobs();
             if(tabId === 'submissions') renderSubmissions();
             if(tabId === 'analytics') updateAnalytics();
@@ -761,7 +774,7 @@
         
         // ---------- INITIALIZATION ----------
         async function init(){
-            // Wait for Firebase globals
+            // Wait for Firebase
             let attempts = 0;
             while(!window.firebaseDb && attempts < 50){
                 await new Promise(r => setTimeout(r, 100));
