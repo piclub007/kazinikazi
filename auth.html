@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        /* (same styles as before, unchanged for brevity) */
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:#f4f2ef;color:#191919;min-height:100vh;display:flex;flex-direction:column;}
         .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:clamp(0.6rem,3vw,1rem) clamp(1rem,5vw,2.5rem);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;position:sticky;top:0;z-index:100;}
@@ -122,11 +123,10 @@
     
     const _skillLevels = ["Beginner", "Median", "Intermediate", "Professional"];
     
-    // Helper: upload image to ImgBB (FIXED: strip base64 prefix)
+    // Helper: upload image to ImgBB (strip prefix)
     async function uploadToImgBB(base64Image) {
         try {
-            if (!base64Image) throw new Error("No image data");
-            // Remove the data:image/...;base64, prefix
+            if (!base64Image) return null;
             let rawBase64 = base64Image;
             if (base64Image.includes(',')) {
                 rawBase64 = base64Image.split(',')[1];
@@ -148,7 +148,7 @@
             }
         } catch (error) {
             console.error('ImgBB upload error:', error);
-            throw error;
+            return null;
         }
     }
     
@@ -181,7 +181,7 @@
         });
     }
     
-    // Render UI
+    // Render UI (forms same as before)
     function render(){
         const container=document.getElementById('mainContainer');
         if(!container) return;
@@ -392,7 +392,7 @@
         });
     }
     
-    // ==================== SUPABASE AUTH HANDLERS ====================
+    // ==================== SUPABASE AUTH HANDLERS WITH BETTER ERROR HANDLING ====================
     async function handleSignin(e){
         e.preventDefault();
         const btn=document.getElementById('signinBtn');
@@ -463,23 +463,53 @@
                 }
                 if (password.length < 6) { showToast("Password min 6 characters", true); setLoading(btn, false, origText); return; }
                 
+                // Upload images (skip if fails, but we need to inform user)
                 let logoUrl = null;
-                if (_companyLogoBase64) logoUrl = await uploadToImgBB(_companyLogoBase64);
+                if (_companyLogoBase64) {
+                    try {
+                        logoUrl = await uploadToImgBB(_companyLogoBase64);
+                    } catch(e) { console.warn('Logo upload failed', e); }
+                }
                 
                 const businessImageUrls = [];
                 for (const imgBase64 of _businessImages) {
-                    const url = await uploadToImgBB(imgBase64);
-                    businessImageUrls.push(url);
+                    try {
+                        const url = await uploadToImgBB(imgBase64);
+                        if (url) businessImageUrls.push(url);
+                    } catch(e) { console.warn('Business image upload failed', e); }
+                }
+                if (businessImageUrls.length < 3) {
+                    showToast("Failed to upload business images. Please try again.", true);
+                    setLoading(btn, false, origText);
+                    return;
                 }
                 
+                // Sign up with Supabase
                 const { data: authData, error: signUpError } = await _supabase.auth.signUp({
                     email, password,
                     options: { data: { full_name: name, user_type: 'company' } }
                 });
-                if (signUpError) throw signUpError;
+                
+                if (signUpError) {
+                    // Check for specific error messages
+                    if (signUpError.message.includes('already registered')) {
+                        showToast("Email already registered. Please sign in instead.", true);
+                    } else {
+                        showToast("Signup failed: " + signUpError.message, true);
+                    }
+                    setLoading(btn, false, origText);
+                    return;
+                }
+                
+                if (!authData.user) {
+                    showToast("Signup failed. Please check your email and try again.", true);
+                    setLoading(btn, false, origText);
+                    return;
+                }
                 
                 const userId = authData.user.id;
                 
+                // Insert into profiles
                 const { error: profileError } = await _supabase.from('profiles').insert({
                     id: userId,
                     user_type: 'company',
@@ -489,8 +519,14 @@
                     address: address,
                     avatar_url: logoUrl
                 });
-                if (profileError) throw profileError;
+                if (profileError) {
+                    console.error("Profile insert error:", profileError);
+                    showToast("Profile creation failed. Please contact support.", true);
+                    setLoading(btn, false, origText);
+                    return;
+                }
                 
+                // Insert into companies
                 const { error: companyError } = await _supabase.from('companies').insert({
                     user_id: userId,
                     company_name: name,
@@ -501,13 +537,18 @@
                     address: address,
                     business_images: businessImageUrls
                 });
-                if (companyError) throw companyError;
+                if (companyError) {
+                    console.error("Company insert error:", companyError);
+                    showToast("Company profile creation failed. Please contact support.", true);
+                    setLoading(btn, false, origText);
+                    return;
+                }
                 
                 localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'company', name }));
                 showToast("🎉 Company account created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingsco.html"; }, 1000);
                 
-            } else {
+            } else { // Worker
                 const fullName = document.getElementById('workerNames')?.value.trim();
                 const email = document.getElementById('workerEmail')?.value.trim();
                 const password = document.getElementById('workerPass')?.value;
@@ -524,13 +565,33 @@
                 if (password.length < 6) { showToast("Password min 6 characters", true); setLoading(btn, false, origText); return; }
                 
                 let avatarUrl = null;
-                if (_workerAvatarBase64) avatarUrl = await uploadToImgBB(_workerAvatarBase64);
+                if (_workerAvatarBase64) {
+                    try {
+                        avatarUrl = await uploadToImgBB(_workerAvatarBase64);
+                    } catch(e) { console.warn('Avatar upload failed', e); }
+                }
                 
+                // Sign up
                 const { data: authData, error: signUpError } = await _supabase.auth.signUp({
                     email, password,
                     options: { data: { full_name: fullName, user_type: 'worker' } }
                 });
-                if (signUpError) throw signUpError;
+                
+                if (signUpError) {
+                    if (signUpError.message.includes('already registered')) {
+                        showToast("Email already registered. Please sign in instead.", true);
+                    } else {
+                        showToast("Signup failed: " + signUpError.message, true);
+                    }
+                    setLoading(btn, false, origText);
+                    return;
+                }
+                
+                if (!authData.user) {
+                    showToast("Signup failed. Please check your email and try again.", true);
+                    setLoading(btn, false, origText);
+                    return;
+                }
                 
                 const userId = authData.user.id;
                 
@@ -542,7 +603,12 @@
                     address: address,
                     avatar_url: avatarUrl
                 });
-                if (profileError) throw profileError;
+                if (profileError) {
+                    console.error("Profile insert error:", profileError);
+                    showToast("Profile creation failed. Please contact support.", true);
+                    setLoading(btn, false, origText);
+                    return;
+                }
                 
                 const primarySkillParts = _selectedPrimarySkill.split(' - ');
                 const primaryCat = primarySkillParts[0];
@@ -558,14 +624,20 @@
                     earning_range: earningRange,
                     address: address
                 });
-                if (workerError) throw workerError;
+                if (workerError) {
+                    console.error("Worker insert error:", workerError);
+                    showToast("Worker profile creation failed. Please contact support.", true);
+                    setLoading(btn, false, origText);
+                    return;
+                }
                 
                 localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'worker', name: fullName }));
                 showToast("✨ Freelancer profile created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingswo.html"; }, 1000);
             }
         } catch (error) {
-            showToast(error.message, true);
+            console.error("Unexpected error:", error);
+            showToast("An unexpected error occurred. Please try again.", true);
         } finally {
             setLoading(btn, false, origText);
         }
