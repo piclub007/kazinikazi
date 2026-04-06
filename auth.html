@@ -118,7 +118,7 @@
         } catch(e){ return null; }
     }
 
-    // ==================== FORM RENDERING ====================
+    // ==================== FORM RENDERING (unchanged, same as before) ====================
     function renderSignupFields(){
         const container = document.getElementById('signupDynamicFields');
         if(!container) return;
@@ -322,7 +322,7 @@
         }
     }
 
-    // ==================== SUPABASE AUTH HANDLERS ====================
+    // ==================== FIXED SUPABASE HANDLERS (Upsert to avoid 409) ====================
     async function handleSignin(e){
         e.preventDefault();
         const btn = document.getElementById('signinBtn');
@@ -359,14 +359,26 @@
                 const bizUrls = [];
                 for(let img of _businessImages){ let url = await uploadToImgBB(img); if(url) bizUrls.push(url); }
                 if(bizUrls.length < 3) throw new Error("Failed to upload business images");
+                
                 const { data: auth, error: signErr } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: name, user_type: 'company' } } });
                 if(signErr) throw signErr;
                 if(!auth.user) throw new Error("Signup failed – check email confirmation settings");
                 const userId = auth.user.id;
-                const { error: profErr } = await _supabase.from('profiles').insert({ id: userId, user_type: 'company', full_name: name, email, avatar_url: logoUrl });
+                
+                // UPSERT profile (insert or update) to avoid 409 conflict
+                const { error: profErr } = await _supabase.from('profiles').upsert({ 
+                    id: userId, 
+                    user_type: 'company', 
+                    full_name: name, 
+                    email, 
+                    avatar_url: logoUrl,
+                    updated_at: new Date()
+                }, { onConflict: 'id' });
                 if(profErr) throw profErr;
+                
                 const { error: compErr } = await _supabase.from('companies').insert({ user_id: userId, company_name: name, category: _selectedCategory, business_images: bizUrls });
                 if(compErr) throw compErr;
+                
                 localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'company', name }));
                 showToast("🎉 Company account created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingsco.html"; }, 1000);
@@ -377,16 +389,38 @@
                 if(!fullName || !email || !password || !_selectedPrimarySkill) throw new Error("Full name, email, password and primary skill required");
                 if(password.length < 6) throw new Error("Password min 6 characters");
                 const avatarUrl = _workerAvatarBase64 ? await uploadToImgBB(_workerAvatarBase64) : null;
+                
                 const { data: auth, error: signErr } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, user_type: 'worker' } } });
                 if(signErr) throw signErr;
+                if(!auth.user) throw new Error("Signup failed – check email confirmation settings");
                 const userId = auth.user.id;
-                const { error: profErr } = await _supabase.from('profiles').insert({ id: userId, user_type: 'worker', full_name: fullName, email, avatar_url: avatarUrl });
+                
+                // UPSERT profile
+                const { error: profErr } = await _supabase.from('profiles').upsert({ 
+                    id: userId, 
+                    user_type: 'worker', 
+                    full_name: fullName, 
+                    email, 
+                    avatar_url: avatarUrl,
+                    updated_at: new Date()
+                }, { onConflict: 'id' });
                 if(profErr) throw profErr;
+                
                 const primaryParts = _selectedPrimarySkill.split(' - ');
                 const primaryCat = primaryParts[0];
                 const primaryName = primaryParts[1] || _selectedPrimarySkill;
-                const { error: workErr } = await _supabase.from('workers').insert({ user_id: userId, username: document.getElementById('workerUser')?.value.trim(), portfolio_url: document.getElementById('workerPort')?.value.trim(), primary_skill_category: primaryCat, primary_skill_name: primaryName, general_skills: _generalSkills, earning_range: document.getElementById('earningRange')?.value, address: document.getElementById('workerAddr')?.value.trim() });
+                const { error: workErr } = await _supabase.from('workers').insert({ 
+                    user_id: userId, 
+                    username: document.getElementById('workerUser')?.value.trim(), 
+                    portfolio_url: document.getElementById('workerPort')?.value.trim(), 
+                    primary_skill_category: primaryCat, 
+                    primary_skill_name: primaryName, 
+                    general_skills: _generalSkills, 
+                    earning_range: document.getElementById('earningRange')?.value, 
+                    address: document.getElementById('workerAddr')?.value.trim() 
+                });
                 if(workErr) throw workErr;
+                
                 localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'worker', name: fullName }));
                 showToast("✨ Freelancer profile created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingswo.html"; }, 1000);
