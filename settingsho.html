@@ -48,6 +48,7 @@
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:#f3f2ef;color:#191919;overflow-x:hidden;}
         .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:0.8rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;position:sticky;top:0;z-index:100;}
+        .menu-icon{display:none;font-size:1.5rem;cursor:pointer;color:#0a66c2;}
         .logo-area{display:flex;align-items:center;gap:0.75rem;}
         .logo-area img{height:40px;width:auto;}
         .logo-text{font-size:1.4rem;font-weight:800;background:linear-gradient(135deg,#0a66c2,#00a3ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
@@ -55,7 +56,7 @@
         .nav-center .home-btn{background:#0a66c2;color:white;border:none;padding:0.5rem 1.2rem;border-radius:2rem;cursor:pointer;font-weight:600;font-size:0.9rem;}
         .user-info{display:flex;align-items:center;gap:1rem;}
         .dashboard-container{display:flex;max-width:1400px;margin:2rem auto;padding:0 1.5rem;gap:2rem;}
-        .sidebar{width:280px;background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1rem;height:fit-content;position:sticky;top:90px;}
+        .sidebar{width:280px;background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1rem;height:fit-content;position:sticky;top:90px;transition:transform 0.3s ease;}
         .sidebar-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;border-radius:0.8rem;cursor:pointer;transition:all 0.2s;margin-bottom:0.3rem;color:#334155;}
         .sidebar-item i{width:24px;}
         .sidebar-item:hover{background:#eef2ff;}
@@ -86,22 +87,35 @@
         .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;}
         .stat-card{background:#f8fafc;padding:1rem;border-radius:1rem;text-align:center;}
         .stat-number{font-size:2rem;font-weight:800;color:#0a66c2;}
+        /* Auth card styles */
+        .auth-container{max-width:500px;margin:2rem auto;}
         .toggle-buttons{display:flex;gap:1rem;margin-bottom:1.5rem;}
         .toggle-btn{flex:1;text-align:center;padding:0.6rem;border-radius:2rem;cursor:pointer;background:#f1f5f9;font-weight:600;}
         .toggle-btn.active{background:#0a66c2;color:white;}
         .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;font-size:0.85rem;}
+        /* Mobile styles */
         @media(max-width:800px){
-            .dashboard-container{flex-direction:column;}
-            .sidebar{width:100%;position:static;}
+            .dashboard-container{flex-direction:column;padding:0 1rem;}
+            .sidebar{position:fixed;top:70px;left:0;height:calc(100% - 70px);z-index:99;transform:translateX(-100%);transition:transform 0.3s;width:280px;border-radius:0 1rem 1rem 0;}
+            .sidebar.open{transform:translateX(0);}
+            .menu-icon{display:block;order:-1;}
             .nav-center{position:relative;left:0;transform:none;}
+            .navbar{justify-content:space-between;flex-wrap:nowrap;}
+            .user-info{margin-left:auto;}
+            .auth-container{width:95%;}
         }
         .loader{display:inline-block;width:18px;height:18px;border:2px solid white;border-radius:50%;border-top-color:transparent;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;}
         @keyframes spin{to{transform:rotate(360deg);}}
+        .close-sidebar-btn{display:none;margin-bottom:1rem;text-align:right;cursor:pointer;color:#64748b;}
+        @media(max-width:800px){.close-sidebar-btn{display:block;}}
     </style>
 </head>
 <body>
 <nav class="navbar">
-    <div class="logo-area"><img src="images/logo.png" alt="Kazi ni Kazi" onerror="this.src='https://placehold.co/140x40'"><span class="logo-text">Kazi ni Kazi · Real Estate</span></div>
+    <div style="display:flex; align-items:center; gap:0.8rem;">
+        <i class="fas fa-bars menu-icon" id="menuIcon"></i>
+        <div class="logo-area"><img src="images/logo.png" alt="Kazi ni Kazi" onerror="this.src='https://placehold.co/140x40'"><span class="logo-text">Kazi ni Kazi · Real Estate</span></div>
+    </div>
     <div class="nav-center">
         <button class="home-btn" id="homeBtn"><i class="fas fa-home"></i> Home</button>
     </div>
@@ -112,32 +126,35 @@
 </nav>
 
 <div class="container" style="max-width:1400px; margin:2rem auto; padding:0 1.5rem;">
-    <!-- Auth Section (Login / Signup) -->
-    <div id="authSection" class="card">
-        <div class="toggle-buttons">
-            <div class="toggle-btn active" id="showLoginBtn">Sign In</div>
-            <div class="toggle-btn" id="showSignupBtn">Create Account</div>
-        </div>
-        <div id="loginForm">
-            <h2>Sign in to Real Estate Dashboard</h2>
-            <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="agent@realestate.com"></div>
-            <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••"></div>
-            <button class="btn-primary" id="doLoginBtn">Sign In</button>
-        </div>
-        <div id="signupForm" style="display:none;">
-            <h2>Create Real Estate Account</h2>
-            <p style="font-size:0.8rem; color:#5e6f8d;">This account is hidden from public. Only you can manage home listings.</p>
-            <div class="form-group"><label>Full Name</label><input type="text" id="signupName" placeholder="Agency Name or Agent Name"></div>
-            <div class="form-group"><label>Email</label><input type="email" id="signupEmail" placeholder="agent@realestate.com"></div>
-            <div class="form-group"><label>Password</label><input type="password" id="signupPassword" placeholder="Min 6 characters"></div>
-            <button class="btn-primary" id="doSignupBtn">Create Account</button>
+    <!-- Auth Section (centered box) -->
+    <div id="authSection" class="auth-container">
+        <div class="card" style="background:white; border-radius:1rem; border:1px solid #e2e8f0; padding:2rem;">
+            <div class="toggle-buttons">
+                <div class="toggle-btn active" id="showLoginBtn">Sign In</div>
+                <div class="toggle-btn" id="showSignupBtn">Create Account</div>
+            </div>
+            <div id="loginForm">
+                <h2>Sign in to Real Estate Dashboard</h2>
+                <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="agent@realestate.com"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••"></div>
+                <button class="btn-primary" id="doLoginBtn" style="width:100%;">Sign In</button>
+            </div>
+            <div id="signupForm" style="display:none;">
+                <h2>Create Real Estate Account</h2>
+                <p style="font-size:0.8rem; color:#5e6f8d; margin-bottom:1rem;">This account is hidden from public. Only you can manage home listings.</p>
+                <div class="form-group"><label>Full Name</label><input type="text" id="signupName" placeholder="Agency Name or Agent Name"></div>
+                <div class="form-group"><label>Email</label><input type="email" id="signupEmail" placeholder="agent@realestate.com"></div>
+                <div class="form-group"><label>Password</label><input type="password" id="signupPassword" placeholder="Min 6 characters"></div>
+                <button class="btn-primary" id="doSignupBtn" style="width:100%;">Create Account</button>
+            </div>
         </div>
     </div>
 
     <!-- Dashboard Section (visible after login) -->
     <div id="dashboardSection" style="display:none;">
         <div class="dashboard-container">
-            <div class="sidebar">
+            <div class="sidebar" id="sidebar">
+                <div class="close-sidebar-btn" id="closeSidebarBtn"><i class="fas fa-times"></i> Close</div>
                 <div class="sidebar-item" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</div>
                 <div class="sidebar-item" data-tab="addproperty"><i class="fas fa-plus-circle"></i> Add Property</div>
                 <div class="sidebar-item" data-tab="manageproperty"><i class="fas fa-edit"></i> Manage Property</div>
@@ -580,6 +597,28 @@
             if(tabId === 'dashboard') renderDashboard();
         }
         
+        // Mobile sidebar toggle
+        function initMobileSidebar(){
+            const menuIcon = document.getElementById('menuIcon');
+            const sidebar = document.getElementById('sidebar');
+            const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+            if(menuIcon && sidebar){
+                menuIcon.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
+                if(closeSidebarBtn){
+                    closeSidebarBtn.addEventListener('click', () => {
+                        sidebar.classList.remove('open');
+                    });
+                }
+                document.addEventListener('click', (e) => {
+                    if(window.innerWidth <= 800 && sidebar.classList.contains('open') && !sidebar.contains(e.target) && !menuIcon.contains(e.target)){
+                        sidebar.classList.remove('open');
+                    }
+                });
+            }
+        }
+        
         async function init(){
             let attempts = 0;
             while(!window.realEstateAuth && attempts < 50){
@@ -650,6 +689,8 @@
             document.getElementById('homeBtn').addEventListener('click', () => {
                 window.location.href = 'index.html';
             });
+            
+            initMobileSidebar();
         }
         
         init();
