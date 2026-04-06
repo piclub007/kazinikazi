@@ -82,15 +82,15 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_SYsRbYQOnrYW6cAtIAHpDg_uLV2G_k2';
     const IMGBB_API_KEY = 'ba8023ca74166460c442e8e703d2a1b0';
     
-    let supabase = null;
+    let _supabase = null;  // Renamed to avoid conflict with global supabase
     
-    // Initialize Supabase
+    // Initialize Supabase (using the global supabase from CDN)
     function initSupabase() {
-        if (!supabase && typeof supabaseJs !== 'undefined') {
-            supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else if (!supabase && window.supabase) {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        } else if (!supabase) {
+        if (typeof supabase !== 'undefined' && !_supabase) {
+            _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else if (window.supabase && !_supabase) {
+            _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        } else {
             console.error('Supabase not loaded');
         }
     }
@@ -101,11 +101,11 @@
     let _selectedCategory = '';
     let _generalSkills = [];          // array of {category, skill, level}
     let _selectedPrimarySkill = '';
-    let _businessImages = [];         // array of base64 strings (will upload to ImgBB)
+    let _businessImages = [];         // array of base64 strings
     let _companyLogoBase64 = '';
     let _workerAvatarBase64 = '';
     
-    // Categories & Skills DB (same as before)
+    // Categories & Skills DB
     const _categories = ["Food & Hospitality","Retail & Shops","Construction","Real Estate","Technology & IT Services","Digital Agencies","Marketing & Advertising","Events & Entertainment","Transportation & Logistics","Delivery Services","Health & Medical Services","Pharmacies","Fitness & Gyms","Beauty & Personal Care","Education & Training","Financial Services","Insurance","Legal Services","Agriculture & Farming","Manufacturing","Wholesale & Distribution","Cleaning Services","Repair & Maintenance","Security Services","Printing & Publishing","Media & Broadcasting","Travel & Tourism","Non-Profit Organizations","Government & Public Services","Consulting & Business Services"];
     
     const _skillsDB = {
@@ -124,7 +124,7 @@
     
     const _skillLevels = ["Beginner", "Median", "Intermediate", "Professional"];
     
-    // Helper: upload image to ImgBB and return URL
+    // Helper: upload image to ImgBB
     async function uploadToImgBB(base64Image) {
         try {
             const formData = new FormData();
@@ -175,7 +175,7 @@
         });
     }
     
-    // Render main view (identical UI structure but with Supabase handlers)
+    // Render main view (all forms)
     function render(){
         const container=document.getElementById('mainContainer');
         if(!container) return;
@@ -287,7 +287,6 @@
             </div>
         `).join('');
         
-        // Attach dynamic events
         document.querySelectorAll('.skill-category').forEach(sel=>{
             sel.addEventListener('change',(e)=>{
                 const idx=parseInt(sel.getAttribute('data-skill-cat'));
@@ -404,11 +403,10 @@
         }
         
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
             
-            // Get user profile from profiles table
-            const { data: profile, error: profileError } = await supabase
+            const { data: profile, error: profileError } = await _supabase
                 .from('profiles')
                 .select('user_type, full_name')
                 .eq('id', data.user.id)
@@ -416,22 +414,16 @@
             
             if (profileError) throw profileError;
             
-            const userType = profile.user_type;
-            const fullName = profile.full_name;
-            
-            // Store session info in localStorage for quick access
             localStorage.setItem('knk_current_user', JSON.stringify({
                 id: data.user.id,
                 email: email,
-                type: userType,
-                name: fullName
+                type: profile.user_type,
+                name: profile.full_name
             }));
             
-            showToast(`✅ Welcome back, ${fullName}! Redirecting...`);
-            
-            // Role-based redirection
+            showToast(`✅ Welcome back, ${profile.full_name}! Redirecting...`);
             setTimeout(() => {
-                if (userType === 'company') window.location.href = "settingsco.html";
+                if (profile.user_type === 'company') window.location.href = "settingsco.html";
                 else window.location.href = "settingswo.html";
             }, 1000);
         } catch (error) {
@@ -465,7 +457,6 @@
                 }
                 if (password.length < 6) { showToast("Password min 6 characters", true); setLoading(btn, false, origText); return; }
                 
-                // Upload logo and business images to ImgBB
                 let logoUrl = null;
                 if (_companyLogoBase64) logoUrl = await uploadToImgBB(_companyLogoBase64);
                 
@@ -475,8 +466,7 @@
                     businessImageUrls.push(url);
                 }
                 
-                // Create auth user
-                const { data: authData, error: signUpError } = await supabase.auth.signUp({
+                const { data: authData, error: signUpError } = await _supabase.auth.signUp({
                     email, password,
                     options: { data: { full_name: name, user_type: 'company' } }
                 });
@@ -484,8 +474,7 @@
                 
                 const userId = authData.user.id;
                 
-                // Insert into profiles
-                const { error: profileError } = await supabase.from('profiles').insert({
+                const { error: profileError } = await _supabase.from('profiles').insert({
                     id: userId,
                     user_type: 'company',
                     full_name: name,
@@ -496,8 +485,7 @@
                 });
                 if (profileError) throw profileError;
                 
-                // Insert into companies
-                const { error: companyError } = await supabase.from('companies').insert({
+                const { error: companyError } = await _supabase.from('companies').insert({
                     user_id: userId,
                     company_name: name,
                     website: website,
@@ -513,7 +501,7 @@
                 showToast("🎉 Company account created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingsco.html"; }, 1000);
                 
-            } else { // Worker
+            } else {
                 const fullName = document.getElementById('workerNames')?.value.trim();
                 const email = document.getElementById('workerEmail')?.value.trim();
                 const password = document.getElementById('workerPass')?.value;
@@ -529,12 +517,10 @@
                 }
                 if (password.length < 6) { showToast("Password min 6 characters", true); setLoading(btn, false, origText); return; }
                 
-                // Upload avatar
                 let avatarUrl = null;
                 if (_workerAvatarBase64) avatarUrl = await uploadToImgBB(_workerAvatarBase64);
                 
-                // Create auth user
-                const { data: authData, error: signUpError } = await supabase.auth.signUp({
+                const { data: authData, error: signUpError } = await _supabase.auth.signUp({
                     email, password,
                     options: { data: { full_name: fullName, user_type: 'worker' } }
                 });
@@ -542,8 +528,7 @@
                 
                 const userId = authData.user.id;
                 
-                // Insert into profiles
-                const { error: profileError } = await supabase.from('profiles').insert({
+                const { error: profileError } = await _supabase.from('profiles').insert({
                     id: userId,
                     user_type: 'worker',
                     full_name: fullName,
@@ -553,12 +538,11 @@
                 });
                 if (profileError) throw profileError;
                 
-                // Insert into workers
                 const primarySkillParts = _selectedPrimarySkill.split(' - ');
                 const primaryCat = primarySkillParts[0];
                 const primaryName = primarySkillParts[1] || _selectedPrimarySkill;
                 
-                const { error: workerError } = await supabase.from('workers').insert({
+                const { error: workerError } = await _supabase.from('workers').insert({
                     user_id: userId,
                     username: username,
                     portfolio_url: portfolio,
@@ -581,10 +565,10 @@
         }
     }
     
-    // Initialize Supabase and render
+    // Initialize
     function init() {
         initSupabase();
-        if (!supabase) {
+        if (!_supabase) {
             showToast("Failed to initialize Supabase. Check your connection.", true);
             return;
         }
