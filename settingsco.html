@@ -9,8 +9,8 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, where, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyBbhxmAkHJtq3Zs17P4ewHsc8wi8-0M_XI",
@@ -27,7 +27,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
-        // Make globals available
         window.firebaseAuth = auth;
         window.firebaseDb = db;
         window.firebaseDoc = doc;
@@ -40,12 +39,9 @@
         window.firebaseWhere = where;
         window.firebaseCollection = collection;
         window.firebaseDeleteDoc = deleteDoc;
-        window.firebaseOnSnapshot = onSnapshot;
-        window.onAuthStateChanged = onAuthStateChanged;
     </script>
     <script src="config.js"></script>
     <style>
-        /* (same styles as before – keep unchanged) */
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:#f3f2ef;color:#191919;overflow-x:hidden;}
         .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:0.8rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;position:sticky;top:0;z-index:100;}
@@ -92,7 +88,7 @@
         .stat-number{font-size:2rem;font-weight:800;color:#0a66c2;}
         .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;z-index:1000;}
         .modal-content{background:white;border-radius:1rem;padding:1.5rem;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;}
-        .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;}
+        .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;font-size:0.85rem;}
         @media(max-width:800px){
             .dashboard-container{flex-direction:column;}
             .sidebar{position:fixed;top:70px;left:0;height:calc(100% - 70px);z-index:99;transform:translateX(-100%);transition:transform 0.3s;}
@@ -130,9 +126,8 @@
 
 <script>
     (function(){
-        // ---------- FIREBASE REFERENCES (set after module loads) ----------
+        // ---------- FIREBASE REFERENCES ----------
         let db = null;
-        let auth = null;
         let docRef = null;
         let getDocFn = null;
         let setDocFn = null;
@@ -143,10 +138,8 @@
         let whereFn = null;
         let collectionFn = null;
         let deleteDocFn = null;
-        let onSnapshotFn = null;
         
         // ---------- GLOBAL STATE ----------
-        let currentUser = null;
         let companyId = null;
         let jobs = [];
         let jobForms = {};
@@ -155,7 +148,13 @@
         let verificationRequested = false;
         let isVerified = false;
         
-        // Categories list (same as auth)
+        // Company data
+        let companyData = {
+            name: '', email: '', category: '', logo: '',
+            website: '', ceo: '', phone: '', address: ''
+        };
+        
+        // Categories list
         const COMPANY_CATEGORIES = [
             "Food & Hospitality","Retail & Shops","Construction","Real Estate","Technology & IT Services",
             "Digital Agencies","Marketing & Advertising","Events & Entertainment","Transportation & Logistics",
@@ -200,9 +199,9 @@
                 jobs.push({ id: docSnap.id, ...docSnap.data() });
             });
             jobs.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-            renderManageJobs();
-            updateJobSelects();
-            updateAnalytics();
+            if(window.renderManageJobs) window.renderManageJobs();
+            if(window.updateJobSelects) window.updateJobSelects();
+            if(window.updateAnalytics) window.updateAnalytics();
         }
         
         async function loadJobForms(){
@@ -212,6 +211,7 @@
             snapshot.forEach(docSnap => {
                 jobForms[docSnap.data().jobId] = docSnap.data().formFields;
             });
+            if(window.updateJobSelects) window.updateJobSelects();
         }
         
         async function loadSubmissions(){
@@ -221,7 +221,7 @@
             snapshot.forEach(docSnap => {
                 submissions.push({ id: docSnap.id, ...docSnap.data() });
             });
-            renderSubmissions();
+            if(window.renderSubmissions) window.renderSubmissions();
         }
         
         async function loadNotifications(){
@@ -232,7 +232,7 @@
                 notifications.push({ id: docSnap.id, ...docSnap.data() });
             });
             notifications.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
-            renderNotifications();
+            if(window.renderNotifications) window.renderNotifications();
         }
         
         async function loadVerificationStatus(){
@@ -244,7 +244,7 @@
                 verificationRequested = false;
                 isVerified = false;
             }
-            updateVerifiedUI();
+            if(window.updateVerifiedUI) window.updateVerifiedUI();
         }
         
         // ---------- SAVE OPERATIONS ----------
@@ -262,22 +262,17 @@
         }
         
         async function addJob(jobData){
-            const newJobRef = await addDocFn(collectionFn(db, "jobs"), {
+            await addDocFn(collectionFn(db, "jobs"), {
                 ...jobData,
                 companyId: companyId,
                 createdAt: new Date().toISOString(),
                 status: 'open'
             });
-            return newJobRef.id;
-        }
-        
-        async function updateJob(jobId, jobData){
-            await updateDocFn(docRef(db, "jobs", jobId), jobData);
         }
         
         async function deleteJob(jobId){
             await deleteDocFn(docRef(db, "jobs", jobId));
-            // Also delete associated form and submissions
+            // Delete associated form
             const formQuery = queryFn(collectionFn(db, "jobForms"), whereFn("jobId", "==", jobId));
             const formSnapshot = await getDocsFn(formQuery);
             formSnapshot.forEach(async (f) => await deleteDocFn(docRef(db, "jobForms", f.id)));
@@ -305,7 +300,7 @@
                 createdAt: new Date().toISOString(),
                 isRead: false
             });
-            loadNotifications();
+            await loadNotifications();
         }
         
         async function requestVerification(){
@@ -314,12 +309,12 @@
                 requestedAt: new Date().toISOString()
             });
             verificationRequested = true;
-            updateVerifiedUI();
-            addNotification("Verification request submitted. Admin will review within 48h.");
+            if(window.updateVerifiedUI) window.updateVerifiedUI();
+            await addNotification("Verification request submitted. Admin will review within 48h.");
             showToast("Request sent!");
         }
         
-        // ---------- RENDER FUNCTIONS (UI) ----------
+        // ---------- UI RENDER FUNCTIONS ----------
         function renderManageJobs(){
             const container = document.getElementById('manageJobsList');
             if(!container) return;
@@ -340,17 +335,30 @@
         window.editJob = async (jobId) => {
             const job = jobs.find(j => j.id === jobId);
             if(job){
-                document.getElementById('jobTitle').value = job.title;
-                document.getElementById('jobRole').value = job.role;
-                document.getElementById('categorySearchInput').value = job.category;
-                document.getElementById('jobCategory').value = job.category;
-                document.getElementById('jobSkills').value = (job.skills || []).join(', ');
-                document.getElementById('jobDesc').value = job.description;
-                document.getElementById('jobRequirements').value = job.requirements || '';
-                document.getElementById('payoutAmount').value = job.payout?.amount || '';
-                document.getElementById('payoutCurrency').value = job.payout?.currency || 'USD';
-                document.getElementById('payoutPeriod').value = job.payout?.period || 'per hour';
-                document.getElementById('jobDeadline').value = job.deadline || '';
+                const titleInput = document.getElementById('jobTitle');
+                const roleInput = document.getElementById('jobRole');
+                const catSearch = document.getElementById('categorySearchInput');
+                const catHidden = document.getElementById('jobCategory');
+                const skillsInput = document.getElementById('jobSkills');
+                const descInput = document.getElementById('jobDesc');
+                const reqInput = document.getElementById('jobRequirements');
+                const amountInput = document.getElementById('payoutAmount');
+                const currencySelect = document.getElementById('payoutCurrency');
+                const periodSelect = document.getElementById('payoutPeriod');
+                const deadlineInput = document.getElementById('jobDeadline');
+                
+                if(titleInput) titleInput.value = job.title;
+                if(roleInput) roleInput.value = job.role;
+                if(catSearch) catSearch.value = job.category;
+                if(catHidden) catHidden.value = job.category;
+                if(skillsInput) skillsInput.value = (job.skills || []).join(', ');
+                if(descInput) descInput.value = job.description;
+                if(reqInput) reqInput.value = job.requirements || '';
+                if(amountInput) amountInput.value = job.payout?.amount || '';
+                if(currencySelect) currencySelect.value = job.payout?.currency || 'USD';
+                if(periodSelect) periodSelect.value = job.payout?.period || 'per hour';
+                if(deadlineInput) deadlineInput.value = job.deadline || '';
+                
                 await window.deleteJob(jobId);
                 switchTab('postjob');
                 showToast("Edit mode: modify and repost");
@@ -374,20 +382,21 @@
                     const selected = selectForm.value;
                     if(selected && jobForms[selected]) currentFormFields = jobForms[selected];
                     else currentFormFields = [];
-                    renderFormBuilder();
+                    if(window.renderFormBuilder) window.renderFormBuilder();
                 };
             }
             if(selectSub){
                 selectSub.innerHTML = '<option value="">All Jobs</option>' + options;
-                selectSub.onchange = () => renderSubmissions();
+                selectSub.onchange = () => { if(window.renderSubmissions) window.renderSubmissions(); };
             }
         }
         
         function renderSubmissions(){
-            const jobId = document.getElementById('submissionJobSelect').value;
+            const jobId = document.getElementById('submissionJobSelect')?.value;
             let filtered = submissions;
             if(jobId) filtered = submissions.filter(s => s.jobId === jobId);
             const container = document.getElementById('submissionsList');
+            if(!container) return;
             if(filtered.length === 0){ container.innerHTML = '<p>No submissions yet.</p>'; return; }
             container.innerHTML = filtered.map(sub => `
                 <div class="submission-card">
@@ -399,15 +408,20 @@
         
         function renderNotifications(){
             const container = document.getElementById('notificationsList');
+            if(!container) return;
             if(notifications.length === 0){ container.innerHTML = '<p>No notifications yet.</p>'; return; }
             container.innerHTML = notifications.map(n => `<div class="job-card">${escapeHtml(n.message)}<br><small>${new Date(n.createdAt).toLocaleString()}</small></div>`).join('');
         }
         
         function updateAnalytics(){
-            document.getElementById('profileViews').innerText = Math.floor(Math.random() * 200 + 50); // placeholder
-            document.getElementById('totalJobsPosted').innerText = jobs.length;
-            document.getElementById('totalSubmissions').innerText = submissions.length;
-            document.getElementById('activeJobs').innerText = jobs.filter(j => j.status === 'open').length;
+            const viewsEl = document.getElementById('profileViews');
+            const jobsEl = document.getElementById('totalJobsPosted');
+            const subsEl = document.getElementById('totalSubmissions');
+            const activeEl = document.getElementById('activeJobs');
+            if(viewsEl) viewsEl.innerText = Math.floor(Math.random() * 200 + 50);
+            if(jobsEl) jobsEl.innerText = jobs.length;
+            if(subsEl) subsEl.innerText = submissions.length;
+            if(activeEl) activeEl.innerText = jobs.filter(j => j.status === 'open').length;
             const ctx = document.getElementById('analyticsChart')?.getContext('2d');
             if(ctx){
                 ctx.clearRect(0,0,400,200);
@@ -418,22 +432,25 @@
         
         function updateVerifiedUI(){
             const statusDiv = document.getElementById('verificationStatus');
+            const requestBtn = document.getElementById('requestVerifyBtn');
+            if(!statusDiv) return;
             if(isVerified){
                 statusDiv.innerHTML = '<div style="color:#059669;"><i class="fas fa-check-circle"></i> Verified! Blue badge active.</div>';
-                document.getElementById('requestVerifyBtn').disabled = true;
+                if(requestBtn) requestBtn.disabled = true;
             } else if(verificationRequested){
                 statusDiv.innerHTML = '<div style="color:#eab308;">Verification pending admin approval.</div>';
-                document.getElementById('requestVerifyBtn').disabled = true;
+                if(requestBtn) requestBtn.disabled = true;
             } else {
                 statusDiv.innerHTML = '<div>Not verified. Request verification below.</div>';
-                document.getElementById('requestVerifyBtn').disabled = false;
+                if(requestBtn) requestBtn.disabled = false;
             }
         }
         
-        // ---------- FORM BUILDER (same as before, but saves to Firestore) ----------
+        // ---------- FORM BUILDER ----------
         let currentFormFields = [];
         let selectedFormJobId = null;
         const formContainer = document.getElementById('formFieldsContainer');
+        
         function renderFormBuilder(){
             if(!formContainer) return;
             formContainer.innerHTML = currentFormFields.map((field, idx) => `
@@ -448,6 +465,7 @@
             `).join('');
             attachDragSort();
         }
+        
         window.editFieldParams = (idx) => {
             const field = currentFormFields[idx];
             let html = `<div><h3>Edit ${field.type}</h3><label>Label:</label><input type="text" id="paramLabel" value="${field.label}"><br>`;
@@ -471,7 +489,9 @@
             };
             modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
         };
+        
         window.removeField = (idx) => { currentFormFields.splice(idx,1); renderFormBuilder(); };
+        
         function attachDragSort(){
             const items = document.querySelectorAll('.form-field');
             items.forEach(item => {
@@ -492,9 +512,54 @@
             });
         }
         
+        async function uploadToImgBB(base64Image){
+            if(!base64Image) return null;
+            let raw = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
+            const formData = new FormData();
+            formData.append('image', raw);
+            formData.append('key', KAZI_CONFIG.imgbb.apiKey);
+            try{
+                const res = await fetch(KAZI_CONFIG.imgbb.uploadUrl, { method:'POST', body:formData });
+                const data = await res.json();
+                return data.success ? data.data.url : null;
+            } catch(e){ return null; }
+        }
+        
+        // ---------- PROFILE UI UPDATE ----------
+        function updateProfileUI(){
+            const nameInput = document.getElementById('compName');
+            if(nameInput) nameInput.value = companyData.name || '';
+            const websiteInput = document.getElementById('compWebsite');
+            if(websiteInput) websiteInput.value = companyData.website || '';
+            const ceoInput = document.getElementById('compCeo');
+            if(ceoInput) ceoInput.value = companyData.ceo || '';
+            const categoryInput = document.getElementById('compCategory');
+            if(categoryInput) categoryInput.value = companyData.category || '';
+            const phoneInput = document.getElementById('compPhone');
+            if(phoneInput) phoneInput.value = companyData.phone || '';
+            const addressInput = document.getElementById('compAddress');
+            if(addressInput) addressInput.value = companyData.address || '';
+            const emailInput = document.getElementById('compEmail');
+            if(emailInput) emailInput.value = companyData.email || '';
+            const logoPreview = document.getElementById('logoPreview');
+            if(logoPreview && companyData.logo){
+                logoPreview.innerHTML = `<img src="${companyData.logo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`;
+            }
+            const nameDisplay = document.getElementById('companyNameDisplay');
+            if(nameDisplay) nameDisplay.innerText = companyData.name || 'Company';
+            const profileAvatar = document.getElementById('profileAvatar');
+            if(profileAvatar && companyData.logo){
+                profileAvatar.style.backgroundImage = `url(${companyData.logo})`;
+                profileAvatar.style.backgroundSize = 'cover';
+                profileAvatar.style.backgroundPosition = 'center';
+                profileAvatar.innerHTML = '';
+            }
+        }
+        
         // ---------- TAB RENDERING ----------
         function renderTabs() {
             const main = document.getElementById('mainContent');
+            if(!main) return;
             main.innerHTML = `
                 <div id="profileTab" class="tab-content"><h2>Edit Company Profile</h2><form id="profileForm"><div class="form-group"><label>Company Logo</label><input type="file" id="logoUpload" accept="image/*"><div id="logoPreview" style="margin-top:0.5rem;"></div></div><div class="form-group"><label>Company Name *</label><input type="text" id="compName" required></div><div class="form-group"><label>Website</label><input type="url" id="compWebsite"></div><div class="form-group"><label>CEO / Social Name</label><input type="text" id="compCeo"></div><div class="form-group"><label>Category</label><input type="text" id="compCategory" readonly></div><div class="form-group"><label>Phone</label><input type="tel" id="compPhone"></div><div class="form-group"><label>Address</label><input type="text" id="compAddress"></div><div class="form-group"><label>Email *</label><input type="email" id="compEmail" required></div><button type="submit" class="btn-primary">Save Changes</button></form></div>
                 <div id="postjobTab" class="tab-content"><h2>Post a New Job</h2><form id="jobPostForm"><div class="form-group"><label>Job Title *</label><input type="text" id="jobTitle" required></div><div class="form-group"><label>Role *</label><input type="text" id="jobRole" required></div><div class="form-group"><label>Category *</label><div class="searchable-select"><input type="text" id="categorySearchInput" placeholder="Search category..."><div id="categoryDropdown" class="searchable-dropdown"></div></div><input type="hidden" id="jobCategory" required></div><div class="form-group"><label>Main Skills (comma separated)</label><input type="text" id="jobSkills" placeholder="React, Python, UI Design"></div><div class="form-group"><label>Description *</label><textarea id="jobDesc" rows="4" required></textarea></div><div class="form-group"><label>Requirements *</label><textarea id="jobRequirements" rows="3" placeholder="List specific requirements..."></textarea></div><div class="form-group"><label>Estimated Payout</label><div class="inline-row"><input type="number" id="payoutAmount" placeholder="Amount" style="flex:2;"><select id="payoutCurrency" style="flex:1;"><option value="USD">USD</option><option value="EUR">EUR</option><option value="RWF">RWF</option></select><select id="payoutPeriod" style="flex:1;"><option>per hour</option><option>per month</option><option>per year</option></select></div></div><div class="form-group"><label>Deadline (optional)</label><input type="date" id="jobDeadline"></div><button type="submit" class="btn-primary" id="postJobBtn">Post Job</button></form></div>
@@ -509,164 +574,183 @@
         }
         
         function attachTabEvents(){
-            // Profile save
-            document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const updated = {
-                    name: document.getElementById('compName').value.trim(),
-                    website: document.getElementById('compWebsite').value.trim(),
-                    ceo: document.getElementById('compCeo').value.trim(),
-                    phone: document.getElementById('compPhone').value.trim(),
-                    address: document.getElementById('compAddress').value.trim(),
-                    email: document.getElementById('compEmail').value.trim(),
-                    logo: companyData.logo
-                };
-                await saveCompanyProfile(updated);
-                companyData = { ...companyData, ...updated };
-                updateProfileUI();
-                showToast("Profile updated");
-            });
-            document.getElementById('logoUpload')?.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if(file){
-                    const reader = new FileReader();
-                    reader.onload = async (ev) => {
-                        // Upload to ImgBB
-                        const url = await uploadToImgBB(ev.target.result);
-                        if(url){
-                            companyData.logo = url;
-                            await saveCompanyProfile(companyData);
-                            updateProfileUI();
-                            showToast("Logo uploaded");
-                        } else showToast("Logo upload failed", true);
+            // Profile form submit
+            const profileForm = document.getElementById('profileForm');
+            if(profileForm){
+                profileForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const updated = {
+                        name: document.getElementById('compName')?.value.trim() || '',
+                        website: document.getElementById('compWebsite')?.value.trim() || '',
+                        ceo: document.getElementById('compCeo')?.value.trim() || '',
+                        phone: document.getElementById('compPhone')?.value.trim() || '',
+                        address: document.getElementById('compAddress')?.value.trim() || '',
+                        email: document.getElementById('compEmail')?.value.trim() || '',
+                        logo: companyData.logo
                     };
-                    reader.readAsDataURL(file);
-                }
-            });
+                    await saveCompanyProfile(updated);
+                    companyData = { ...companyData, ...updated };
+                    updateProfileUI();
+                    showToast("Profile updated");
+                });
+            }
+            
+            // Logo upload
+            const logoUpload = document.getElementById('logoUpload');
+            if(logoUpload){
+                logoUpload.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if(file){
+                        const reader = new FileReader();
+                        reader.onload = async (ev) => {
+                            const url = await uploadToImgBB(ev.target.result);
+                            if(url){
+                                companyData.logo = url;
+                                await saveCompanyProfile(companyData);
+                                updateProfileUI();
+                                showToast("Logo uploaded");
+                            } else showToast("Logo upload failed", true);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+            
             // Searchable category
             const catInput = document.getElementById('categorySearchInput');
             const catDropdown = document.getElementById('categoryDropdown');
             const catHidden = document.getElementById('jobCategory');
             function filterCategories(filter){
                 const filtered = COMPANY_CATEGORIES.filter(c => c.toLowerCase().includes(filter.toLowerCase()));
-                catDropdown.innerHTML = filtered.map(c => `<div class="searchable-option" data-cat="${c}">${c}</div>`).join('');
-                catDropdown.classList.add('show');
+                if(catDropdown) catDropdown.innerHTML = filtered.map(c => `<div class="searchable-option" data-cat="${c}">${c}</div>`).join('');
+                if(catDropdown) catDropdown.classList.add('show');
                 document.querySelectorAll('.searchable-option').forEach(opt => {
                     opt.addEventListener('click', () => {
-                        catInput.value = opt.getAttribute('data-cat');
-                        catHidden.value = opt.getAttribute('data-cat');
-                        catDropdown.classList.remove('show');
+                        if(catInput) catInput.value = opt.getAttribute('data-cat');
+                        if(catHidden) catHidden.value = opt.getAttribute('data-cat');
+                        if(catDropdown) catDropdown.classList.remove('show');
                     });
                 });
             }
-            catInput?.addEventListener('input', (e) => filterCategories(e.target.value));
-            catInput?.addEventListener('focus', () => filterCategories(catInput.value));
-            document.addEventListener('click', (e) => { if(!catInput?.contains(e.target) && catDropdown && !catDropdown.contains(e.target)) catDropdown.classList.remove('show'); });
+            if(catInput){
+                catInput.addEventListener('input', (e) => filterCategories(e.target.value));
+                catInput.addEventListener('focus', () => filterCategories(catInput.value));
+            }
+            document.addEventListener('click', (e) => {
+                if(catInput && catDropdown && !catInput.contains(e.target) && !catDropdown.contains(e.target)) {
+                    catDropdown.classList.remove('show');
+                }
+            });
+            
             // Post Job
-            document.getElementById('jobPostForm')?.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const title = document.getElementById('jobTitle').value.trim();
-                const role = document.getElementById('jobRole').value.trim();
-                const category = catHidden.value;
-                const skills = document.getElementById('jobSkills').value.split(',').map(s=>s.trim()).filter(s=>s);
-                const description = document.getElementById('jobDesc').value.trim();
-                const requirements = document.getElementById('jobRequirements').value.trim();
-                const amount = document.getElementById('payoutAmount').value;
-                const currency = document.getElementById('payoutCurrency').value;
-                const period = document.getElementById('payoutPeriod').value;
-                const deadline = document.getElementById('jobDeadline').value;
-                if(!title || !role || !category || !description){ showToast("Required fields missing", true); return; }
-                const newJob = { title, role, category, skills, description, requirements, payout: { amount, currency, period }, deadline, createdAt: new Date().toISOString(), status: 'open' };
-                await addJob(newJob);
-                showToast("Job posted!");
-                document.getElementById('jobPostForm').reset();
-                await loadJobs();
-                await loadJobForms();
-                updateJobSelects();
-                updateAnalytics();
-            });
-            // Form builder save
-            document.getElementById('saveFormBtn')?.addEventListener('click', async () => {
-                if(!selectedFormJobId){ showToast("Select a job first", true); return; }
-                await saveJobForm(selectedFormJobId, currentFormFields);
-                await loadJobForms();
-                showToast("Form saved");
-            });
-            document.getElementById('previewFormBtn')?.addEventListener('click', () => {
-                let previewHtml = '<h3>Form Preview</h3>';
-                currentFormFields.forEach(f => {
-                    previewHtml += `<div><label>${escapeHtml(f.label)}</label>`;
-                    if(f.type === 'text') previewHtml += `<input type="text" placeholder="${f.label}">`;
-                    else if(f.type === 'textarea') previewHtml += `<textarea rows="2"></textarea>`;
-                    else if(f.type === 'number') previewHtml += `<input type="number">`;
-                    else if(f.type === 'date') previewHtml += `<input type="date">`;
-                    else if(f.type === 'dropdown') previewHtml += `<select>${(f.options||[]).map(o=>`<option>${o}</option>`).join('')}</select>`;
-                    else if(f.type === 'checkbox') previewHtml += `<div>${(f.options||[]).map(o=>`<label><input type="checkbox"> ${o}</label>`).join('')}</div>`;
-                    else if(f.type === 'file') previewHtml += `<input type="file" multiple>`;
-                    previewHtml += `</div><br>`;
+            const jobForm = document.getElementById('jobPostForm');
+            if(jobForm){
+                jobForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const title = document.getElementById('jobTitle')?.value.trim();
+                    const role = document.getElementById('jobRole')?.value.trim();
+                    const category = catHidden ? catHidden.value : '';
+                    const skills = document.getElementById('jobSkills')?.value.split(',').map(s=>s.trim()).filter(s=>s) || [];
+                    const description = document.getElementById('jobDesc')?.value.trim();
+                    const requirements = document.getElementById('jobRequirements')?.value.trim();
+                    const amount = document.getElementById('payoutAmount')?.value;
+                    const currency = document.getElementById('payoutCurrency')?.value;
+                    const period = document.getElementById('payoutPeriod')?.value;
+                    const deadline = document.getElementById('jobDeadline')?.value;
+                    if(!title || !role || !category || !description){
+                        showToast("Required fields missing", true);
+                        return;
+                    }
+                    const newJob = {
+                        title, role, category, skills, description, requirements,
+                        payout: { amount, currency, period }, deadline
+                    };
+                    await addJob(newJob);
+                    showToast("Job posted!");
+                    if(jobForm) jobForm.reset();
+                    await loadJobs();
+                    await loadJobForms();
+                    updateJobSelects();
+                    updateAnalytics();
                 });
-                const modal = document.createElement('div'); modal.className = 'modal'; modal.style.display = 'flex';
-                modal.innerHTML = `<div class="modal-content">${previewHtml}<button class="btn-secondary" onclick="this.closest('.modal').remove()">Close</button></div>`;
-                document.body.appendChild(modal);
-                modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
-            });
-            document.getElementById('requestPushBtn')?.addEventListener('click', () => {
-                if("Notification" in window) Notification.requestPermission();
-                else showToast("Not supported", true);
-            });
-            document.getElementById('requestVerifyBtn')?.addEventListener('click', async () => {
-                await requestVerification();
-            });
-            // Drag & drop for form builder components
-            document.querySelectorAll('.component-item').forEach(comp => {
+            }
+            
+            // Form builder save
+            const saveFormBtn = document.getElementById('saveFormBtn');
+            if(saveFormBtn){
+                saveFormBtn.addEventListener('click', async () => {
+                    if(!selectedFormJobId){ showToast("Select a job first", true); return; }
+                    await saveJobForm(selectedFormJobId, currentFormFields);
+                    await loadJobForms();
+                    showToast("Form saved");
+                });
+            }
+            
+            // Preview form
+            const previewBtn = document.getElementById('previewFormBtn');
+            if(previewBtn){
+                previewBtn.addEventListener('click', () => {
+                    let previewHtml = '<h3>Form Preview</h3>';
+                    currentFormFields.forEach(f => {
+                        previewHtml += `<div><label>${escapeHtml(f.label)}</label>`;
+                        if(f.type === 'text') previewHtml += `<input type="text" placeholder="${f.label}">`;
+                        else if(f.type === 'textarea') previewHtml += `<textarea rows="2"></textarea>`;
+                        else if(f.type === 'number') previewHtml += `<input type="number">`;
+                        else if(f.type === 'date') previewHtml += `<input type="date">`;
+                        else if(f.type === 'dropdown') previewHtml += `<select>${(f.options||[]).map(o=>`<option>${o}</option>`).join('')}</select>`;
+                        else if(f.type === 'checkbox') previewHtml += `<div>${(f.options||[]).map(o=>`<label><input type="checkbox"> ${o}</label>`).join('')}</div>`;
+                        else if(f.type === 'file') previewHtml += `<input type="file" multiple>`;
+                        previewHtml += `</div><br>`;
+                    });
+                    const modal = document.createElement('div'); modal.className = 'modal'; modal.style.display = 'flex';
+                    modal.innerHTML = `<div class="modal-content">${previewHtml}<button class="btn-secondary" onclick="this.closest('.modal').remove()">Close</button></div>`;
+                    document.body.appendChild(modal);
+                    modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+                });
+            }
+            
+            // Push notifications
+            const pushBtn = document.getElementById('requestPushBtn');
+            if(pushBtn){
+                pushBtn.addEventListener('click', () => {
+                    if("Notification" in window) Notification.requestPermission();
+                    else showToast("Not supported", true);
+                });
+            }
+            
+            // Request verification
+            const verifyBtn = document.getElementById('requestVerifyBtn');
+            if(verifyBtn){
+                verifyBtn.addEventListener('click', async () => {
+                    await requestVerification();
+                });
+            }
+            
+            // Drag & drop components
+            const components = document.querySelectorAll('.component-item');
+            components.forEach(comp => {
                 comp.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', comp.getAttribute('data-type')));
             });
-            formContainer?.addEventListener('dragover', (e) => e.preventDefault());
-            formContainer?.addEventListener('drop', (e) => {
-                e.preventDefault();
-                const type = e.dataTransfer.getData('text/plain');
-                if(type) currentFormFields.push({ type, label: `New ${type}`, options: [], min: '', max: '', maxFiles: 1 });
-                renderFormBuilder();
-            });
-        }
-        
-        // Helper to upload to ImgBB (using config.js)
-        async function uploadToImgBB(base64Image){
-            if(!base64Image) return null;
-            let raw = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image;
-            const formData = new FormData();
-            formData.append('image', raw);
-            formData.append('key', KAZI_CONFIG.imgbb.apiKey);
-            try{
-                const res = await fetch(KAZI_CONFIG.imgbb.uploadUrl, { method:'POST', body:formData });
-                const data = await res.json();
-                return data.success ? data.data.url : null;
-            } catch(e){ return null; }
-        }
-        
-        // UI update for profile
-        let companyData = { name: '', email: '', category: '', logo: '', website: '', ceo: '', phone: '', address: '' };
-        function updateProfileUI(){
-            document.getElementById('compName').value = companyData.name;
-            document.getElementById('compWebsite').value = companyData.website;
-            document.getElementById('compCeo').value = companyData.ceo;
-            document.getElementById('compCategory').value = companyData.category;
-            document.getElementById('compPhone').value = companyData.phone;
-            document.getElementById('compAddress').value = companyData.address;
-            document.getElementById('compEmail').value = companyData.email;
-            if(companyData.logo){
-                document.getElementById('logoPreview').innerHTML = `<img src="${companyData.logo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`;
-                document.getElementById('profileAvatar').style.backgroundImage = `url(${companyData.logo})`;
+            if(formContainer){
+                formContainer.addEventListener('dragover', (e) => e.preventDefault());
+                formContainer.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const type = e.dataTransfer.getData('text/plain');
+                    if(type) currentFormFields.push({ type, label: `New ${type}`, options: [], min: '', max: '', maxFiles: 1 });
+                    renderFormBuilder();
+                });
             }
-            document.getElementById('companyNameDisplay').innerText = companyData.name;
         }
         
-        // Tab switching
+        // ---------- TAB SWITCHING ----------
         function switchTab(tabId){
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId+'Tab').classList.add('active');
+            const activeTab = document.getElementById(tabId+'Tab');
+            if(activeTab) activeTab.classList.add('active');
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
-            document.querySelector(`.sidebar-item[data-tab="${tabId}"]`).classList.add('active');
+            const activeSidebar = document.querySelector(`.sidebar-item[data-tab="${tabId}"]`);
+            if(activeSidebar) activeSidebar.classList.add('active');
+            
             if(tabId === 'managejobs') renderManageJobs();
             if(tabId === 'submissions') renderSubmissions();
             if(tabId === 'analytics') updateAnalytics();
@@ -688,7 +772,6 @@
                 return;
             }
             db = window.firebaseDb;
-            auth = window.firebaseAuth;
             docRef = window.firebaseDoc;
             getDocFn = window.firebaseGetDoc;
             setDocFn = window.firebaseSetDoc;
@@ -699,28 +782,40 @@
             whereFn = window.firebaseWhere;
             collectionFn = window.firebaseCollection;
             deleteDocFn = window.firebaseDeleteDoc;
-            onSnapshotFn = window.firebaseOnSnapshot;
             
-            // Get current user from localStorage (set by auth.html)
             const storedUser = JSON.parse(localStorage.getItem('knk_current_user') || '{}');
             if(!storedUser.id || storedUser.type !== 'company'){
                 window.location.href = 'auth.html';
                 return;
             }
             companyId = storedUser.id;
-            currentUser = storedUser;
             
-            // Load data
             const profile = await loadCompanyProfile();
             if(profile) companyData = profile;
-            updateProfileUI();
-            await loadJobs();
-            await loadJobForms();
-            await loadSubmissions();
-            await loadNotifications();
-            await loadVerificationStatus();
+            else {
+                companyData = {
+                    name: storedUser.name || '',
+                    email: storedUser.email || '',
+                    category: '',
+                    logo: '',
+                    website: '',
+                    ceo: '',
+                    phone: '',
+                    address: ''
+                };
+            }
+            
+            await Promise.all([
+                loadJobs(),
+                loadJobForms(),
+                loadSubmissions(),
+                loadNotifications(),
+                loadVerificationStatus()
+            ]);
             
             renderTabs();
+            updateProfileUI();
+            
             setTimeout(() => {
                 document.querySelectorAll('.sidebar-item[data-tab]').forEach(el => {
                     el.addEventListener('click', () => switchTab(el.getAttribute('data-tab')));
@@ -731,9 +826,22 @@
             // Mobile menu
             const menuIcon = document.getElementById('menuIcon');
             const sidebar = document.getElementById('sidebar');
-            menuIcon?.addEventListener('click', () => sidebar.classList.toggle('open'));
-            document.addEventListener('click', (e) => { if(window.innerWidth <= 800 && !sidebar.contains(e.target) && !menuIcon.contains(e.target)) sidebar.classList.remove('open'); });
-            document.getElementById('logoutBtn')?.addEventListener('click', () => { localStorage.removeItem('knk_current_user'); window.location.href = 'auth.html'; });
+            if(menuIcon && sidebar){
+                menuIcon.addEventListener('click', () => sidebar.classList.toggle('open'));
+                document.addEventListener('click', (e) => {
+                    if(window.innerWidth <= 800 && !sidebar.contains(e.target) && !menuIcon.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                });
+            }
+            
+            const logoutBtn = document.getElementById('logoutBtn');
+            if(logoutBtn){
+                logoutBtn.addEventListener('click', () => {
+                    localStorage.removeItem('knk_current_user');
+                    window.location.href = 'auth.html';
+                });
+            }
         }
         
         init();
