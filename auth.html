@@ -6,7 +6,37 @@
     <title>Kazi ni Kazi · Sign In or Join</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbhxmAkHJtq3Zs17P4ewHsc8wi8-0M_XI",
+            authDomain: "developers-imw.firebaseapp.com",
+            databaseURL: "https://developers-imw-default-rtdb.firebaseio.com",
+            projectId: "developers-imw",
+            storageBucket: "developers-imw.firebasestorage.app",
+            messagingSenderId: "182400720989",
+            appId: "1:182400720989:web:180f2390f7563f1ec96db4",
+            measurementId: "G-R7RDM0PMY8"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // Make them globally accessible
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+        window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.setDoc = setDoc;
+        window.doc = doc;
+        window.getDoc = getDoc;
+    </script>
     <script src="config.js"></script>
     <style>
         /* (same styles as before – keep unchanged) */
@@ -68,7 +98,6 @@
 
 <script>
     // ==================== GLOBALS ====================
-    let _supabase = null;
     let _currentView = 'signin';
     let _accountType = 'company';
     let _selectedCategory = '';
@@ -78,7 +107,16 @@
     let _companyLogoBase64 = '';
     let _workerAvatarBase64 = '';
 
-    // Categories & Skills DB (same as before)
+    // Firebase references (set after module loads)
+    let auth = null;
+    let db = null;
+    let createUserWithEmailAndPassword = null;
+    let signInWithEmailAndPassword = null;
+    let setDoc = null;
+    let doc = null;
+    let getDoc = null;
+
+    // Categories & Skills DB
     const _categories = ["Food & Hospitality","Retail & Shops","Construction","Real Estate","Technology & IT Services","Digital Agencies","Marketing & Advertising","Events & Entertainment","Transportation & Logistics","Delivery Services","Health & Medical Services","Pharmacies","Fitness & Gyms","Beauty & Personal Care","Education & Training","Financial Services","Insurance","Legal Services","Agriculture & Farming","Manufacturing","Wholesale & Distribution","Cleaning Services","Repair & Maintenance","Security Services","Printing & Publishing","Media & Broadcasting","Travel & Tourism","Non-Profit Organizations","Government & Public Services","Consulting & Business Services"];
     
     const _skillsDB = {
@@ -119,7 +157,7 @@
         } catch(e){ return null; }
     }
 
-    // ==================== FORM RENDERING (same as before) ====================
+    // ==================== FORM RENDERING ====================
     function renderSignupFields(){
         const container = document.getElementById('signupDynamicFields');
         if(!container) return;
@@ -323,7 +361,7 @@
         }
     }
 
-    // ==================== FIXED SUPABASE HANDLERS ====================
+    // ==================== FIREBASE AUTH HANDLERS ====================
     async function handleSignin(e){
         e.preventDefault();
         const btn = document.getElementById('signinBtn');
@@ -333,14 +371,20 @@
         const password = document.getElementById('siPassword')?.value;
         if(!email || !password){ showToast("Email and password required", true); setLoading(btn, false, orig); return; }
         try{
-            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
-            if(error) throw error;
-            const { data: profile, error: profErr } = await _supabase.from('profiles').select('user_type, full_name').eq('id', data.user.id).single();
-            if(profErr) throw profErr;
-            localStorage.setItem('knk_current_user', JSON.stringify({ id: data.user.id, email, type: profile.user_type, name: profile.full_name }));
-            showToast(`✅ Welcome back, ${profile.full_name}! Redirecting...`);
-            setTimeout(() => { window.location.href = profile.user_type === 'company' ? 'settingsco.html' : 'settingswo.html'; }, 1000);
-        } catch(err){ showToast(err.message, true); }
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            // Fetch user profile from Firestore
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if(!userDoc.exists()) throw new Error("Profile not found");
+            const userData = userDoc.data();
+            localStorage.setItem('knk_current_user', JSON.stringify({ id: user.uid, email, type: userData.user_type, name: userData.full_name }));
+            showToast(`✅ Welcome back, ${userData.full_name}! Redirecting...`);
+            setTimeout(() => { window.location.href = userData.user_type === 'company' ? 'settingsco.html' : 'settingswo.html'; }, 1000);
+        } catch(err){ 
+            if(err.code === 'auth/user-not-found') showToast("No account found with this email", true);
+            else if(err.code === 'auth/wrong-password') showToast("Incorrect password", true);
+            else showToast(err.message, true);
+        }
         finally{ setLoading(btn, false, orig); }
     }
 
@@ -354,7 +398,7 @@
                 const name = document.getElementById('compName')?.value.trim();
                 const email = document.getElementById('compEmail')?.value.trim();
                 const password = document.getElementById('compPass')?.value;
-                if(!name || !email || !password || _businessImages.length < 3 || !_selectedCategory) throw new Error("Missing required fields");
+                if(!name || !email || !password || _businessImages.length < 3 || !_selectedCategory) throw new Error("Missing required: name, email, password, category & 3+ images");
                 if(password.length < 6) throw new Error("Password must be at least 6 characters");
                 
                 const logoUrl = _companyLogoBase64 ? await uploadToImgBB(_companyLogoBase64) : null;
@@ -362,124 +406,88 @@
                 for(let img of _businessImages){ let url = await uploadToImgBB(img); if(url) bizUrls.push(url); }
                 if(bizUrls.length < 3) throw new Error("Failed to upload business images");
                 
-                // 1. Sign up
-                const { data: auth, error: signErr } = await _supabase.auth.signUp({ 
-                    email, 
-                    password, 
-                    options: { data: { full_name: name, user_type: 'company' } } 
-                });
-                if(signErr) throw signErr;
-                if(!auth.user) throw new Error("Signup failed – email confirmation may be required");
+                // Create user in Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const userId = userCredential.user.uid;
                 
-                // 2. If email confirmation is disabled, we have a session. Set it explicitly.
-                if(auth.session) {
-                    await _supabase.auth.setSession(auth.session.access_token, auth.session.refresh_token);
-                } else {
-                    // If email confirmation is enabled, user must confirm before we can upsert profile.
-                    // In that case, we redirect to a "check your email" page.
-                    showToast("✅ Check your email to confirm your account. After confirmation, please sign in.", false);
-                    setLoading(btn, false, orig);
-                    return;
-                }
-                
-                const userId = auth.user.id;
-                
-                // 3. Upsert profile (now authenticated)
-                const { error: profErr } = await _supabase.from('profiles').upsert({ 
-                    id: userId, 
-                    user_type: 'company', 
-                    full_name: name, 
-                    email, 
+                // Store user profile in Firestore
+                await setDoc(doc(db, "users", userId), {
+                    user_type: 'company',
+                    full_name: name,
+                    email: email,
                     avatar_url: logoUrl,
-                    updated_at: new Date()
-                }, { onConflict: 'id' });
-                if(profErr) throw profErr;
-                
-                // 4. Insert into companies
-                const { error: compErr } = await _supabase.from('companies').insert({ 
-                    user_id: userId, 
-                    company_name: name, 
-                    category: _selectedCategory, 
-                    business_images: bizUrls 
+                    company_name: name,
+                    website: document.getElementById('compWeb')?.value.trim() || '',
+                    ceo_name: document.getElementById('compCeo')?.value.trim() || '',
+                    category: _selectedCategory,
+                    phone: document.getElementById('compPhone')?.value.trim() || '',
+                    address: document.getElementById('compAddr')?.value.trim() || '',
+                    business_images: bizUrls,
+                    created_at: new Date().toISOString()
                 });
-                if(compErr) throw compErr;
                 
                 localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'company', name }));
                 showToast("🎉 Company account created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingsco.html"; }, 1000);
-                
-            } else { // Worker
+            } else {
                 const fullName = document.getElementById('workerNames')?.value.trim();
                 const email = document.getElementById('workerEmail')?.value.trim();
                 const password = document.getElementById('workerPass')?.value;
                 if(!fullName || !email || !password || !_selectedPrimarySkill) throw new Error("Full name, email, password and primary skill required");
                 if(password.length < 6) throw new Error("Password min 6 characters");
-                
                 const avatarUrl = _workerAvatarBase64 ? await uploadToImgBB(_workerAvatarBase64) : null;
                 
-                const { data: auth, error: signErr } = await _supabase.auth.signUp({ 
-                    email, 
-                    password, 
-                    options: { data: { full_name: fullName, user_type: 'worker' } } 
-                });
-                if(signErr) throw signErr;
-                if(!auth.user) throw new Error("Signup failed");
-                
-                if(auth.session) {
-                    await _supabase.auth.setSession(auth.session.access_token, auth.session.refresh_token);
-                } else {
-                    showToast("✅ Check your email to confirm your account. After confirmation, please sign in.", false);
-                    setLoading(btn, false, orig);
-                    return;
-                }
-                
-                const userId = auth.user.id;
-                
-                const { error: profErr } = await _supabase.from('profiles').upsert({ 
-                    id: userId, 
-                    user_type: 'worker', 
-                    full_name: fullName, 
-                    email, 
-                    avatar_url: avatarUrl,
-                    updated_at: new Date()
-                }, { onConflict: 'id' });
-                if(profErr) throw profErr;
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const userId = userCredential.user.uid;
                 
                 const primaryParts = _selectedPrimarySkill.split(' - ');
                 const primaryCat = primaryParts[0];
                 const primaryName = primaryParts[1] || _selectedPrimarySkill;
-                const { error: workErr } = await _supabase.from('workers').insert({ 
-                    user_id: userId, 
-                    username: document.getElementById('workerUser')?.value.trim(), 
-                    portfolio_url: document.getElementById('workerPort')?.value.trim(), 
-                    primary_skill_category: primaryCat, 
-                    primary_skill_name: primaryName, 
-                    general_skills: _generalSkills, 
-                    earning_range: document.getElementById('earningRange')?.value, 
-                    address: document.getElementById('workerAddr')?.value.trim() 
+                
+                await setDoc(doc(db, "users", userId), {
+                    user_type: 'worker',
+                    full_name: fullName,
+                    email: email,
+                    avatar_url: avatarUrl,
+                    username: document.getElementById('workerUser')?.value.trim() || '',
+                    portfolio_url: document.getElementById('workerPort')?.value.trim() || '',
+                    primary_skill_category: primaryCat,
+                    primary_skill_name: primaryName,
+                    general_skills: _generalSkills,
+                    earning_range: document.getElementById('earningRange')?.value || '',
+                    address: document.getElementById('workerAddr')?.value.trim() || '',
+                    created_at: new Date().toISOString()
                 });
-                if(workErr) throw workErr;
                 
                 localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'worker', name: fullName }));
                 showToast("✨ Freelancer profile created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingswo.html"; }, 1000);
             }
         } catch(err){ 
-            if(err.message.includes("429")){
-                showToast("Too many signup attempts. Please wait 1 minute and try again.", true);
-            } else {
-                showToast(err.message, true);
-            }
+            if(err.code === 'auth/email-already-in-use') showToast("Email already registered. Please sign in.", true);
+            else showToast(err.message, true);
         }
         finally{ setLoading(btn, false, orig); }
     }
 
     // ==================== INITIALIZATION ====================
     (async function(){
-        if(typeof initSupabase === 'function') await initSupabase();
-        _supabase = supabaseClient;
-        if(!_supabase){
-            showToast("Failed to initialize Supabase. Check config.js and network.", true);
+        // Wait for Firebase module to initialize globals
+        let attempts = 0;
+        while(!window.firebaseAuth && attempts < 50){
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+        }
+        if(window.firebaseAuth){
+            auth = window.firebaseAuth;
+            db = window.firebaseDb;
+            createUserWithEmailAndPassword = window.createUserWithEmailAndPassword;
+            signInWithEmailAndPassword = window.signInWithEmailAndPassword;
+            setDoc = window.setDoc;
+            doc = window.doc;
+            getDoc = window.getDoc;
+        } else {
+            showToast("Firebase failed to initialize. Check your connection.", true);
             return;
         }
         render();
