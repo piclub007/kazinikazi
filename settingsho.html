@@ -46,7 +46,7 @@
     <script src="config.js"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:'Inter',sans-serif;background:#f3f2ef;color:#191919;}
+        body{font-family:'Inter',sans-serif;background:#f3f2ef;color:#191919;overflow-x:hidden;}
         .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:0.8rem 1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;position:sticky;top:0;z-index:100;}
         .logo-area{display:flex;align-items:center;gap:0.75rem;}
         .logo-area img{height:40px;width:auto;}
@@ -54,9 +54,16 @@
         .nav-center{position:absolute;left:50%;transform:translateX(-50%);}
         .nav-center .home-btn{background:#0a66c2;color:white;border:none;padding:0.5rem 1.2rem;border-radius:2rem;cursor:pointer;font-weight:600;font-size:0.9rem;}
         .user-info{display:flex;align-items:center;gap:1rem;}
-        .container{max-width:1200px;margin:2rem auto;padding:0 1.5rem;}
-        .card{background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1.5rem;margin-bottom:2rem;}
-        .card h2{margin-bottom:1rem;font-size:1.3rem;}
+        .dashboard-container{display:flex;max-width:1400px;margin:2rem auto;padding:0 1.5rem;gap:2rem;}
+        .sidebar{width:280px;background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1rem;height:fit-content;position:sticky;top:90px;}
+        .sidebar-item{display:flex;align-items:center;gap:0.8rem;padding:0.8rem 1rem;border-radius:0.8rem;cursor:pointer;transition:all 0.2s;margin-bottom:0.3rem;color:#334155;}
+        .sidebar-item i{width:24px;}
+        .sidebar-item:hover{background:#eef2ff;}
+        .sidebar-item.active{background:#0a66c2;color:white;}
+        .logout-item{color:#dc2626;margin-top:1rem;border-top:1px solid #e2e8f0;padding-top:1rem;}
+        .main-content{flex:1;background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1.5rem;min-height:70vh;}
+        .tab-content{display:none;}
+        .tab-content.active{display:block;}
         .form-group{margin-bottom:1rem;}
         label{font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.3rem;color:#1e293b;}
         input,select,textarea{width:100%;padding:0.7rem;border:1px solid #cbd5e1;border-radius:0.5rem;font-family:inherit;font-size:0.9rem;}
@@ -65,11 +72,8 @@
         button.btn-primary{background:#0a66c2;color:white;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;font-weight:600;}
         button.btn-secondary{background:#e2e8f0;color:#334155;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;}
         button.btn-danger{background:#dc2626;color:white;border:none;padding:0.4rem 0.8rem;border-radius:2rem;cursor:pointer;font-size:0.75rem;}
-        .tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.5rem;}
-        .tab-btn{padding:0.5rem 1.2rem;border-radius:2rem;cursor:pointer;background:transparent;border:none;font-weight:600;transition:0.2s;}
-        .tab-btn.active{background:#0a66c2;color:white;}
         .homes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;}
-        .home-card{border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden;background:white;position:relative;}
+        .home-card{border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden;background:white;}
         .home-img{height:180px;background-size:cover;background-position:center;background-color:#eef3fc;}
         .home-info{padding:0.8rem;}
         .home-title{font-weight:700;font-size:1rem;}
@@ -79,14 +83,17 @@
         .card-actions{display:flex;gap:0.5rem;margin-top:0.5rem;justify-content:flex-end;}
         .images-preview{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;}
         .preview-img{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;}
+        .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;}
+        .stat-card{background:#f8fafc;padding:1rem;border-radius:1rem;text-align:center;}
+        .stat-number{font-size:2rem;font-weight:800;color:#0a66c2;}
         .toggle-buttons{display:flex;gap:1rem;margin-bottom:1.5rem;}
         .toggle-btn{flex:1;text-align:center;padding:0.6rem;border-radius:2rem;cursor:pointer;background:#f1f5f9;font-weight:600;}
         .toggle-btn.active{background:#0a66c2;color:white;}
-        .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;}
+        .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;font-size:0.85rem;}
         @media(max-width:800px){
-            .container{padding:0 1rem;}
+            .dashboard-container{flex-direction:column;}
+            .sidebar{width:100%;position:static;}
             .nav-center{position:relative;left:0;transform:none;}
-            .tabs{flex-wrap:wrap;}
         }
         .loader{display:inline-block;width:18px;height:18px;border:2px solid white;border-radius:50%;border-top-color:transparent;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;}
         @keyframes spin{to{transform:rotate(360deg);}}
@@ -104,7 +111,7 @@
     </div>
 </nav>
 
-<div class="container">
+<div class="container" style="max-width:1400px; margin:2rem auto; padding:0 1.5rem;">
     <!-- Auth Section (Login / Signup) -->
     <div id="authSection" class="card">
         <div class="toggle-buttons">
@@ -127,85 +134,74 @@
         </div>
     </div>
 
-    <!-- Main Dashboard (visible after login) -->
+    <!-- Dashboard Section (visible after login) -->
     <div id="dashboardSection" style="display:none;">
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
-            <button class="tab-btn" data-tab="addproperty"><i class="fas fa-plus-circle"></i> Add Property</button>
-            <button class="tab-btn" data-tab="manageproperty"><i class="fas fa-edit"></i> Manage Property</button>
-        </div>
-
-        <!-- Dashboard Tab -->
-        <div id="dashboardTab" class="tab-content active">
-            <div class="card">
-                <h2><i class="fas fa-chart-simple"></i> Dashboard Overview</h2>
-                <div class="stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:1.5rem;">
-                    <div class="stat-card" style="background:#f8fafc; padding:1rem; border-radius:1rem; text-align:center;">
-                        <div class="stat-number" id="totalProperties" style="font-size:2rem; font-weight:800; color:#0a66c2;">0</div>
-                        <div>Total Properties</div>
+        <div class="dashboard-container">
+            <div class="sidebar">
+                <div class="sidebar-item" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</div>
+                <div class="sidebar-item" data-tab="addproperty"><i class="fas fa-plus-circle"></i> Add Property</div>
+                <div class="sidebar-item" data-tab="manageproperty"><i class="fas fa-edit"></i> Manage Property</div>
+                <div class="sidebar-item logout-item" id="sidebarLogoutBtn"><i class="fas fa-sign-out-alt"></i> Log out</div>
+            </div>
+            <div class="main-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboardTab" class="tab-content active">
+                    <h2><i class="fas fa-chart-simple"></i> Dashboard Overview</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card"><div class="stat-number" id="totalProperties">0</div><div>Total Properties</div></div>
+                        <div class="stat-card"><div class="stat-number" id="totalViews">0</div><div>Total Views</div></div>
                     </div>
-                    <div class="stat-card" style="background:#f8fafc; padding:1rem; border-radius:1rem; text-align:center;">
-                        <div class="stat-number" id="totalViews" style="font-size:2rem; font-weight:800; color:#0a66c2;">0</div>
-                        <div>Total Views</div>
-                    </div>
+                    <h3>Your Properties</h3>
+                    <div id="dashboardHomesList"></div>
                 </div>
-                <h3>Your Properties</h3>
-                <div id="dashboardHomesList"></div>
-            </div>
-        </div>
 
-        <!-- Add Property Tab -->
-        <div id="addpropertyTab" class="tab-content">
-            <div class="card">
-                <h2><i class="fas fa-home"></i> Add New Property</h2>
-                <form id="addHomeForm">
-                    <div class="form-group"><label>Title *</label><input type="text" id="homeTitle" required placeholder="e.g., Modern 2BR Apartment"></div>
-                    <div class="inline-row">
-                        <div class="form-group"><label>Property Type</label><select id="homeType"><option value="Apartment">Apartment</option><option value="House">House</option><option value="Villa">Villa</option><option value="Condo">Condo</option><option value="Land">Land</option><option value="Commercial">Commercial</option></select></div>
-                        <div class="form-group"><label>Location *</label><input type="text" id="homeLocation" required placeholder="Kigali, Gasabo"></div>
-                    </div>
-                    <div class="inline-row">
-                        <div class="form-group"><label>Price *</label><input type="text" id="homePrice" required placeholder="$45/night or $500/month"></div>
-                        <div class="form-group"><label>Area (sqm)</label><input type="number" id="homeArea" placeholder="e.g., 120"></div>
-                    </div>
-                    <div class="inline-row">
-                        <div class="form-group"><label>Bedrooms</label><input type="number" id="homeBedrooms" placeholder="2"></div>
-                        <div class="form-group"><label>Bathrooms</label><input type="number" id="homeBathrooms" placeholder="1"></div>
-                    </div>
-                    <div class="form-group"><label>Description</label><textarea id="homeDesc" rows="3" placeholder="Describe the property..."></textarea></div>
-                    <div class="form-group"><label>Amenities (select multiple)</label>
-                        <div class="amenities-group" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">
-                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Parking"> Parking</label>
-                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Pool"> Pool</label>
-                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Gym"> Gym</label>
-                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="WiFi"> WiFi</label>
-                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Air Conditioning"> AC</label>
-                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Security"> Security</label>
-                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Furnished"> Furnished</label>
+                <!-- Add Property Tab -->
+                <div id="addpropertyTab" class="tab-content">
+                    <h2><i class="fas fa-home"></i> Add New Property</h2>
+                    <form id="addHomeForm">
+                        <div class="form-group"><label>Title *</label><input type="text" id="homeTitle" required placeholder="e.g., Modern 2BR Apartment"></div>
+                        <div class="inline-row">
+                            <div class="form-group"><label>Property Type</label><select id="homeType"><option value="Apartment">Apartment</option><option value="House">House</option><option value="Villa">Villa</option><option value="Condo">Condo</option><option value="Land">Land</option><option value="Commercial">Commercial</option></select></div>
+                            <div class="form-group"><label>Location *</label><input type="text" id="homeLocation" required placeholder="Kigali, Gasabo"></div>
                         </div>
-                    </div>
-                    <div class="form-group"><label>Nearby Landmarks</label><input type="text" id="homeLandmarks" placeholder="e.g., City Mall, Bus station"></div>
-                    <div class="form-group"><label>Maps Link (optional)</label><input type="url" id="homeMapsLink" placeholder="https://maps.google.com/..."></div>
-                    <div class="form-group"><label>Contact Phone (optional)</label><input type="tel" id="homePhone" placeholder="+250..."></div>
-                    
-                    <!-- Image Upload Section (required, min 3) -->
-                    <div class="form-group">
-                        <label>Property Images * (minimum 3)</label>
-                        <input type="file" id="homeImages" multiple accept="image/*">
-                        <div id="imagesPreview" class="images-preview"></div>
-                        <small style="color:#64748b;">Select at least 3 images. First image will be used as cover.</small>
-                    </div>
-                    
-                    <button type="submit" class="btn-primary">Add Property</button>
-                </form>
-            </div>
-        </div>
+                        <div class="inline-row">
+                            <div class="form-group"><label>Price *</label><input type="text" id="homePrice" required placeholder="$45/night or $500/month"></div>
+                            <div class="form-group"><label>Area (sqm)</label><input type="number" id="homeArea" placeholder="e.g., 120"></div>
+                        </div>
+                        <div class="inline-row">
+                            <div class="form-group"><label>Bedrooms</label><input type="number" id="homeBedrooms" placeholder="2"></div>
+                            <div class="form-group"><label>Bathrooms</label><input type="number" id="homeBathrooms" placeholder="1"></div>
+                        </div>
+                        <div class="form-group"><label>Description</label><textarea id="homeDesc" rows="3" placeholder="Describe the property..."></textarea></div>
+                        <div class="form-group"><label>Amenities (select multiple)</label>
+                            <div class="amenities-group" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">
+                                <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Parking"> Parking</label>
+                                <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Pool"> Pool</label>
+                                <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Gym"> Gym</label>
+                                <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="WiFi"> WiFi</label>
+                                <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Air Conditioning"> AC</label>
+                                <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Security"> Security</label>
+                                <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Furnished"> Furnished</label>
+                            </div>
+                        </div>
+                        <div class="form-group"><label>Nearby Landmarks</label><input type="text" id="homeLandmarks" placeholder="e.g., City Mall, Bus station"></div>
+                        <div class="form-group"><label>Maps Link (optional)</label><input type="url" id="homeMapsLink" placeholder="https://maps.google.com/..."></div>
+                        <div class="form-group"><label>Contact Phone (optional)</label><input type="tel" id="homePhone" placeholder="+250..."></div>
+                        <div class="form-group">
+                            <label>Property Images * (minimum 3)</label>
+                            <input type="file" id="homeImages" multiple accept="image/*">
+                            <div id="imagesPreview" class="images-preview"></div>
+                            <small style="color:#64748b;">Select at least 3 images. First image will be used as cover.</small>
+                        </div>
+                        <button type="submit" class="btn-primary">Add Property</button>
+                    </form>
+                </div>
 
-        <!-- Manage Property Tab -->
-        <div id="managepropertyTab" class="tab-content">
-            <div class="card">
-                <h2><i class="fas fa-list"></i> Manage Your Properties</h2>
-                <div id="manageHomesList"></div>
+                <!-- Manage Property Tab -->
+                <div id="managepropertyTab" class="tab-content">
+                    <h2><i class="fas fa-list"></i> Manage Your Properties</h2>
+                    <div id="manageHomesList"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -261,7 +257,6 @@
             snapshot.forEach(docSnap => {
                 allHomes.push({ id: docSnap.id, ...docSnap.data() });
             });
-            // Update dashboard and manage views
             renderDashboard();
             renderManageList();
         }
@@ -272,7 +267,6 @@
             document.getElementById('totalProperties').innerText = allHomes.length;
             let totalViews = allHomes.reduce((sum, h) => sum + (h.views || 0), 0);
             document.getElementById('totalViews').innerText = totalViews;
-            
             if(allHomes.length === 0){
                 container.innerHTML = '<p style="text-align:center; color:#5e6f8d;">No properties yet. Click "Add Property" to list your first property.</p>';
                 return;
@@ -345,7 +339,6 @@
         function editHomeById(id){
             const home = allHomes.find(h => h.id === id);
             if(!home) return;
-            // Fill the add property form with existing data for editing
             document.getElementById('homeTitle').value = home.title || '';
             document.getElementById('homeType').value = home.propertyType || 'Apartment';
             document.getElementById('homeLocation').value = home.location || '';
@@ -357,15 +350,12 @@
             document.getElementById('homeLandmarks').value = home.landmarks || '';
             document.getElementById('homeMapsLink').value = home.mapsLink || '';
             document.getElementById('homePhone').value = home.phone || '';
-            // Clear images preview and file input (user must re-upload if they want to change images)
             document.getElementById('imagesPreview').innerHTML = '';
             document.getElementById('homeImages').value = '';
-            // Check amenities checkboxes
             const amenitiesList = home.amenities || [];
             document.querySelectorAll('.amenities-group input[type="checkbox"]').forEach(cb => {
                 cb.checked = amenitiesList.includes(cb.value);
             });
-            // Change submit behavior to update
             const form = document.getElementById('addHomeForm');
             const originalSubmit = form.onsubmit;
             form.onsubmit = async (e) => {
@@ -417,15 +407,12 @@
                 form.onsubmit = originalSubmit;
                 document.getElementById('imagesPreview').innerHTML = '';
                 await loadHomes();
-                // Switch to manage tab
                 switchTab('manageproperty');
             };
-            // Switch to add property tab and scroll
             switchTab('addproperty');
             showToast('Editing property. Modify and click Add Property to update.');
         }
         
-        // Add property
         async function addHome(e){
             e.preventDefault();
             if(!currentUserId){
@@ -444,7 +431,6 @@
                 showToast('Please select at least 3 images', true);
                 return;
             }
-            // Upload images
             showToast('Uploading images...');
             const imageUrls = [];
             for(let file of imageFiles){
@@ -488,7 +474,6 @@
             switchTab('dashboard');
         }
         
-        // Preview images
         function setupImagePreview(){
             const input = document.getElementById('homeImages');
             const previewDiv = document.getElementById('imagesPreview');
@@ -585,17 +570,16 @@
             showToast('Logged out');
         }
         
-        // Tab switching
         function switchTab(tabId){
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId+'Tab').classList.add('active');
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            const activeSidebar = document.querySelector(`.sidebar-item[data-tab="${tabId}"]`);
+            if(activeSidebar) activeSidebar.classList.add('active');
             if(tabId === 'manageproperty') renderManageList();
             if(tabId === 'dashboard') renderDashboard();
         }
         
-        // Initialize
         async function init(){
             let attempts = 0;
             while(!window.realEstateAuth && attempts < 50){
@@ -638,10 +622,10 @@
             document.getElementById('doSignupBtn').addEventListener('click', handleSignup);
             document.getElementById('doLoginBtn').addEventListener('click', handleLogin);
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            document.getElementById('sidebarLogoutBtn').addEventListener('click', handleLogout);
             document.getElementById('addHomeForm').addEventListener('submit', addHome);
             setupImagePreview();
             
-            // Toggle between login/signup
             const showLoginBtn = document.getElementById('showLoginBtn');
             const showSignupBtn = document.getElementById('showSignupBtn');
             const loginFormDiv = document.getElementById('loginForm');
@@ -659,12 +643,10 @@
                 signupFormDiv.style.display = 'block';
             });
             
-            // Tab buttons
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
+            document.querySelectorAll('.sidebar-item[data-tab]').forEach(el => {
+                el.addEventListener('click', () => switchTab(el.getAttribute('data-tab')));
             });
             
-            // Home button
             document.getElementById('homeBtn').addEventListener('click', () => {
                 window.location.href = 'index.html';
             });
