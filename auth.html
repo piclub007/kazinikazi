@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
-        /* (same styles as before – keep them) */
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:#f4f2ef;color:#191919;min-height:100vh;display:flex;flex-direction:column;}
         .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:0.8rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
@@ -26,9 +25,29 @@
         .card-sub{color:#5e6f8d;border-bottom:1px solid #eef2f8;padding-bottom:0.8rem;margin-bottom:1.2rem;}
         .form-group{margin-bottom:1.2rem;}
         label{font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.3rem;}
-        input,select{width:100%;padding:0.7rem;border:1px solid #cbd5e1;border-radius:12px;}
+        input,select,textarea{width:100%;padding:0.7rem;border:1px solid #cbd5e1;border-radius:12px;font-family:inherit;}
         .submit-btn{width:100%;background:#0a66c2;color:white;padding:0.8rem;border-radius:40px;font-weight:700;cursor:pointer;border:none;}
-        .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;}
+        .submit-btn:disabled{opacity:0.6;cursor:not-allowed;}
+        .back-btn{background:transparent;border:1px solid #cbd5e1;color:#334155;padding:0.4rem 1rem;border-radius:40px;cursor:pointer;margin-bottom:1rem;}
+        .type-toggle-group{display:flex;gap:0.8rem;margin-bottom:1.5rem;}
+        .type-toggle-btn{flex:1;text-align:center;padding:0.6rem;border-radius:60px;font-weight:700;cursor:pointer;background:#f1f5f9;color:#334155;border:none;}
+        .type-toggle-btn.active{background:#0a66c2;color:white;}
+        .upload-btn{background:#f8fafc;border:1.5px dashed #0a66c2;padding:0.5rem 1rem;border-radius:40px;font-size:0.8rem;cursor:pointer;display:inline-flex;align-items:center;gap:0.5rem;}
+        .circle-preview{width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+        .rect-preview{width:80px;height:60px;object-fit:cover;border-radius:12px;border:1px solid #e2e8f0;}
+        .images-preview{display:flex;gap:0.6rem;flex-wrap:wrap;margin-top:0.5rem;}
+        .skill-card{background:#f8fafc;border-radius:12px;padding:0.8rem;margin-bottom:0.8rem;border:1px solid #e2e8f0;}
+        .skill-header{display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;}
+        .skill-header select{flex:2;min-width:120px;}
+        .remove-skill-btn{background:#fee2e2;border:none;padding:0.3rem 0.7rem;border-radius:30px;color:#dc2626;cursor:pointer;font-size:0.7rem;}
+        .add-skill-btn{background:#eef2ff;border:none;padding:0.4rem 0.8rem;border-radius:40px;font-weight:600;cursor:pointer;margin-top:0.5rem;}
+        .category-search{position:relative;}
+        .category-list{position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #cbd5e1;border-radius:16px;max-height:200px;overflow-y:auto;z-index:30;display:none;}
+        .category-list.show{display:block;}
+        .category-item{padding:0.6rem 1rem;cursor:pointer;}
+        .category-item:hover{background:#eef3fc;}
+        .selected-cat{background:#e0edff;padding:0.2rem 0.8rem;border-radius:20px;font-size:0.75rem;display:inline-block;margin-top:0.3rem;}
+        .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;font-size:0.85rem;}
         .loader{display:inline-block;width:18px;height:18px;border:2px solid white;border-radius:50%;border-top-color:transparent;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;}
         @keyframes spin{to{transform:rotate(360deg);}}
         footer{text-align:center;padding:1.5rem;font-size:0.75rem;color:#64748b;border-top:1px solid #e2e8f0;margin-top:auto;}
@@ -47,6 +66,7 @@
 <footer>© 2026 Kazi ni Kazi · created with love by Rwanda PI Club</footer>
 
 <script>
+    // ==================== GLOBALS ====================
     let _supabase = null;
     let _currentView = 'signin';
     let _accountType = 'company';
@@ -57,11 +77,25 @@
     let _companyLogoBase64 = '';
     let _workerAvatarBase64 = '';
 
-    // Categories & Skills (same as before – abbreviated for brevity)
+    // Categories & Skills DB
     const _categories = ["Food & Hospitality","Retail & Shops","Construction","Real Estate","Technology & IT Services","Digital Agencies","Marketing & Advertising","Events & Entertainment","Transportation & Logistics","Delivery Services","Health & Medical Services","Pharmacies","Fitness & Gyms","Beauty & Personal Care","Education & Training","Financial Services","Insurance","Legal Services","Agriculture & Farming","Manufacturing","Wholesale & Distribution","Cleaning Services","Repair & Maintenance","Security Services","Printing & Publishing","Media & Broadcasting","Travel & Tourism","Non-Profit Organizations","Government & Public Services","Consulting & Business Services"];
-    const _skillsDB = { "Web & Software Development":["Frontend Developer","Backend Developer"] }; // truncated for space – add full object
-    const _skillLevels = ["Beginner","Median","Intermediate","Professional"];
+    
+    const _skillsDB = {
+        "Web & Software Development":["Frontend Developer","Backend Developer","Full-Stack Developer","Mobile App Developer","WordPress Developer","Software Engineer","Game Developer"],
+        "Graphic & Visual Design":["Graphic Designer","Logo Designer","Branding Designer","Illustrator","UI/UX Designer","Motion Graphics Designer","Animator"],
+        "Writing & Content Creation":["Copywriter","Blog Writer","Technical Writer","Scriptwriter","Translator","Proofreader/Editor","Social Media Content Creator"],
+        "Digital Marketing & SEO":["Social Media Manager","SEO Specialist","Digital Advertiser","Email Marketing Specialist","Content Marketing Strategist","Influencer Marketing Manager"],
+        "Video & Audio Production":["Video Editor","Videographer","Animator","Sound Engineer","Voice-over Artist","Podcast Producer","Video Producer"],
+        "Local & Physical Services":["Electrician","Plumber","Carpenter","Painter","Mason","Mechanic","House Cleaner"],
+        "Salon, Beauty & Personal Care":["Hair Stylist","Barber","Makeup Artist","Nail Technician","Esthetician","Massage Therapist","Spa Therapist"],
+        "Event Planning & Lifestyle":["Event Planner","Wedding Planner","DJ","MC","Photographer","Decorator","Florist"],
+        "Education & Tutoring":["Private Tutor","Coding Instructor","Music Teacher","Online Course Creator","Language Teacher","Test Prep Coach"],
+        "Administrative & Business Support":["Virtual Assistant","Data Entry Clerk","Accountant","HR Assistant","Customer Support","Project Manager"],
+        "Sales & Lead Generation":["Sales Representative","Lead Generation Specialist","Market Research Analyst","Telemarketer","Business Development"]
+    };
+    const _skillLevels = ["Beginner", "Median", "Intermediate", "Professional"];
 
+    // Helper functions
     function showToast(msg, isErr=false){
         let t=document.createElement('div'); t.className='toast'; t.style.background=isErr?'#dc2626':'#1f2937'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
     }
@@ -77,17 +111,182 @@
         const formData = new FormData();
         formData.append('image', raw);
         formData.append('key', KAZI_CONFIG.imgbb.apiKey);
-        const res = await fetch(KAZI_CONFIG.imgbb.uploadUrl, { method:'POST', body:formData });
-        const data = await res.json();
-        return data.success ? data.data.url : null;
+        try{
+            const res = await fetch(KAZI_CONFIG.imgbb.uploadUrl, { method:'POST', body:formData });
+            const data = await res.json();
+            return data.success ? data.data.url : null;
+        } catch(e){ return null; }
     }
 
-    // Render UI (forms) – same as before, but ensure fields are populated
-    function render(){
-        const container=document.getElementById('mainContainer');
+    // ==================== FORM RENDERING ====================
+    function renderSignupFields(){
+        const container = document.getElementById('signupDynamicFields');
         if(!container) return;
-        if(_currentView==='signin'){
-            container.innerHTML=`
+        if(_accountType === 'company'){
+            container.innerHTML = `
+                <div class="form-group"><label>Company Logo</label><input type="file" id="compLogoFile" accept="image/*" style="display:none;"><button type="button" class="upload-btn" id="uploadLogoBtn"><i class="fas fa-cloud-upload-alt"></i> Upload Logo</button><div id="logoPreviewCircle" class="images-preview"></div></div>
+                <div class="form-group"><label>Company Name *</label><input type="text" id="compName" placeholder="Tech Corp Ltd"></div>
+                <div class="form-group"><label>Website</label><input type="url" id="compWeb" placeholder="https://example.com"></div>
+                <div class="form-group"><label>CEO / Social Name</label><input type="text" id="compCeo" placeholder="Full name"></div>
+                <div class="form-group"><label>Category *</label><div class="category-search"><input type="text" id="catSearch" placeholder="Search category..."><div id="catDropdown" class="category-list"></div></div><div id="selectedCatDisplay"></div></div>
+                <div class="form-group"><label>Phone</label><input type="tel" id="compPhone"></div>
+                <div class="form-group"><label>Address (Province, Sector, Cell)</label><input type="text" id="compAddr" placeholder="Kigali, Gasabo, Kimihurura"></div>
+                <div class="form-group"><label>Email *</label><input type="email" id="compEmail"></div>
+                <div class="form-group"><label>Business images (min 3) *</label><input type="file" id="businessImgs" multiple accept="image/*" style="display:none;"><button type="button" class="upload-btn" id="uploadBizBtn"><i class="fas fa-images"></i> Select Images</button><div id="bizImagesPreview" class="images-preview"></div></div>
+                <div class="form-group"><label>Password * (min 6 chars)</label><input type="password" id="compPass"></div>
+            `;
+            attachCompanyEvents();
+        } else {
+            container.innerHTML = `
+                <div class="form-group"><label>Profile picture</label><input type="file" id="workerPicFile" accept="image/*" style="display:none;"><button type="button" class="upload-btn" id="uploadWorkerPicBtn"><i class="fas fa-user-circle"></i> Upload photo</button><div id="workerPreviewCircle" class="images-preview"></div></div>
+                <div class="inline-row" style="display:flex; gap:0.8rem; flex-wrap:wrap;"><div class="form-group" style="flex:1"><label>Full Names *</label><input type="text" id="workerNames"></div><div class="form-group" style="flex:1"><label>Username</label><input type="text" id="workerUser"></div></div>
+                <div class="form-group"><label>Portfolio (URL)</label><input type="url" id="workerPort" placeholder="https://portfolio.com"></div>
+                <div class="form-group"><label>Primary Skill *</label><select id="priSkillCat"><option value="">-- Select Category --</option>${Object.keys(_skillsDB).map(c=>`<option value="${c}">${c}</option>`).join('')}</select><select id="priSkillSelect" disabled><option>First choose category</option></select></div>
+                <div class="form-group"><label>General Skills (with levels)</label><div id="generalSkillsList"></div><button type="button" class="add-skill-btn" id="addGeneralSkillBtn"><i class="fas fa-plus"></i> Add General Skill</button></div>
+                <div class="form-group"><label>Address (Province, Sector, Cell)</label><input type="text" id="workerAddr"></div>
+                <div class="form-group"><label>Email *</label><input type="email" id="workerEmail"></div>
+                <div class="form-group"><label>Earning range</label><select id="earningRange"><option>10$-30$</option><option>40$-80$</option><option>100$-350$</option><option>400$-700$</option><option>800$-1000$</option><option>1000$+</option></select></div>
+                <div class="form-group"><label>Password * (min 6 chars)</label><input type="password" id="workerPass"></div>
+            `;
+            attachWorkerEvents();
+            renderGeneralSkillsList();
+        }
+    }
+
+    function renderGeneralSkillsList(){
+        const container = document.getElementById('generalSkillsList');
+        if(!container) return;
+        if(_generalSkills.length === 0){
+            container.innerHTML = '<p style="font-size:0.75rem; color:#64748b; padding:0.5rem;">No general skills added yet. Click "Add General Skill"</p>';
+            return;
+        }
+        container.innerHTML = _generalSkills.map((skill, idx) => `
+            <div class="skill-card">
+                <div class="skill-header">
+                    <select data-skill-cat="${idx}" class="skill-category" style="flex:2;">
+                        <option value="">-- Category --</option>
+                        ${Object.keys(_skillsDB).map(c=>`<option value="${c}" ${skill.category===c?'selected':''}>${c}</option>`).join('')}
+                    </select>
+                    <select data-skill-name="${idx}" class="skill-name" style="flex:2;" ${!skill.category ? 'disabled' : ''}>
+                        <option value="">Select skill</option>
+                        ${skill.category && _skillsDB[skill.category] ? _skillsDB[skill.category].map(s=>`<option value="${s}" ${skill.skill===s?'selected':''}>${s}</option>`).join('') : ''}
+                    </select>
+                    <select data-skill-level="${idx}" class="skill-level" style="flex:1;">
+                        ${_skillLevels.map(l=>`<option value="${l}" ${skill.level===l?'selected':''}>${l}</option>`).join('')}
+                    </select>
+                    <button type="button" class="remove-skill-btn" data-skill-remove="${idx}"><i class="fas fa-trash"></i> Remove</button>
+                </div>
+            </div>
+        `).join('');
+        // Attach dynamic events
+        document.querySelectorAll('.skill-category').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = parseInt(sel.getAttribute('data-skill-cat'));
+                const newCat = e.target.value;
+                _generalSkills[idx].category = newCat;
+                _generalSkills[idx].skill = '';
+                renderGeneralSkillsList();
+            });
+        });
+        document.querySelectorAll('.skill-name').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = parseInt(sel.getAttribute('data-skill-name'));
+                _generalSkills[idx].skill = e.target.value;
+            });
+        });
+        document.querySelectorAll('.skill-level').forEach(sel => {
+            sel.addEventListener('change', (e) => {
+                const idx = parseInt(sel.getAttribute('data-skill-level'));
+                _generalSkills[idx].level = e.target.value;
+            });
+        });
+        document.querySelectorAll('.remove-skill-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const idx = parseInt(btn.getAttribute('data-skill-remove'));
+                _generalSkills.splice(idx, 1);
+                renderGeneralSkillsList();
+            });
+        });
+    }
+
+    function attachCompanyEvents(){
+        const logoInput = document.getElementById('compLogoFile');
+        document.getElementById('uploadLogoBtn')?.addEventListener('click', () => logoInput?.click());
+        logoInput?.addEventListener('change', async (e) => {
+            if(e.target.files[0]){ _companyLogoBase64 = await toBase64(e.target.files[0]); document.getElementById('logoPreviewCircle').innerHTML = `<img src="${_companyLogoBase64}" class="circle-preview">`; }
+        });
+        const bizInput = document.getElementById('businessImgs');
+        document.getElementById('uploadBizBtn')?.addEventListener('click', () => bizInput?.click());
+        bizInput?.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            _businessImages = [];
+            const previewDiv = document.getElementById('bizImagesPreview');
+            previewDiv.innerHTML = '';
+            for(let f of files){
+                const b64 = await toBase64(f);
+                _businessImages.push(b64);
+                let img = document.createElement('img');
+                img.src = b64;
+                img.className = 'rect-preview';
+                previewDiv.appendChild(img);
+            }
+            if(_businessImages.length < 3) showToast("Please select at least 3 business images", true);
+        });
+        const catInput = document.getElementById('catSearch');
+        const dropdown = document.getElementById('catDropdown');
+        const renderDropdown = (filter='') => {
+            const filtered = _categories.filter(c => c.toLowerCase().includes(filter.toLowerCase()));
+            dropdown.innerHTML = filtered.map(c => `<div class="category-item" data-cat="${c}">${c}</div>`).join('');
+            dropdown.classList.add('show');
+            document.querySelectorAll('.category-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    _selectedCategory = el.getAttribute('data-cat');
+                    catInput.value = _selectedCategory;
+                    document.getElementById('selectedCatDisplay').innerHTML = `<span class="selected-cat">✅ ${_selectedCategory}</span>`;
+                    dropdown.classList.remove('show');
+                });
+            });
+        };
+        catInput?.addEventListener('input', (e) => renderDropdown(e.target.value));
+        catInput?.addEventListener('focus', () => renderDropdown(catInput.value));
+        document.addEventListener('click', (e) => { if(!catInput?.contains(e.target) && dropdown && !dropdown.contains(e.target)) dropdown.classList.remove('show'); });
+    }
+
+    function attachWorkerEvents(){
+        const picInput = document.getElementById('workerPicFile');
+        document.getElementById('uploadWorkerPicBtn')?.addEventListener('click', () => picInput?.click());
+        picInput?.addEventListener('change', async (e) => {
+            if(e.target.files[0]){ _workerAvatarBase64 = await toBase64(e.target.files[0]); document.getElementById('workerPreviewCircle').innerHTML = `<img src="${_workerAvatarBase64}" class="circle-preview">`; }
+        });
+        const catSel = document.getElementById('priSkillCat');
+        const skillSel = document.getElementById('priSkillSelect');
+        catSel?.addEventListener('change', (e) => {
+            const cat = e.target.value;
+            if(cat && _skillsDB[cat]){
+                skillSel.disabled = false;
+                skillSel.innerHTML = `<option value="">Select primary skill</option>` + _skillsDB[cat].map(s => `<option value="${s}">${s}</option>`).join('');
+            } else {
+                skillSel.disabled = true;
+                skillSel.innerHTML = '<option>First choose category</option>';
+            }
+        });
+        skillSel?.addEventListener('change', (e) => { _selectedPrimarySkill = e.target.value; });
+        document.getElementById('addGeneralSkillBtn')?.addEventListener('click', () => {
+            _generalSkills.push({ category: '', skill: '', level: 'Beginner' });
+            renderGeneralSkillsList();
+        });
+    }
+
+    // ==================== UI RENDER ====================
+    function resetState(){
+        _selectedCategory = ''; _generalSkills = []; _selectedPrimarySkill = ''; _businessImages = []; _companyLogoBase64 = ''; _workerAvatarBase64 = '';
+    }
+
+    function render(){
+        const container = document.getElementById('mainContainer');
+        if(!container) return;
+        if(_currentView === 'signin'){
+            container.innerHTML = `
                 <div class="card">
                     <button class="back-btn" id="backBtn"><i class="fas fa-arrow-left"></i> Back</button>
                     <h2>Sign in</h2><div class="card-sub">Access your professional network</div>
@@ -100,10 +299,10 @@
                 </div>
             `;
             document.getElementById('signinFormElem')?.addEventListener('submit', handleSignin);
-            document.getElementById('switchInline')?.addEventListener('click',()=>{ _currentView='signup'; resetState(); render(); });
-            document.getElementById('backBtn')?.addEventListener('click',()=>window.history.back());
+            document.getElementById('switchInline')?.addEventListener('click', () => { _currentView = 'signup'; resetState(); render(); });
+            document.getElementById('backBtn')?.addEventListener('click', () => window.history.back());
         } else {
-            container.innerHTML=`
+            container.innerHTML = `
                 <div class="card">
                     <button class="back-btn" id="backBtnSignup"><i class="fas fa-arrow-left"></i> Back</button>
                     <h2>Create account</h2><div class="card-sub">Join the Kazi ni Kazi community</div>
@@ -115,114 +314,98 @@
                     <form id="signupFormElem"><button type="submit" class="submit-btn" id="signupSubmitBtn">Agree & Join →</button></form>
                 </div>
             `;
-            document.getElementById('toggleCompany')?.addEventListener('click',()=>{ _accountType='company'; resetState(); render(); });
-            document.getElementById('toggleWorker')?.addEventListener('click',()=>{ _accountType='worker'; resetState(); render(); });
-            document.getElementById('backBtnSignup')?.addEventListener('click',()=>window.history.back());
+            document.getElementById('toggleCompany')?.addEventListener('click', () => { _accountType = 'company'; resetState(); render(); });
+            document.getElementById('toggleWorker')?.addEventListener('click', () => { _accountType = 'worker'; resetState(); render(); });
+            document.getElementById('backBtnSignup')?.addEventListener('click', () => window.history.back());
             renderSignupFields();
             document.getElementById('signupFormElem')?.addEventListener('submit', handleSignup);
         }
     }
 
-    function resetState(){
-        _selectedCategory=''; _generalSkills=[]; _selectedPrimarySkill=''; _businessImages=[]; _companyLogoBase64=''; _workerAvatarBase64='';
-    }
-
-    function renderSignupFields(){
-        const container=document.getElementById('signupDynamicFields');
-        if(!container) return;
-        if(_accountType==='company'){
-            container.innerHTML=`...`; // (same as previous – include all fields)
-        } else {
-            container.innerHTML=`...`; // (same as previous – include all fields)
-        }
-        attachCompanyEvents(); attachWorkerEvents();
-    }
-    // ... (attachCompanyEvents, attachWorkerEvents, renderGeneralSkillsList – same as before, not repeated for brevity)
-
-    // ==================== SUPABASE HANDLERS ====================
+    // ==================== SUPABASE AUTH HANDLERS ====================
     async function handleSignin(e){
         e.preventDefault();
-        const btn=document.getElementById('signinBtn');
-        const orig='Sign in →';
+        const btn = document.getElementById('signinBtn');
+        const orig = 'Sign in →';
         setLoading(btn, true, orig);
-        const email=document.getElementById('siEmail')?.value.trim();
-        const pwd=document.getElementById('siPassword')?.value;
-        if(!email||!pwd){ showToast("Email and password required",true); setLoading(btn,false,orig); return; }
+        const email = document.getElementById('siEmail')?.value.trim();
+        const password = document.getElementById('siPassword')?.value;
+        if(!email || !password){ showToast("Email and password required", true); setLoading(btn, false, orig); return; }
         try{
-            const { data, error } = await _supabase.auth.signInWithPassword({ email, password:pwd });
+            const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
             if(error) throw error;
             const { data: profile, error: profErr } = await _supabase.from('profiles').select('user_type, full_name').eq('id', data.user.id).single();
             if(profErr) throw profErr;
-            localStorage.setItem('knk_current_user', JSON.stringify({ id:data.user.id, email, type:profile.user_type, name:profile.full_name }));
-            showToast(`✅ Welcome back! Redirecting...`);
-            setTimeout(()=>{ window.location.href = profile.user_type==='company' ? 'settingsco.html' : 'settingswo.html'; }, 1000);
+            localStorage.setItem('knk_current_user', JSON.stringify({ id: data.user.id, email, type: profile.user_type, name: profile.full_name }));
+            showToast(`✅ Welcome back, ${profile.full_name}! Redirecting...`);
+            setTimeout(() => { window.location.href = profile.user_type === 'company' ? 'settingsco.html' : 'settingswo.html'; }, 1000);
         } catch(err){ showToast(err.message, true); }
         finally{ setLoading(btn, false, orig); }
     }
 
     async function handleSignup(e){
         e.preventDefault();
-        const btn=document.getElementById('signupSubmitBtn');
-        const orig='Agree & Join →';
+        const btn = document.getElementById('signupSubmitBtn');
+        const orig = 'Agree & Join →';
         setLoading(btn, true, orig);
         try{
-            if(_accountType==='company'){
-                const name=document.getElementById('compName')?.value.trim();
-                const email=document.getElementById('compEmail')?.value.trim();
-                const pwd=document.getElementById('compPass')?.value;
-                if(!name||!email||!pwd||_businessImages.length<3||!_selectedCategory) throw new Error("Missing required fields");
-                if(pwd.length<6) throw new Error("Password min 6 chars");
+            if(_accountType === 'company'){
+                const name = document.getElementById('compName')?.value.trim();
+                const email = document.getElementById('compEmail')?.value.trim();
+                const password = document.getElementById('compPass')?.value;
+                if(!name || !email || !password || _businessImages.length < 3 || !_selectedCategory) throw new Error("Missing required: name, email, password, category & 3+ images");
+                if(password.length < 6) throw new Error("Password must be at least 6 characters");
                 const logoUrl = _companyLogoBase64 ? await uploadToImgBB(_companyLogoBase64) : null;
                 const bizUrls = [];
-                for(let img of _businessImages){ let url=await uploadToImgBB(img); if(url) bizUrls.push(url); }
-                if(bizUrls.length<3) throw new Error("Failed to upload business images");
-                const { data: auth, error: signErr } = await _supabase.auth.signUp({ email, password:pwd, options:{ data:{ full_name:name, user_type:'company' } } });
+                for(let img of _businessImages){ let url = await uploadToImgBB(img); if(url) bizUrls.push(url); }
+                if(bizUrls.length < 3) throw new Error("Failed to upload business images");
+                const { data: auth, error: signErr } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: name, user_type: 'company' } } });
                 if(signErr) throw signErr;
                 if(!auth.user) throw new Error("Signup failed – check email confirmation settings");
                 const userId = auth.user.id;
-                const { error: profErr } = await _supabase.from('profiles').insert({ id:userId, user_type:'company', full_name:name, email, avatar_url:logoUrl });
+                const { error: profErr } = await _supabase.from('profiles').insert({ id: userId, user_type: 'company', full_name: name, email, avatar_url: logoUrl });
                 if(profErr) throw profErr;
-                const { error: compErr } = await _supabase.from('companies').insert({ user_id:userId, company_name:name, category:_selectedCategory, business_images:bizUrls });
+                const { error: compErr } = await _supabase.from('companies').insert({ user_id: userId, company_name: name, category: _selectedCategory, business_images: bizUrls });
                 if(compErr) throw compErr;
-                localStorage.setItem('knk_current_user', JSON.stringify({ id:userId, email, type:'company', name }));
+                localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'company', name }));
                 showToast("🎉 Company account created! Redirecting...");
-                setTimeout(()=>{ window.location.href="settingsco.html"; }, 1000);
+                setTimeout(() => { window.location.href = "settingsco.html"; }, 1000);
             } else {
-                // Worker signup similar
-                const fullName=document.getElementById('workerNames')?.value.trim();
-                const email=document.getElementById('workerEmail')?.value.trim();
-                const pwd=document.getElementById('workerPass')?.value;
-                if(!fullName||!email||!pwd||!_selectedPrimarySkill) throw new Error("Full name, email, password and primary skill required");
-                if(pwd.length<6) throw new Error("Password min 6 chars");
+                const fullName = document.getElementById('workerNames')?.value.trim();
+                const email = document.getElementById('workerEmail')?.value.trim();
+                const password = document.getElementById('workerPass')?.value;
+                if(!fullName || !email || !password || !_selectedPrimarySkill) throw new Error("Full name, email, password and primary skill required");
+                if(password.length < 6) throw new Error("Password min 6 characters");
                 const avatarUrl = _workerAvatarBase64 ? await uploadToImgBB(_workerAvatarBase64) : null;
-                const { data: auth, error: signErr } = await _supabase.auth.signUp({ email, password:pwd, options:{ data:{ full_name:fullName, user_type:'worker' } } });
+                const { data: auth, error: signErr } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, user_type: 'worker' } } });
                 if(signErr) throw signErr;
                 const userId = auth.user.id;
-                await _supabase.from('profiles').insert({ id:userId, user_type:'worker', full_name:fullName, email, avatar_url:avatarUrl });
+                const { error: profErr } = await _supabase.from('profiles').insert({ id: userId, user_type: 'worker', full_name: fullName, email, avatar_url: avatarUrl });
+                if(profErr) throw profErr;
                 const primaryParts = _selectedPrimarySkill.split(' - ');
-                await _supabase.from('workers').insert({ user_id:userId, username:document.getElementById('workerUser')?.value.trim(), portfolio_url:document.getElementById('workerPort')?.value.trim(), primary_skill_category:primaryParts[0], primary_skill_name:primaryParts[1]||_selectedPrimarySkill, general_skills:_generalSkills, earning_range:document.getElementById('earningRange')?.value, address:document.getElementById('workerAddr')?.value.trim() });
-                localStorage.setItem('knk_current_user', JSON.stringify({ id:userId, email, type:'worker', name:fullName }));
+                const primaryCat = primaryParts[0];
+                const primaryName = primaryParts[1] || _selectedPrimarySkill;
+                const { error: workErr } = await _supabase.from('workers').insert({ user_id: userId, username: document.getElementById('workerUser')?.value.trim(), portfolio_url: document.getElementById('workerPort')?.value.trim(), primary_skill_category: primaryCat, primary_skill_name: primaryName, general_skills: _generalSkills, earning_range: document.getElementById('earningRange')?.value, address: document.getElementById('workerAddr')?.value.trim() });
+                if(workErr) throw workErr;
+                localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'worker', name: fullName }));
                 showToast("✨ Freelancer profile created! Redirecting...");
-                setTimeout(()=>{ window.location.href="settingswo.html"; }, 1000);
+                setTimeout(() => { window.location.href = "settingswo.html"; }, 1000);
             }
-        } catch(err){
-            showToast(err.message, true);
-        } finally {
-            setLoading(btn, false, orig);
-        }
+        } catch(err){ showToast(err.message, true); }
+        finally{ setLoading(btn, false, orig); }
     }
 
-    // Initialize Supabase from config.js
+    // ==================== INITIALIZATION ====================
     (async function(){
-        await initSupabase();
+        if(typeof initSupabase === 'function') await initSupabase();
         _supabase = supabaseClient;
         if(!_supabase){
             showToast("Failed to initialize Supabase. Check config.js and network.", true);
             return;
         }
         render();
-        document.getElementById('switchToSignInBtn')?.addEventListener('click',()=>{ _currentView='signin'; render(); });
-        document.getElementById('switchToSignUpBtn')?.addEventListener('click',()=>{ _currentView='signup'; resetState(); render(); });
+        document.getElementById('switchToSignInBtn')?.addEventListener('click', () => { _currentView = 'signin'; render(); });
+        document.getElementById('switchToSignUpBtn')?.addEventListener('click', () => { _currentView = 'signup'; resetState(); render(); });
     })();
 </script>
 </body>
