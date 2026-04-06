@@ -7,22 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f3f2ef;
-            color: #191919;
-            overflow-x: hidden;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f3f2ef; color: #191919; overflow-x: hidden; }
         /* Navbar */
         .navbar {
             background: white;
             border-bottom: 1px solid #e2e8f0;
-            padding: 0.8rem 2rem;
+            padding: 0.8rem 1.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -32,280 +23,114 @@
             top: 0;
             z-index: 100;
         }
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-        .logo-area img {
-            height: 40px;
-            width: auto;
-        }
-        .logo-text {
-            font-size: 1.4rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #0a66c2, #00a3ff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+        .logo-area { display: flex; align-items: center; gap: 0.75rem; }
+        .logo-area img { height: 40px; width: auto; }
+        .logo-text { font-size: 1.4rem; font-weight: 800; background: linear-gradient(135deg,#0a66c2,#00a3ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .user-menu { display: flex; align-items: center; gap: 1rem; }
         .avatar-sm {
-            width: 40px;
-            height: 40px;
-            background: #0a66c2;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
+            width: 40px; height: 40px; background: #0a66c2; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;
+            background-size: cover; background-position: center;
         }
+        .menu-icon { display: none; font-size: 1.5rem; cursor: pointer; color: #0a66c2; }
         /* Layout */
-        .dashboard-container {
-            display: flex;
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
-            gap: 2rem;
-        }
+        .dashboard-container { display: flex; max-width: 1400px; margin: 2rem auto; padding: 0 1.5rem; gap: 2rem; }
         .sidebar {
-            width: 280px;
-            background: white;
-            border-radius: 1rem;
-            border: 1px solid #e2e8f0;
-            padding: 1rem;
-            height: fit-content;
-            position: sticky;
-            top: 90px;
+            width: 280px; background: white; border-radius: 1rem; border: 1px solid #e2e8f0;
+            padding: 1rem; height: fit-content; position: sticky; top: 90px;
+            transition: transform 0.3s ease;
         }
         .sidebar-item {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            padding: 0.8rem 1rem;
-            border-radius: 0.8rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 0.3rem;
-            color: #334155;
+            display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1rem;
+            border-radius: 0.8rem; cursor: pointer; transition: all 0.2s; margin-bottom: 0.3rem; color: #334155;
         }
-        .sidebar-item i {
-            width: 24px;
-        }
-        .sidebar-item:hover {
-            background: #eef2ff;
-        }
-        .sidebar-item.active {
-            background: #0a66c2;
-            color: white;
-        }
-        .logout-item {
-            color: #dc2626;
-            margin-top: 1rem;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 1rem;
-        }
-        .main-content {
-            flex: 1;
-            background: white;
-            border-radius: 1rem;
-            border: 1px solid #e2e8f0;
-            padding: 1.5rem;
-            min-height: 70vh;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
+        .sidebar-item i { width: 24px; }
+        .sidebar-item:hover { background: #eef2ff; }
+        .sidebar-item.active { background: #0a66c2; color: white; }
+        .logout-item { color: #dc2626; margin-top: 1rem; border-top: 1px solid #e2e8f0; padding-top: 1rem; }
+        .main-content { flex: 1; background: white; border-radius: 1rem; border: 1px solid #e2e8f0; padding: 1.5rem; min-height: 70vh; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         /* Forms */
-        .form-group {
-            margin-bottom: 1.2rem;
+        .form-group { margin-bottom: 1.2rem; }
+        label { font-weight: 600; font-size: 0.85rem; display: block; margin-bottom: 0.3rem; color: #1e293b; }
+        input, select, textarea { width: 100%; padding: 0.7rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-family: inherit; font-size: 0.9rem; }
+        .inline-row { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; }
+        button.btn-primary { background: #0a66c2; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; cursor: pointer; font-weight: 600; }
+        button.btn-secondary { background: #e2e8f0; color: #334155; border: none; padding: 0.6rem 1.2rem; border-radius: 2rem; cursor: pointer; }
+        .job-card, .submission-card { border: 1px solid #e2e8f0; border-radius: 1rem; padding: 1rem; margin-bottom: 1rem; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
+        .badge { background: #eef2ff; padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.7rem; }
+        /* Searchable category */
+        .searchable-select { position: relative; }
+        .searchable-select input { width: 100%; }
+        .searchable-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e1;
+            border-radius: 0.5rem; max-height: 200px; overflow-y: auto; z-index: 20; display: none;
         }
-        label {
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: block;
-            margin-bottom: 0.3rem;
-            color: #1e293b;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 0.7rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 0.5rem;
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-        button.btn-primary {
-            background: #0a66c2;
-            color: white;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 2rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-        }
-        button.btn-primary:hover {
-            background: #004182;
-        }
-        button.btn-secondary {
-            background: #e2e8f0;
-            color: #334155;
-            border: none;
-            padding: 0.6rem 1.2rem;
-            border-radius: 2rem;
-            cursor: pointer;
-            font-weight: 600;
-        }
-        .job-card, .submission-card {
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-        .flex-between {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .badge {
-            background: #eef2ff;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-        }
-        /* Form Builder - Two columns */
-        .form-builder-layout {
-            display: flex;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
+        .searchable-dropdown.show { display: block; }
+        .searchable-option { padding: 0.5rem 0.8rem; cursor: pointer; }
+        .searchable-option:hover { background: #eef2ff; }
+        /* Form builder */
+        .form-builder-layout { display: flex; gap: 1.5rem; flex-wrap: wrap; }
         .components-panel {
-            width: 220px;
-            background: #f8fafc;
-            border-radius: 1rem;
-            padding: 1rem;
-            border: 1px solid #e2e8f0;
-        }
-        .components-panel h4 {
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
+            width: 240px; background: #f8fafc; border-radius: 1rem; padding: 1rem; border: 1px solid #e2e8f0;
         }
         .component-item {
-            background: white;
-            border: 1px solid #cbd5e1;
-            border-radius: 0.5rem;
-            padding: 0.5rem;
-            margin-bottom: 0.5rem;
-            cursor: grab;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: 0.1s;
-        }
-        .component-item:active {
-            cursor: grabbing;
+            background: white; border: 1px solid #cbd5e1; border-radius: 0.5rem; padding: 0.5rem;
+            margin-bottom: 0.5rem; cursor: grab; display: flex; align-items: center; gap: 0.5rem;
         }
         .form-builder-area {
-            flex: 1;
-            background: #fefefe;
-            border-radius: 1rem;
-            border: 2px dashed #cbd5e1;
-            min-height: 400px;
-            padding: 1rem;
+            flex: 1; background: #fefefe; border-radius: 1rem; border: 2px dashed #cbd5e1;
+            min-height: 400px; padding: 1rem;
         }
         .form-field {
-            background: white;
-            border: 1px solid #cbd5e1;
-            border-radius: 0.8rem;
-            padding: 0.8rem;
-            margin-bottom: 0.8rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: move;
+            background: white; border: 1px solid #cbd5e1; border-radius: 0.8rem; padding: 0.8rem;
+            margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;
         }
-        .form-field.dragging {
-            opacity: 0.4;
+        .drag-handle { cursor: grab; margin-right: 0.5rem; color: #64748b; }
+        .field-tools button { background: none; border: none; cursor: pointer; margin-left: 0.5rem; color: #64748b; }
+        .param-group { margin-top: 0.5rem; padding-left: 1rem; border-left: 2px solid #e2e8f0; }
+        .option-item { display: flex; gap: 0.5rem; margin-top: 0.3rem; align-items: center; }
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: #f8fafc; padding: 1rem; border-radius: 1rem; text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: 800; color: #0a66c2; }
+        /* Modal for preview */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;
         }
-        .drag-handle {
-            cursor: grab;
-            margin-right: 0.5rem;
-            color: #64748b;
+        .modal-content {
+            background: white; border-radius: 1rem; padding: 1.5rem; max-width: 500px; width: 90%;
+            max-height: 80vh; overflow-y: auto;
         }
-        .field-tools button {
-            background: none;
-            border: none;
-            cursor: pointer;
-            margin-left: 0.5rem;
-            color: #64748b;
-        }
-        /* Stats grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        .stat-card {
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 1rem;
-            text-align: center;
-        }
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #0a66c2;
-        }
-        /* Loading & Toast */
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid white;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 0.6s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #1f2937;
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 40px;
-            z-index: 1000;
-            font-size: 0.85rem;
-        }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #1f2937; color: white; padding: 0.6rem 1.2rem; border-radius: 40px; z-index: 1000; }
         @media (max-width: 800px) {
             .dashboard-container { flex-direction: column; }
-            .sidebar { width: 100%; position: static; }
+            .sidebar {
+                position: fixed; top: 70px; left: 0; height: calc(100% - 70px); z-index: 99;
+                transform: translateX(-100%); transition: transform 0.3s;
+            }
+            .sidebar.open { transform: translateX(0); }
+            .menu-icon { display: block; }
             .form-builder-layout { flex-direction: column; }
             .components-panel { width: 100%; }
         }
+        .loader { display: inline-block; width: 20px; height: 20px; border: 2px solid white; border-radius: 50%; border-top-color: transparent; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 <nav class="navbar">
-    <div class="logo-area"><img src="images/logo.png" alt="Kazi ni Kazi" onerror="this.src='https://placehold.co/140x40'"><span class="logo-text">Kazi ni Kazi</span></div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <i class="fas fa-bars menu-icon" id="menuIcon"></i>
+        <div class="logo-area"><img src="images/logo.png" alt="Kazi ni Kazi" onerror="this.src='https://placehold.co/140x40'"><span class="logo-text">Kazi ni Kazi</span></div>
+    </div>
     <div class="user-menu"><span id="companyNameDisplay">Company</span><div class="avatar-sm" id="profileAvatar"><i class="fas fa-building"></i></div></div>
 </nav>
 <div class="dashboard-container">
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-item" data-tab="profile"><i class="fas fa-user-edit"></i> Edit Profile</div>
         <div class="sidebar-item" data-tab="postjob"><i class="fas fa-plus-circle"></i> Post Job</div>
         <div class="sidebar-item" data-tab="analytics"><i class="fas fa-chart-line"></i> Analytics</div>
@@ -316,100 +141,7 @@
         <div class="sidebar-item" data-tab="verified"><i class="fas fa-check-circle"></i> Verified</div>
         <div class="sidebar-item logout-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Log out</div>
     </div>
-    <div class="main-content">
-        <!-- Edit Profile Tab -->
-        <div id="profileTab" class="tab-content">
-            <h2>Edit Company Profile</h2>
-            <form id="profileForm">
-                <div class="form-group"><label>Company Logo</label><input type="file" id="logoUpload" accept="image/*"><div id="logoPreview" style="margin-top:0.5rem;"></div></div>
-                <div class="form-group"><label>Company Name *</label><input type="text" id="compName" required></div>
-                <div class="form-group"><label>Website</label><input type="url" id="compWebsite"></div>
-                <div class="form-group"><label>CEO / Social Name</label><input type="text" id="compCeo"></div>
-                <div class="form-group"><label>Category</label><input type="text" id="compCategory" readonly></div>
-                <div class="form-group"><label>Phone</label><input type="tel" id="compPhone"></div>
-                <div class="form-group"><label>Address</label><input type="text" id="compAddress"></div>
-                <div class="form-group"><label>Email *</label><input type="email" id="compEmail" required></div>
-                <button type="submit" class="btn-primary">Save Changes</button>
-            </form>
-        </div>
-        
-        <!-- Post Job Tab -->
-        <div id="postjobTab" class="tab-content">
-            <h2>Post a New Job</h2>
-            <form id="jobPostForm">
-                <div class="form-group"><label>Job Title *</label><input type="text" id="jobTitle" required></div>
-                <div class="form-group"><label>Role *</label><input type="text" id="jobRole" required></div>
-                <div class="form-group"><label>Category *</label><select id="jobCategory" required></select></div>
-                <div class="form-group"><label>Main Skills (comma separated)</label><input type="text" id="jobSkills" placeholder="React, Python, UI Design"></div>
-                <div class="form-group"><label>Description *</label><textarea id="jobDesc" rows="4" required></textarea></div>
-                <div class="form-group"><label>Requirements *</label><textarea id="jobRequirements" rows="3" placeholder="List specific requirements..."></textarea></div>
-                <div class="form-group"><label>Estimated Payout</label><div style="display:flex; gap:0.5rem;"><input type="number" id="payoutAmount" placeholder="Amount"><select id="payoutPeriod"><option>per hour</option><option>per month</option><option>per year</option></select></div></div>
-                <div class="form-group"><label>Deadline (optional)</label><input type="date" id="jobDeadline"></div>
-                <button type="submit" class="btn-primary" id="postJobBtn">Post Job</button>
-            </form>
-        </div>
-        
-        <!-- Analytics Tab -->
-        <div id="analyticsTab" class="tab-content">
-            <h2>Analytics</h2>
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-number" id="profileViews">0</div><div>Profile Views</div></div>
-                <div class="stat-card"><div class="stat-number" id="jobClicks">0</div><div>Job Clicks</div></div>
-                <div class="stat-card"><div class="stat-number" id="totalInteractions">0</div><div>Interactions</div></div>
-                <div class="stat-card"><div class="stat-number" id="applicationsReceived">0</div><div>Applications</div></div>
-            </div>
-            <canvas id="analyticsChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas>
-        </div>
-        
-        <!-- Form Builder Tab -->
-        <div id="formbuilderTab" class="tab-content">
-            <h2>Application Form Builder</h2>
-            <p>Select a job to attach this form:</p>
-            <select id="formJobSelect" style="margin-bottom:1rem;"></select>
-            <div class="form-builder-layout">
-                <div class="components-panel">
-                    <h4><i class="fas fa-puzzle-piece"></i> Drag components</h4>
-                    <div class="component-item" draggable="true" data-type="text"><i class="fas fa-font"></i> Text Input</div>
-                    <div class="component-item" draggable="true" data-type="textarea"><i class="fas fa-align-left"></i> Textarea</div>
-                    <div class="component-item" draggable="true" data-type="number"><i class="fas fa-calculator"></i> Number</div>
-                    <div class="component-item" draggable="true" data-type="date"><i class="fas fa-calendar"></i> Date</div>
-                    <div class="component-item" draggable="true" data-type="dropdown"><i class="fas fa-caret-down"></i> Dropdown</div>
-                    <div class="component-item" draggable="true" data-type="checkbox"><i class="fas fa-check-square"></i> Checkbox</div>
-                    <div class="component-item" draggable="true" data-type="file"><i class="fas fa-image"></i> File Upload</div>
-                </div>
-                <div class="form-builder-area" id="formFieldsContainer"></div>
-            </div>
-            <button id="saveFormBtn" class="btn-primary" style="margin-top:1rem;">Save Form for this Job</button>
-        </div>
-        
-        <!-- Submissions Tab -->
-        <div id="submissionsTab" class="tab-content">
-            <h2>Job Submissions</h2>
-            <select id="submissionJobSelect"></select>
-            <div id="submissionsList"></div>
-        </div>
-        
-        <!-- Notifications Tab -->
-        <div id="notificationsTab" class="tab-content">
-            <h2>Notifications</h2>
-            <div id="notificationsList"></div>
-            <button id="requestPushBtn" class="btn-secondary">Enable Push Notifications</button>
-        </div>
-        
-        <!-- Manage Jobs Tab -->
-        <div id="managejobsTab" class="tab-content">
-            <h2>Manage Jobs</h2>
-            <div id="manageJobsList"></div>
-        </div>
-        
-        <!-- Verified Tab -->
-        <div id="verifiedTab" class="tab-content">
-            <h2>Verification Badge</h2>
-            <div id="verificationStatus"></div>
-            <button id="requestVerifyBtn" class="btn-primary">Request Verification</button>
-            <p style="margin-top:1rem; font-size:0.8rem;">Verification fee may apply. Admin will review your request.</p>
-        </div>
-    </div>
+    <div class="main-content" id="mainContent"></div>
 </div>
 
 <script>
@@ -421,28 +153,19 @@
             return;
         }
         
-        // ---------- CONSTANTS: COMPANY CATEGORIES (from auth) ----------
+        // ---------- CONSTANTS ----------
         const COMPANY_CATEGORIES = [
-            "Food & Hospitality", "Retail & Shops", "Construction", "Real Estate", "Technology & IT Services",
-            "Digital Agencies", "Marketing & Advertising", "Events & Entertainment", "Transportation & Logistics",
-            "Delivery Services", "Health & Medical Services", "Pharmacies", "Fitness & Gyms", "Beauty & Personal Care",
-            "Education & Training", "Financial Services", "Insurance", "Legal Services", "Agriculture & Farming",
-            "Manufacturing", "Wholesale & Distribution", "Cleaning Services", "Repair & Maintenance", "Security Services",
-            "Printing & Publishing", "Media & Broadcasting", "Travel & Tourism", "Non-Profit Organizations",
-            "Government & Public Services", "Consulting & Business Services"
+            "Food & Hospitality","Retail & Shops","Construction","Real Estate","Technology & IT Services",
+            "Digital Agencies","Marketing & Advertising","Events & Entertainment","Transportation & Logistics",
+            "Delivery Services","Health & Medical Services","Pharmacies","Fitness & Gyms","Beauty & Personal Care",
+            "Education & Training","Financial Services","Insurance","Legal Services","Agriculture & Farming",
+            "Manufacturing","Wholesale & Distribution","Cleaning Services","Repair & Maintenance","Security Services",
+            "Printing & Publishing","Media & Broadcasting","Travel & Tourism","Non-Profit Organizations",
+            "Government & Public Services","Consulting & Business Services"
         ];
         
         // ---------- DATA STORES ----------
-        let companyData = {
-            name: currentUser.name || '',
-            email: currentUser.email,
-            category: '',
-            logo: '',
-            website: '',
-            ceo: '',
-            phone: '',
-            address: ''
-        };
+        let companyData = { name: currentUser.name || '', email: currentUser.email, category: '', logo: '', website: '', ceo: '', phone: '', address: '' };
         let jobs = [];
         let jobForms = {};
         let submissions = [];
@@ -472,338 +195,309 @@
             localStorage.setItem('knk_company_verified', isVerified);
         }
         
-        // Helper: showToast
-        function showToast(msg, isErr = false) {
-            let t = document.createElement('div');
-            t.className = 'toast';
-            t.style.background = isErr ? '#dc2626' : '#1f2937';
-            t.innerText = msg;
-            document.body.appendChild(t);
-            setTimeout(() => t.remove(), 3000);
+        function showToast(msg, isErr=false) {
+            let t = document.createElement('div'); t.className = 'toast'; t.style.background = isErr ? '#dc2626' : '#1f2937';
+            t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 3000);
         }
         
-        // Populate category dropdown in post job
-        function populateCategorySelect() {
-            const select = document.getElementById('jobCategory');
-            if(select) {
-                select.innerHTML = '<option value="">-- Select Category --</option>' + COMPANY_CATEGORIES.map(c => `<option value="${c}">${c}</option>`).join('');
-            }
+        // Helper: escapeHtml
+        function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
+        
+        // ---------- RENDER DYNAMIC TABS (to avoid duplicate DOM) ----------
+        const main = document.getElementById('mainContent');
+        function renderTabs() {
+            main.innerHTML = `
+                <div id="profileTab" class="tab-content"><h2>Edit Company Profile</h2><form id="profileForm"><div class="form-group"><label>Company Logo</label><input type="file" id="logoUpload" accept="image/*"><div id="logoPreview" style="margin-top:0.5rem;"></div></div><div class="form-group"><label>Company Name *</label><input type="text" id="compName" required></div><div class="form-group"><label>Website</label><input type="url" id="compWebsite"></div><div class="form-group"><label>CEO / Social Name</label><input type="text" id="compCeo"></div><div class="form-group"><label>Category</label><input type="text" id="compCategory" readonly></div><div class="form-group"><label>Phone</label><input type="tel" id="compPhone"></div><div class="form-group"><label>Address</label><input type="text" id="compAddress"></div><div class="form-group"><label>Email *</label><input type="email" id="compEmail" required></div><button type="submit" class="btn-primary">Save Changes</button></form></div>
+                <div id="postjobTab" class="tab-content"><h2>Post a New Job</h2><form id="jobPostForm"><div class="form-group"><label>Job Title *</label><input type="text" id="jobTitle" required></div><div class="form-group"><label>Role *</label><input type="text" id="jobRole" required></div><div class="form-group"><label>Category *</label><div class="searchable-select"><input type="text" id="categorySearchInput" placeholder="Search category..."><div id="categoryDropdown" class="searchable-dropdown"></div></div><input type="hidden" id="jobCategory" required></div><div class="form-group"><label>Main Skills (comma separated)</label><input type="text" id="jobSkills" placeholder="React, Python, UI Design"></div><div class="form-group"><label>Description *</label><textarea id="jobDesc" rows="4" required></textarea></div><div class="form-group"><label>Requirements *</label><textarea id="jobRequirements" rows="3" placeholder="List specific requirements..."></textarea></div><div class="form-group"><label>Estimated Payout</label><div class="inline-row"><input type="number" id="payoutAmount" placeholder="Amount" style="flex:2;"><select id="payoutCurrency" style="flex:1;"><option value="USD">USD</option><option value="EUR">EUR</option><option value="RWF">RWF</option></select><select id="payoutPeriod" style="flex:1;"><option>per hour</option><option>per month</option><option>per year</option></select></div></div><div class="form-group"><label>Deadline (optional)</label><input type="date" id="jobDeadline"></div><button type="submit" class="btn-primary" id="postJobBtn">Post Job</button></form></div>
+                <div id="analyticsTab" class="tab-content"><h2>Analytics</h2><div class="stats-grid"><div class="stat-card"><div class="stat-number" id="profileViews">0</div><div>Profile Views</div></div><div class="stat-card"><div class="stat-number" id="totalJobsPosted">0</div><div>Jobs Posted</div></div><div class="stat-card"><div class="stat-number" id="totalSubmissions">0</div><div>Applications Received</div></div><div class="stat-card"><div class="stat-number" id="activeJobs">0</div><div>Active Jobs</div></div></div><canvas id="analyticsChart" width="400" height="200" style="max-width:100%; height:auto;"></canvas></div>
+                <div id="formbuilderTab" class="tab-content"><h2>Application Form Builder</h2><p>Select a job to attach this form:</p><select id="formJobSelect" style="margin-bottom:1rem;"></select><div class="form-builder-layout"><div class="components-panel"><h4><i class="fas fa-puzzle-piece"></i> Drag components</h4><div class="component-item" draggable="true" data-type="text"><i class="fas fa-font"></i> Text Input</div><div class="component-item" draggable="true" data-type="textarea"><i class="fas fa-align-left"></i> Textarea</div><div class="component-item" draggable="true" data-type="number"><i class="fas fa-calculator"></i> Number</div><div class="component-item" draggable="true" data-type="date"><i class="fas fa-calendar"></i> Date</div><div class="component-item" draggable="true" data-type="dropdown"><i class="fas fa-caret-down"></i> Dropdown</div><div class="component-item" draggable="true" data-type="checkbox"><i class="fas fa-check-square"></i> Checkbox</div><div class="component-item" draggable="true" data-type="file"><i class="fas fa-image"></i> File Upload</div></div><div class="form-builder-area" id="formFieldsContainer"></div></div><div style="margin-top:1rem; display:flex; gap:1rem;"><button id="saveFormBtn" class="btn-primary">Save Form</button><button id="previewFormBtn" class="btn-secondary">Preview Form</button></div></div>
+                <div id="submissionsTab" class="tab-content"><h2>Job Submissions</h2><select id="submissionJobSelect"></select><div id="submissionsList"></div></div>
+                <div id="notificationsTab" class="tab-content"><h2>Notifications</h2><div id="notificationsList"></div><button id="requestPushBtn" class="btn-secondary">Enable Push Notifications</button></div>
+                <div id="managejobsTab" class="tab-content"><h2>Manage Jobs</h2><div id="manageJobsList"></div></div>
+                <div id="verifiedTab" class="tab-content"><h2>Verification Badge</h2><div id="verificationStatus"></div><button id="requestVerifyBtn" class="btn-primary">Request Verification</button><p style="margin-top:1rem; font-size:0.8rem;">Verification fee may apply. Admin will review your request.</p></div>
+            `;
+            attachTabEvents();
         }
         
-        // Profile
-        function updateProfileForm() {
-            document.getElementById('compName').value = companyData.name || '';
-            document.getElementById('compWebsite').value = companyData.website || '';
-            document.getElementById('compCeo').value = companyData.ceo || '';
-            document.getElementById('compCategory').value = companyData.category || '';
-            document.getElementById('compPhone').value = companyData.phone || '';
-            document.getElementById('compAddress').value = companyData.address || '';
-            document.getElementById('compEmail').value = companyData.email || '';
-            if(companyData.logo) document.getElementById('logoPreview').innerHTML = `<img src="${companyData.logo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`;
-            document.getElementById('companyNameDisplay').innerText = companyData.name || 'Company';
-        }
-        document.getElementById('profileForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            companyData.name = document.getElementById('compName').value.trim();
-            companyData.website = document.getElementById('compWebsite').value.trim();
-            companyData.ceo = document.getElementById('compCeo').value.trim();
-            companyData.phone = document.getElementById('compPhone').value.trim();
-            companyData.address = document.getElementById('compAddress').value.trim();
-            companyData.email = document.getElementById('compEmail').value.trim();
-            saveAll();
-            updateProfileForm();
-            showToast("Profile updated");
-        });
-        document.getElementById('logoUpload')?.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if(file) {
-                const reader = new FileReader();
-                reader.onload = (ev) => { companyData.logo = ev.target.result; saveAll(); updateProfileForm(); showToast("Logo uploaded"); };
-                reader.readAsDataURL(file);
+        function attachTabEvents() {
+            // Profile
+            document.getElementById('profileForm')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                companyData.name = document.getElementById('compName').value.trim();
+                companyData.website = document.getElementById('compWebsite').value.trim();
+                companyData.ceo = document.getElementById('compCeo').value.trim();
+                companyData.phone = document.getElementById('compPhone').value.trim();
+                companyData.address = document.getElementById('compAddress').value.trim();
+                companyData.email = document.getElementById('compEmail').value.trim();
+                saveAll(); updateProfileUI(); showToast("Profile updated");
+            });
+            document.getElementById('logoUpload')?.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if(file) { const reader = new FileReader(); reader.onload = (ev) => { companyData.logo = ev.target.result; saveAll(); updateProfileUI(); showToast("Logo uploaded"); }; reader.readAsDataURL(file); }
+            });
+            // Searchable category
+            const catInput = document.getElementById('categorySearchInput');
+            const catDropdown = document.getElementById('categoryDropdown');
+            const catHidden = document.getElementById('jobCategory');
+            function filterCategories(filter) {
+                const filtered = COMPANY_CATEGORIES.filter(c => c.toLowerCase().includes(filter.toLowerCase()));
+                catDropdown.innerHTML = filtered.map(c => `<div class="searchable-option" data-cat="${c}">${c}</div>`).join('');
+                catDropdown.classList.add('show');
+                document.querySelectorAll('.searchable-option').forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        catInput.value = opt.getAttribute('data-cat');
+                        catHidden.value = opt.getAttribute('data-cat');
+                        catDropdown.classList.remove('show');
+                    });
+                });
             }
-        });
-        
-        // Post Job with Requirements
-        document.getElementById('jobPostForm')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const title = document.getElementById('jobTitle').value.trim();
-            const role = document.getElementById('jobRole').value.trim();
-            const category = document.getElementById('jobCategory').value;
-            const skills = document.getElementById('jobSkills').value.split(',').map(s=>s.trim()).filter(s=>s);
-            const description = document.getElementById('jobDesc').value.trim();
-            const requirements = document.getElementById('jobRequirements').value.trim();
-            const payoutAmount = document.getElementById('payoutAmount').value;
-            const payoutPeriod = document.getElementById('payoutPeriod').value;
-            const deadline = document.getElementById('jobDeadline').value;
-            if(!title || !role || !category || !description) {
-                showToast("Please fill required fields (Title, Role, Category, Description)", true);
-                return;
-            }
-            const newJob = {
-                id: Date.now(),
-                title, role, category, skills, description, requirements,
-                payout: { amount: payoutAmount, period: payoutPeriod },
-                deadline,
-                createdAt: new Date().toISOString(),
-                status: 'open'
+            catInput?.addEventListener('input', (e) => filterCategories(e.target.value));
+            catInput?.addEventListener('focus', () => filterCategories(catInput.value));
+            document.addEventListener('click', (e) => { if(!catInput?.contains(e.target) && catDropdown && !catDropdown.contains(e.target)) catDropdown.classList.remove('show'); });
+            // Post Job
+            document.getElementById('jobPostForm')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = document.getElementById('jobTitle').value.trim();
+                const role = document.getElementById('jobRole').value.trim();
+                const category = catHidden.value;
+                const skills = document.getElementById('jobSkills').value.split(',').map(s=>s.trim()).filter(s=>s);
+                const description = document.getElementById('jobDesc').value.trim();
+                const requirements = document.getElementById('jobRequirements').value.trim();
+                const amount = document.getElementById('payoutAmount').value;
+                const currency = document.getElementById('payoutCurrency').value;
+                const period = document.getElementById('payoutPeriod').value;
+                const deadline = document.getElementById('jobDeadline').value;
+                if(!title || !role || !category || !description) { showToast("Required fields missing", true); return; }
+                const newJob = { id: Date.now(), title, role, category, skills, description, requirements, payout: { amount, currency, period }, deadline, createdAt: new Date().toISOString(), status: 'open' };
+                jobs.unshift(newJob); saveAll(); showToast("Job posted!"); document.getElementById('jobPostForm').reset(); renderManageJobs(); updateJobSelects(); updateAnalytics();
+            });
+            // Manage Jobs
+            renderManageJobs = () => {
+                const container = document.getElementById('manageJobsList');
+                if(!container) return;
+                if(jobs.length === 0) { container.innerHTML = '<p>No jobs posted yet.</p>'; return; }
+                container.innerHTML = jobs.map(job => `<div class="job-card"><div class="flex-between"><h3>${escapeHtml(job.title)}</h3><span class="badge">${job.status}</span></div><p>${escapeHtml(job.description.substring(0,100))}...</p><p><strong>💰 ${job.payout.amount} ${job.payout.currency} ${job.payout.period}</strong></p><div><button class="btn-secondary" onclick="window.editJob(${job.id})">Edit</button><button class="btn-secondary" style="background:#fee2e2;" onclick="window.deleteJob(${job.id})">Delete</button></div></div>`).join('');
             };
-            jobs.unshift(newJob);
-            saveAll();
-            showToast("Job posted successfully!");
-            document.getElementById('jobPostForm').reset();
-            renderManageJobs();
-            updateJobSelects();
-        });
-        
-        // Manage Jobs
-        function renderManageJobs() {
-            const container = document.getElementById('manageJobsList');
-            if(!container) return;
-            if(jobs.length === 0) { container.innerHTML = '<p>No jobs posted yet. Click "Post Job" to start.</p>'; return; }
-            container.innerHTML = jobs.map(job => `
-                <div class="job-card">
-                    <div class="flex-between"><h3>${escapeHtml(job.title)}</h3><span class="badge">${job.status}</span></div>
-                    <p>${escapeHtml(job.description.substring(0,100))}...</p>
-                    <p><strong>💰 ${job.payout.amount || '?'} ${job.payout.period}</strong></p>
-                    <div style="margin-top:0.5rem;">
-                        <button class="btn-secondary" onclick="window.editJob(${job.id})">Edit</button>
-                        <button class="btn-secondary" style="background:#fee2e2;" onclick="window.deleteJob(${job.id})">Delete</button>
+            window.editJob = (id) => {
+                const job = jobs.find(j => j.id === id);
+                if(job) {
+                    document.getElementById('jobTitle').value = job.title;
+                    document.getElementById('jobRole').value = job.role;
+                    document.getElementById('categorySearchInput').value = job.category;
+                    document.getElementById('jobCategory').value = job.category;
+                    document.getElementById('jobSkills').value = job.skills.join(', ');
+                    document.getElementById('jobDesc').value = job.description;
+                    document.getElementById('jobRequirements').value = job.requirements || '';
+                    document.getElementById('payoutAmount').value = job.payout.amount;
+                    document.getElementById('payoutCurrency').value = job.payout.currency;
+                    document.getElementById('payoutPeriod').value = job.payout.period;
+                    document.getElementById('jobDeadline').value = job.deadline || '';
+                    window.deleteJob(id);
+                    switchTab('postjob');
+                }
+            };
+            window.deleteJob = (id) => { jobs = jobs.filter(j => j.id !== id); delete jobForms[id]; saveAll(); renderManageJobs(); updateJobSelects(); showToast("Job deleted"); updateAnalytics(); };
+            
+            // Form Builder
+            let currentFormFields = [];
+            let selectedFormJobId = null;
+            const formContainer = document.getElementById('formFieldsContainer');
+            function renderFormBuilder() {
+                if(!formContainer) return;
+                formContainer.innerHTML = currentFormFields.map((field, idx) => `
+                    <div class="form-field" data-idx="${idx}">
+                        <div style="display:flex; align-items:center; gap:0.5rem; flex:1; flex-wrap:wrap;">
+                            <i class="fas fa-grip-vertical drag-handle"></i>
+                            <span><strong>${field.type}</strong>: ${escapeHtml(field.label)}</span>
+                            <button class="btn-secondary" style="padding:0.2rem 0.5rem;" onclick="window.editFieldParams(${idx})"><i class="fas fa-cog"></i> Params</button>
+                        </div>
+                        <div class="field-tools"><button onclick="window.removeField(${idx})"><i class="fas fa-trash"></i></button></div>
                     </div>
-                </div>
-            `).join('');
-        }
-        window.editJob = (id) => {
-            const job = jobs.find(j => j.id === id);
-            if(job) {
-                document.getElementById('jobTitle').value = job.title;
-                document.getElementById('jobRole').value = job.role;
-                document.getElementById('jobCategory').value = job.category;
-                document.getElementById('jobSkills').value = job.skills.join(', ');
-                document.getElementById('jobDesc').value = job.description;
-                document.getElementById('jobRequirements').value = job.requirements || '';
-                document.getElementById('payoutAmount').value = job.payout.amount;
-                document.getElementById('payoutPeriod').value = job.payout.period;
-                document.getElementById('jobDeadline').value = job.deadline || '';
-                window.deleteJob(id);
-                showToast("Edit mode: modify and repost");
-                switchTab('postjob');
+                `).join('');
+                attachDragSort();
             }
-        };
-        window.deleteJob = (id) => {
-            jobs = jobs.filter(j => j.id !== id);
-            delete jobForms[id];
-            saveAll();
-            renderManageJobs();
-            updateJobSelects();
-            showToast("Job deleted");
-        };
-        
-        // Form Builder - Drag & Drop
-        let currentFormFields = [];
-        let selectedFormJobId = null;
-        const formContainer = document.getElementById('formFieldsContainer');
-        function renderFormBuilder() {
-            if(!formContainer) return;
-            formContainer.innerHTML = currentFormFields.map((field, idx) => `
-                <div class="form-field" data-idx="${idx}">
-                    <div style="display:flex; align-items:center; gap:0.5rem; flex:1;">
-                        <i class="fas fa-grip-vertical drag-handle" style="cursor:grab;"></i>
-                        <span><strong>${field.type}</strong>: ${escapeHtml(field.label || 'Untitled')}</span>
-                    </div>
-                    <div class="field-tools">
-                        <button onclick="window.editField(${idx})"><i class="fas fa-edit"></i></button>
-                        <button onclick="window.removeField(${idx})"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-            `).join('');
-            // Re-attach drag handle for reordering (simplified)
-            attachDragSort();
-        }
-        window.editField = (idx) => {
-            const newLabel = prompt("Field label:", currentFormFields[idx].label);
-            if(newLabel) currentFormFields[idx].label = newLabel;
-            renderFormBuilder();
-        };
-        window.removeField = (idx) => {
-            currentFormFields.splice(idx, 1);
-            renderFormBuilder();
-        };
-        function attachDragSort() {
-            // Simple reorder using drag and drop (native HTML5)
-            const items = document.querySelectorAll('.form-field');
-            items.forEach(item => {
-                item.setAttribute('draggable', 'true');
-                item.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', item.getAttribute('data-idx'));
-                    item.classList.add('dragging');
-                });
-                item.addEventListener('dragend', (e) => { item.classList.remove('dragging'); });
-                item.addEventListener('dragover', (e) => e.preventDefault());
-                item.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-                    const toIdx = parseInt(item.getAttribute('data-idx'));
-                    if (!isNaN(fromIdx) && !isNaN(toIdx) && fromIdx !== toIdx) {
-                        const moved = currentFormFields.splice(fromIdx, 1)[0];
-                        currentFormFields.splice(toIdx, 0, moved);
-                        renderFormBuilder();
-                    }
-                });
-            });
-        }
-        // Drag from components panel
-        document.querySelectorAll('.component-item').forEach(comp => {
-            comp.addEventListener('dragstart', (e) => {
-                e.dataTransfer.setData('text/plain', comp.getAttribute('data-type'));
-            });
-        });
-        formContainer?.addEventListener('dragover', (e) => e.preventDefault());
-        formContainer?.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const type = e.dataTransfer.getData('text/plain');
-            if(type) {
-                currentFormFields.push({ type, label: `New ${type}`, options: type==='dropdown' ? ['Option 1'] : [] });
-                renderFormBuilder();
-            }
-        });
-        
-        function updateJobSelects() {
-            const selectForm = document.getElementById('formJobSelect');
-            const selectSub = document.getElementById('submissionJobSelect');
-            const options = jobs.map(j => `<option value="${j.id}">${escapeHtml(j.title)}</option>`).join('');
-            if(selectForm) {
-                selectForm.innerHTML = '<option value="">-- Select Job --</option>' + options;
-                selectForm.onchange = () => {
-                    selectedFormJobId = selectForm.value ? parseInt(selectForm.value) : null;
-                    if(selectedFormJobId && jobForms[selectedFormJobId]) currentFormFields = jobForms[selectedFormJobId];
-                    else currentFormFields = [];
-                    renderFormBuilder();
+            window.editFieldParams = (idx) => {
+                const field = currentFormFields[idx];
+                let html = `<div><h3>Edit ${field.type}</h3><label>Label:</label><input type="text" id="paramLabel" value="${field.label}"><br>`;
+                if(field.type === 'text') html += `<label>Min length:</label><input type="number" id="paramMin" value="${field.min||''}"><label>Max length:</label><input type="number" id="paramMax" value="${field.max||''}">`;
+                else if(field.type === 'textarea') html += `<label>Max length:</label><input type="number" id="paramMax" value="${field.max||''}">`;
+                else if(field.type === 'number') html += `<label>Min:</label><input type="number" id="paramMin" value="${field.min||''}"><label>Max:</label><input type="number" id="paramMax" value="${field.max||''}">`;
+                else if(field.type === 'dropdown' || field.type === 'checkbox') {
+                    html += `<label>Options (one per line):</label><textarea id="paramOptions" rows="3">${(field.options || []).join('\n')}</textarea>`;
+                } else if(field.type === 'file') html += `<label>Max files:</label><input type="number" id="paramMaxFiles" value="${field.maxFiles||1}">`;
+                html += `<div style="margin-top:1rem;"><button id="saveParamsBtn" class="btn-primary">Save</button></div></div>`;
+                const modal = document.createElement('div'); modal.className = 'modal'; modal.style.display = 'flex';
+                modal.innerHTML = `<div class="modal-content">${html}</div>`;
+                document.body.appendChild(modal);
+                document.getElementById('saveParamsBtn').onclick = () => {
+                    field.label = document.getElementById('paramLabel').value;
+                    if(field.type === 'text' || field.type === 'number') { field.min = document.getElementById('paramMin')?.value; field.max = document.getElementById('paramMax')?.value; }
+                    if(field.type === 'textarea') field.max = document.getElementById('paramMax')?.value;
+                    if(field.type === 'dropdown' || field.type === 'checkbox') field.options = document.getElementById('paramOptions').value.split('\n').filter(o=>o.trim());
+                    if(field.type === 'file') field.maxFiles = document.getElementById('paramMaxFiles')?.value;
+                    modal.remove(); renderFormBuilder();
                 };
+                modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+            };
+            window.removeField = (idx) => { currentFormFields.splice(idx,1); renderFormBuilder(); };
+            function attachDragSort() {
+                const items = document.querySelectorAll('.form-field');
+                items.forEach(item => {
+                    item.setAttribute('draggable', 'true');
+                    item.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', item.getAttribute('data-idx')); item.classList.add('dragging'); });
+                    item.addEventListener('dragend', (e) => { item.classList.remove('dragging'); });
+                    item.addEventListener('dragover', (e) => e.preventDefault());
+                    item.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                        const toIdx = parseInt(item.getAttribute('data-idx'));
+                        if (!isNaN(fromIdx) && !isNaN(toIdx) && fromIdx !== toIdx) {
+                            const moved = currentFormFields.splice(fromIdx, 1)[0];
+                            currentFormFields.splice(toIdx, 0, moved);
+                            renderFormBuilder();
+                        }
+                    });
+                });
             }
-            if(selectSub) {
-                selectSub.innerHTML = '<option value="">All Jobs</option>' + options;
-                selectSub.onchange = () => renderSubmissions();
+            document.querySelectorAll('.component-item').forEach(comp => {
+                comp.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', comp.getAttribute('data-type')));
+            });
+            formContainer?.addEventListener('dragover', (e) => e.preventDefault());
+            formContainer?.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const type = e.dataTransfer.getData('text/plain');
+                if(type) currentFormFields.push({ type, label: `New ${type}`, options: [], min: '', max: '', maxFiles: 1 });
+                renderFormBuilder();
+            });
+            document.getElementById('saveFormBtn')?.addEventListener('click', () => {
+                if(!selectedFormJobId) { showToast("Select a job first", true); return; }
+                jobForms[selectedFormJobId] = currentFormFields; saveAll(); showToast("Form saved");
+            });
+            document.getElementById('previewFormBtn')?.addEventListener('click', () => {
+                let previewHtml = '<h3>Form Preview</h3>';
+                currentFormFields.forEach(f => {
+                    previewHtml += `<div><label>${escapeHtml(f.label)}</label>`;
+                    if(f.type === 'text') previewHtml += `<input type="text" placeholder="${f.label}">`;
+                    else if(f.type === 'textarea') previewHtml += `<textarea rows="2"></textarea>`;
+                    else if(f.type === 'number') previewHtml += `<input type="number">`;
+                    else if(f.type === 'date') previewHtml += `<input type="date">`;
+                    else if(f.type === 'dropdown') previewHtml += `<select>${(f.options||[]).map(o=>`<option>${o}</option>`).join('')}</select>`;
+                    else if(f.type === 'checkbox') previewHtml += `<div>${(f.options||[]).map(o=>`<label><input type="checkbox"> ${o}</label>`).join('')}</div>`;
+                    else if(f.type === 'file') previewHtml += `<input type="file" multiple>`;
+                    previewHtml += `</div><br>`;
+                });
+                const modal = document.createElement('div'); modal.className = 'modal'; modal.style.display = 'flex';
+                modal.innerHTML = `<div class="modal-content">${previewHtml}<button class="btn-secondary" onclick="this.closest('.modal').remove()">Close</button></div>`;
+                document.body.appendChild(modal);
+                modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+            });
+            
+            function updateJobSelects() {
+                const selectForm = document.getElementById('formJobSelect');
+                const selectSub = document.getElementById('submissionJobSelect');
+                const options = jobs.map(j => `<option value="${j.id}">${escapeHtml(j.title)}</option>`).join('');
+                if(selectForm) { selectForm.innerHTML = '<option value="">-- Select Job --</option>' + options; selectForm.onchange = () => { selectedFormJobId = selectForm.value ? parseInt(selectForm.value) : null; if(selectedFormJobId && jobForms[selectedFormJobId]) currentFormFields = jobForms[selectedFormJobId]; else currentFormFields = []; renderFormBuilder(); }; }
+                if(selectSub) { selectSub.innerHTML = '<option value="">All Jobs</option>' + options; selectSub.onchange = () => renderSubmissions(); }
             }
-        }
-        document.getElementById('saveFormBtn')?.addEventListener('click', () => {
-            if(!selectedFormJobId) { showToast("Select a job first", true); return; }
-            jobForms[selectedFormJobId] = currentFormFields;
-            saveAll();
-            showToast("Form saved for this job");
-        });
-        
-        // Submissions
-        function renderSubmissions() {
-            const jobId = document.getElementById('submissionJobSelect').value;
-            let filtered = submissions;
-            if(jobId) filtered = submissions.filter(s => s.jobId == jobId);
-            const container = document.getElementById('submissionsList');
-            if(filtered.length === 0) { container.innerHTML = '<p>No submissions yet.</p>'; return; }
-            container.innerHTML = filtered.map(sub => `
-                <div class="submission-card">
-                    <div class="flex-between"><strong>Job: ${escapeHtml(sub.jobTitle)}</strong><span>${new Date(sub.date).toLocaleString()}</span></div>
-                    <pre style="background:#f1f5f9;padding:0.5rem;border-radius:0.5rem;">${JSON.stringify(sub.data, null, 2)}</pre>
-                </div>
-            `).join('');
-        }
-        
-        // Notifications
-        function renderNotifications() {
-            const container = document.getElementById('notificationsList');
-            if(notifications.length === 0) { container.innerHTML = '<p>No notifications yet.</p>'; return; }
-            container.innerHTML = notifications.map(n => `<div class="job-card">${escapeHtml(n.message)}<br><small>${new Date(n.date).toLocaleString()}</small></div>`).join('');
-        }
-        document.getElementById('requestPushBtn')?.addEventListener('click', () => {
-            if("Notification" in window && Notification.permission !== "granted") {
-                Notification.requestPermission().then(perm => { if(perm === 'granted') showToast("Notifications enabled"); });
-            } else if(Notification.permission === "granted") {
-                new Notification("Kazi ni Kazi", { body: "You will receive updates here" });
-            } else { showToast("Push not supported or denied", true); }
-        });
-        function addNotification(msg) { notifications.unshift({ message: msg, date: new Date() }); saveAll(); renderNotifications(); }
-        
-        // Analytics (mock but functional)
-        function updateAnalytics() {
-            document.getElementById('profileViews').innerText = Math.floor(Math.random() * 300 + 50);
-            document.getElementById('jobClicks').innerText = jobs.reduce((a, j) => a + Math.floor(Math.random() * 30), 0);
-            document.getElementById('totalInteractions').innerText = submissions.length * 2 + 20;
-            document.getElementById('applicationsReceived').innerText = submissions.length;
-            const ctx = document.getElementById('analyticsChart')?.getContext('2d');
-            if(ctx) {
-                ctx.clearRect(0, 0, 400, 200);
-                ctx.fillStyle = '#0a66c2';
-                for(let i=0; i<7; i++) ctx.fillRect(i*50+20, 180 - Math.random()*120, 30, Math.random()*100);
+            // Submissions
+            function renderSubmissions() {
+                const jobId = document.getElementById('submissionJobSelect').value;
+                let filtered = submissions;
+                if(jobId) filtered = submissions.filter(s => s.jobId == jobId);
+                const container = document.getElementById('submissionsList');
+                if(filtered.length === 0) { container.innerHTML = '<p>No submissions yet.</p>'; return; }
+                container.innerHTML = filtered.map(sub => `<div class="submission-card"><div class="flex-between"><strong>Job: ${escapeHtml(sub.jobTitle)}</strong><span>${new Date(sub.date).toLocaleString()}</span></div><pre style="background:#f1f5f9;padding:0.5rem;border-radius:0.5rem;">${JSON.stringify(sub.data, null, 2)}</pre></div>`).join('');
             }
-        }
-        
-        // Verified
-        function updateVerifiedUI() {
-            const statusDiv = document.getElementById('verificationStatus');
-            if(isVerified) {
-                statusDiv.innerHTML = '<div style="color:#059669;"><i class="fas fa-check-circle"></i> Your company is verified! Blue badge active.</div>';
-                document.getElementById('requestVerifyBtn').disabled = true;
-            } else if(verificationRequested) {
-                statusDiv.innerHTML = '<div style="color:#eab308;">Verification request pending admin approval.</div>';
-                document.getElementById('requestVerifyBtn').disabled = true;
-            } else {
-                statusDiv.innerHTML = '<div>No verification badge. Request one below.</div>';
-                document.getElementById('requestVerifyBtn').disabled = false;
+            // Notifications
+            function renderNotifications() {
+                const container = document.getElementById('notificationsList');
+                if(notifications.length === 0) { container.innerHTML = '<p>No notifications yet.</p>'; return; }
+                container.innerHTML = notifications.map(n => `<div class="job-card">${escapeHtml(n.message)}<br><small>${new Date(n.date).toLocaleString()}</small></div>`).join('');
             }
-        }
-        document.getElementById('requestVerifyBtn')?.addEventListener('click', () => {
-            verificationRequested = true;
-            saveAll();
+            document.getElementById('requestPushBtn')?.addEventListener('click', () => { if("Notification" in window) Notification.requestPermission(); else showToast("Not supported", true); });
+            // Analytics (real data)
+            function updateAnalytics() {
+                document.getElementById('profileViews').innerText = Math.floor(Math.random() * 200 + 50); // placeholder, would come from backend
+                document.getElementById('totalJobsPosted').innerText = jobs.length;
+                document.getElementById('totalSubmissions').innerText = submissions.length;
+                document.getElementById('activeJobs').innerText = jobs.filter(j => j.status === 'open').length;
+                const ctx = document.getElementById('analyticsChart')?.getContext('2d');
+                if(ctx) { ctx.clearRect(0,0,400,200); ctx.fillStyle = '#0a66c2'; for(let i=0;i<7;i++) ctx.fillRect(i*50+20, 180 - (submissions.length*10 || 20), 30, (submissions.length*10 || 20)); }
+            }
+            // Verified
+            function updateVerifiedUI() {
+                const statusDiv = document.getElementById('verificationStatus');
+                if(isVerified) { statusDiv.innerHTML = '<div style="color:#059669;"><i class="fas fa-check-circle"></i> Verified!</div>'; document.getElementById('requestVerifyBtn').disabled = true; }
+                else if(verificationRequested) { statusDiv.innerHTML = '<div style="color:#eab308;">Pending approval</div>'; document.getElementById('requestVerifyBtn').disabled = true; }
+                else { statusDiv.innerHTML = '<div>Not verified</div>'; document.getElementById('requestVerifyBtn').disabled = false; }
+            }
+            document.getElementById('requestVerifyBtn')?.addEventListener('click', () => { verificationRequested = true; saveAll(); updateVerifiedUI(); addNotification("Verification requested"); showToast("Request sent"); });
+            function addNotification(msg) { notifications.unshift({ message: msg, date: new Date() }); saveAll(); renderNotifications(); }
+            
+            // Profile UI update
+            function updateProfileUI() {
+                document.getElementById('compName').value = companyData.name;
+                document.getElementById('compWebsite').value = companyData.website;
+                document.getElementById('compCeo').value = companyData.ceo;
+                document.getElementById('compCategory').value = companyData.category;
+                document.getElementById('compPhone').value = companyData.phone;
+                document.getElementById('compAddress').value = companyData.address;
+                document.getElementById('compEmail').value = companyData.email;
+                if(companyData.logo) document.getElementById('logoPreview').innerHTML = `<img src="${companyData.logo}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;">`;
+                document.getElementById('companyNameDisplay').innerText = companyData.name;
+                if(companyData.logo) document.getElementById('profileAvatar').style.backgroundImage = `url(${companyData.logo})`;
+            }
+            updateProfileUI();
+            renderManageJobs();
+            updateJobSelects();
+            renderSubmissions();
+            renderNotifications();
+            updateAnalytics();
             updateVerifiedUI();
-            addNotification("Verification request submitted. Admin will review within 48h.");
-            showToast("Request sent!");
-        });
-        
-        // Logout
-        document.getElementById('logoutBtn')?.addEventListener('click', () => {
-            localStorage.removeItem('knk_current_user');
-            window.location.href = 'auth.html';
-        });
+            if(notifications.length === 0) addNotification("Welcome to your dashboard!");
+        }
         
         // Tab switching
-        const tabs = ['profile','postjob','analytics','formbuilder','submissions','notifications','managejobs','verified'];
+        let currentTab = 'profile';
         function switchTab(tabId) {
-            tabs.forEach(t => { document.getElementById(t+'Tab').classList.remove('active'); });
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId+'Tab').classList.add('active');
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
             document.querySelector(`.sidebar-item[data-tab="${tabId}"]`).classList.add('active');
-            if(tabId === 'managejobs') renderManageJobs();
-            if(tabId === 'submissions') renderSubmissions();
+            currentTab = tabId;
+            if(tabId === 'managejobs') window.renderManageJobs?.();
+            if(tabId === 'submissions') document.getElementById('submissionJobSelect')?.dispatchEvent(new Event('change'));
             if(tabId === 'analytics') updateAnalytics();
             if(tabId === 'notifications') renderNotifications();
             if(tabId === 'formbuilder') updateJobSelects();
             if(tabId === 'verified') updateVerifiedUI();
         }
-        document.querySelectorAll('.sidebar-item[data-tab]').forEach(el => {
-            el.addEventListener('click', () => switchTab(el.getAttribute('data-tab')));
-        });
         
-        // Helper
-        function escapeHtml(str) {
-            if(!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if(m === '&') return '&amp;';
-                if(m === '<') return '&lt;';
-                if(m === '>') return '&gt;';
-                return m;
+        // Global functions
+        window.renderManageJobs = () => {};
+        window.updateJobSelects = () => {};
+        window.renderSubmissions = () => {};
+        window.renderNotifications = () => {};
+        window.updateAnalytics = () => {};
+        window.updateVerifiedUI = () => {};
+        
+        // Mobile menu
+        const menuIcon = document.getElementById('menuIcon');
+        const sidebar = document.getElementById('sidebar');
+        menuIcon?.addEventListener('click', () => sidebar.classList.toggle('open'));
+        document.addEventListener('click', (e) => { if(window.innerWidth <= 800 && !sidebar.contains(e.target) && !menuIcon.contains(e.target)) sidebar.classList.remove('open'); });
+        
+        // Logout
+        document.getElementById('logoutBtn')?.addEventListener('click', () => { localStorage.removeItem('knk_current_user'); window.location.href = 'auth.html'; });
+        
+        // Initial render
+        renderTabs();
+        setTimeout(() => {
+            document.querySelectorAll('.sidebar-item[data-tab]').forEach(el => {
+                el.addEventListener('click', () => switchTab(el.getAttribute('data-tab')));
             });
-        }
-        
-        // Initialization
-        populateCategorySelect();
-        updateProfileForm();
-        renderManageJobs();
-        updateJobSelects();
-        renderSubmissions();
-        renderNotifications();
-        updateAnalytics();
-        updateVerifiedUI();
-        switchTab('profile');
-        if(notifications.length === 0) addNotification("Welcome to your company dashboard! Complete your profile.");
+            switchTab('profile');
+        }, 50);
     })();
 </script>
 </body>
