@@ -3,9 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Kazi · services, homes, jobs</title>
+    <title>Kazi ni Kazi · Services, Homes, Jobs</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbhxmAkHJtq3Zs17P4ewHsc8wi8-0M_XI",
+            authDomain: "developers-imw.firebaseapp.com",
+            databaseURL: "https://developers-imw-default-rtdb.firebaseio.com",
+            projectId: "developers-imw",
+            storageBucket: "developers-imw.firebasestorage.app",
+            messagingSenderId: "182400720989",
+            appId: "1:182400720989:web:180f2390f7563f1ec96db4",
+            measurementId: "G-R7RDM0PMY8"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        window.firebaseDb = db;
+        window.firebaseCollection = collection;
+        window.firebaseGetDocs = getDocs;
+        window.firebaseQuery = query;
+        window.firebaseWhere = where;
+        window.firebaseDoc = doc;
+        window.firebaseGetDoc = getDoc;
+    </script>
+    <script src="config.js"></script>
     <style>
         * {
             margin: 0;
@@ -21,7 +49,6 @@
             line-height: 1.45;
         }
 
-        /* ultra minimal navbar */
         .navbar {
             background: #ffffff;
             border-bottom: 1px solid #eaeef2;
@@ -63,7 +90,6 @@
             border-color: #b9c2cc;
         }
 
-        /* news ticker - minimal */
         .news-ticker {
             background: #f0f2f4;
             padding: 0.45rem 1rem;
@@ -92,7 +118,6 @@
             animation-play-state: paused;
         }
 
-        /* container */
         .container {
             max-width: 1320px;
             margin: 1.2rem auto;
@@ -102,14 +127,12 @@
             gap: 1.8rem;
         }
 
-        /* main card - sharp edges, minimal */
         .main-content {
             background: #ffffff;
             border: 1px solid #eef2f5;
             overflow: hidden;
         }
 
-        /* tabs - clean */
         .tabs {
             display: flex;
             border-bottom: 1px solid #eef2f5;
@@ -139,7 +162,6 @@
             border-bottom: 2px solid #0a66c2;
         }
 
-        /* filter area - minimal with dropdowns */
         .filter-area {
             padding: 0.9rem 1rem;
             background: #ffffff;
@@ -201,13 +223,11 @@
             background: #fefefe;
         }
 
-        /* content area */
         .content-area {
             padding: 1.2rem;
             min-height: 460px;
         }
 
-        /* horizontal scroll cards - minimal */
         .horizontal-scroll {
             display: flex;
             overflow-x: auto;
@@ -240,6 +260,12 @@
             color: white;
             font-size: 1.2rem;
             font-weight: 500;
+            overflow: hidden;
+        }
+        .person-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .person-name {
             font-weight: 600;
@@ -254,7 +280,6 @@
             color: #f5b042;
         }
 
-        /* jobs minimal */
         .job-item {
             border: 1px solid #edf1f5;
             padding: 0.8rem;
@@ -279,7 +304,6 @@
             flex-wrap: wrap;
         }
 
-        /* homes grid */
         .homes-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -305,7 +329,6 @@
             font-size: 0.7rem;
         }
 
-        /* SIDEBAR - sharp edges, no "admin", just spotlight */
         .sidebar-right {
             background: #ffffff;
             border: 1px solid #eef2f5;
@@ -324,7 +347,6 @@
             border-left: 2px solid #0a66c2;
             padding-left: 8px;
         }
-        /* whole boxes with sharp edges, no inner radius */
         .spotlight-card {
             background: #fafbfc;
             border: 1px solid #eef2f5;
@@ -406,6 +428,12 @@
             letter-spacing: -0.1px;
             color: #2c3e4e;
         }
+        .loader {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.7rem;
+            color: #8e9eae;
+        }
         @media (max-width: 880px) {
             .container { grid-template-columns: 1fr; padding: 0 1rem; }
             .navbar { padding: 0.6rem 1rem; }
@@ -414,7 +442,6 @@
 </head>
 <body>
 
-<!-- minimal news ticker -->
 <div class="news-ticker">
     <div class="ticker-content">
         <i class="fas fa-circle-info"></i> 2026 updates · verified freelancers · new remote jobs added daily
@@ -440,11 +467,10 @@
         </div>
         <div id="filterContainer" class="filter-area"></div>
         <div id="contentArea" class="content-area">
-            <div class="empty-state">loading...</div>
+            <div class="loader">loading real data...</div>
         </div>
     </div>
 
-    <!-- SIDEBAR: sharp edges, renamed to Spotlight & Recommendations -->
     <div class="sidebar-right">
         <div class="spotlight-header">📌 spotlight</div>
         <div class="spotlight-card">
@@ -475,38 +501,30 @@
 </div>
 
 <script>
-    // mobile redirect
+    // ---------- MOBILE REDIRECT ----------
     if (window.innerWidth <= 768) {
         window.location.href = "indexp.html";
     }
 
+    // ---------- GLOBALS ----------
     let currentTab = "services";
-    
-    // minimal filter state
+    let freelancersList = [];
+    let homesList = [];
+    let jobsList = [];
+
+    // Filter state
     let serviceFilters = { category: "", location: "", rating: "", search: "" };
     let homeFilters = { location: "", guests: "", type: "", search: "" };
     let jobFilters = { category: "", salary: "", jobType: "", search: "" };
 
-    // demo data — clean, small
-    let freelancers = [
-        { id: 1, full_name: "Aisha Makena", primary_skill: "UI/UX", category: "design", rating: 4.9, location: "Nairobi", reviews: 124 },
-        { id: 2, full_name: "Brian Otieno", primary_skill: "Full Stack", category: "development", rating: 4.8, location: "Mombasa", reviews: 87 },
-        { id: 3, full_name: "Cynthia Wanjiku", primary_skill: "Marketing", category: "marketing", rating: 4.7, location: "Kisumu", reviews: 56 },
-        { id: 4, full_name: "David Kimathi", primary_skill: "Photography", category: "media", rating: 4.95, location: "Nairobi", reviews: 203 },
-        { id: 5, full_name: "Edna Achieng", primary_skill: "Content", category: "writing", rating: 4.6, location: "Eldoret", reviews: 42 }
-    ];
-
-    let homes = [
-        { id: 101, title: "Modern 3BR Villa", location: "Nairobi, Runda", price: "$350/night", guests: 6, type: "villa", image_url: "https://placehold.co/500x300/eef2f6/8b9ab0?text=villa" },
-        { id: 102, title: "Beachfront Studio", location: "Mombasa, Nyali", price: "$120/night", guests: 2, type: "studio", image_url: "https://placehold.co/500x300/eef2f6/8b9ab0?text=studio" },
-        { id: 103, title: "Executive Suite", location: "Nairobi, Westlands", price: "$210/night", guests: 4, type: "suite", image_url: "https://placehold.co/500x300/eef2f6/8b9ab0?text=suite" }
-    ];
-
-    let jobs = [
-        { id: 201, title: "Frontend Developer", company: "TechHub", budget: "$4k - $6k", location: "Remote", category: "tech", salary: 5000, type: "remote", description: "React / Next.js" },
-        { id: 202, title: "Marketing Lead", company: "SokoInsight", budget: "$2.5k", location: "Nairobi", category: "marketing", salary: 2500, type: "remote", description: "digital strategy" },
-        { id: 203, title: "Property Manager", company: "Prime Homes", budget: "$1.8k", location: "Mombasa", category: "real estate", salary: 1800, type: "onsite", description: "guest relations" }
-    ];
+    // Firebase helpers
+    let db = null;
+    let collectionFn = null;
+    let getDocsFn = null;
+    let queryFn = null;
+    let whereFn = null;
+    let docFn = null;
+    let getDocFn = null;
 
     function showToast(msg) {
         let t = document.createElement('div');
@@ -516,17 +534,203 @@
         setTimeout(() => t.remove(), 2000);
     }
 
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, function(m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;'); }
     function renderStars(rating) { const full = Math.floor(rating); return '★'.repeat(full) + '☆'.repeat(5-full); }
 
-    // ----- FILTER UI with dropdowns & search (minimal) -----
+    // ---------- DATA LOADING ----------
+    async function loadFreelancers() {
+        try {
+            // Fetch all users with type 'worker'
+            const usersRef = collectionFn(db, "users");
+            const q = queryFn(usersRef, whereFn("user_type", "==", "worker"));
+            const snapshot = await getDocsFn(q);
+            const freelancers = [];
+            for (const userDoc of snapshot.docs) {
+                const userData = userDoc.data();
+                const userId = userDoc.id;
+                // Fetch corresponding worker document
+                const workersRef = collectionFn(db, "workers");
+                const workerQuery = queryFn(workersRef, whereFn("user_id", "==", userId));
+                const workerSnap = await getDocsFn(workerQuery);
+                let workerData = {};
+                if (!workerSnap.empty) workerData = workerSnap.docs[0].data();
+                
+                freelancers.push({
+                    id: userId,
+                    full_name: userData.full_name || "Anonymous",
+                    avatar: userData.avatar_url || "",
+                    primary_skill: workerData.primary_skill_name || "Freelancer",
+                    category: workerData.primary_skill_category || "general",
+                    // Reputation points: calculate rating (1-5) based on points (0-500 -> 0-5)
+                    rating: workerData.reputation_points ? Math.min(5, workerData.reputation_points / 100) : 3.5,
+                    location: userData.address || "Remote",
+                    reviews: Math.floor(Math.random() * 100) // placeholder, could be from reviews collection
+                });
+            }
+            return freelancers;
+        } catch (err) {
+            console.error("Error loading freelancers:", err);
+            return [];
+        }
+    }
+
+    async function loadHomes() {
+        try {
+            const homesRef = collectionFn(db, "realEstateHomes");
+            const snapshot = await getDocsFn(homesRef);
+            const homes = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                homes.push({
+                    id: doc.id,
+                    title: data.title || "Property",
+                    location: data.location || "Unknown",
+                    price: data.price || "$0",
+                    guests: data.bedrooms ? parseInt(data.bedrooms) * 2 : 4,
+                    type: (data.propertyType || "house").toLowerCase(),
+                    image_url: (data.images && data.images.length) ? data.images[0] : "https://placehold.co/400x200?text=No+Image"
+                });
+            });
+            return homes;
+        } catch (err) {
+            console.error("Error loading homes:", err);
+            return [];
+        }
+    }
+
+    async function loadJobs() {
+        try {
+            const jobsRef = collectionFn(db, "jobs");
+            const snapshot = await getDocsFn(jobsRef);
+            const jobs = [];
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                jobs.push({
+                    id: doc.id,
+                    title: data.title || "Position",
+                    company: data.company_name || (data.companyId ? "Company" : "Anonymous"),
+                    budget: data.payout ? `${data.payout.amount} ${data.payout.currency}` : "Negotiable",
+                    location: data.location || "Remote",
+                    category: (data.category || "general").toLowerCase(),
+                    salary: data.payout ? parseInt(data.payout.amount) : 0,
+                    type: data.remote ? "remote" : "onsite",
+                    description: data.description || ""
+                });
+            });
+            return jobs;
+        } catch (err) {
+            console.error("Error loading jobs:", err);
+            return [];
+        }
+    }
+
+    // ---------- RENDER FUNCTIONS ----------
+    function renderServices() {
+        let filtered = [...freelancersList];
+        if (serviceFilters.category) filtered = filtered.filter(f => f.category.toLowerCase().includes(serviceFilters.category));
+        if (serviceFilters.location) filtered = filtered.filter(f => f.location.toLowerCase().includes(serviceFilters.location));
+        if (serviceFilters.rating) filtered = filtered.filter(f => f.rating >= parseFloat(serviceFilters.rating));
+        if (serviceFilters.search) filtered = filtered.filter(f => f.full_name.toLowerCase().includes(serviceFilters.search) || f.primary_skill.toLowerCase().includes(serviceFilters.search));
+        
+        const container = document.getElementById('contentArea');
+        if (!filtered.length) { container.innerHTML = '<div class="empty-state">no freelancers match your criteria</div>'; return; }
+        
+        let html = `<div class="section-title">freelancers · top rated</div><div class="horizontal-scroll">`;
+        filtered.forEach(f => {
+            const initial = f.full_name.charAt(0).toUpperCase();
+            html += `<div class="person-card" data-id="${f.id}">
+                        <div class="person-avatar">${f.avatar ? `<img src="${f.avatar}" alt="avatar">` : initial}</div>
+                        <div class="person-name">${escapeHtml(f.full_name)}</div>
+                        <div class="person-title">${escapeHtml(f.primary_skill)}</div>
+                        <div class="rating">${renderStars(f.rating)} ${f.rating.toFixed(1)}</div>
+                        <div style="font-size:0.6rem;">📍 ${escapeHtml(f.location)}</div>
+                    </div>`;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+        document.querySelectorAll('.person-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const id = card.getAttribute('data-id');
+                localStorage.setItem('knk_selected_freelancer', id);
+                window.location.href = 'profile.html';
+            });
+        });
+    }
+
+    function renderHomes() {
+        let filtered = [...homesList];
+        if (homeFilters.location) filtered = filtered.filter(h => h.location.toLowerCase().includes(homeFilters.location));
+        if (homeFilters.guests) { let max = parseInt(homeFilters.guests); filtered = filtered.filter(h => h.guests <= max); }
+        if (homeFilters.type) filtered = filtered.filter(h => h.type === homeFilters.type);
+        if (homeFilters.search) filtered = filtered.filter(h => h.title.toLowerCase().includes(homeFilters.search) || h.location.toLowerCase().includes(homeFilters.search));
+        
+        const container = document.getElementById('contentArea');
+        if (!filtered.length) { container.innerHTML = '<div class="empty-state">no homes match your filters</div>'; return; }
+        
+        let html = `<div class="homes-grid">`;
+        filtered.forEach(h => {
+            html += `<div class="home-card" data-id="${h.id}">
+                        <div class="home-img" style="background-image:url('${h.image_url}'); background-size:cover;"></div>
+                        <div class="home-info">
+                            <strong>${escapeHtml(h.title)}</strong>
+                            <div>📍 ${escapeHtml(h.location)}</div>
+                            <div>💰 ${h.price} · ${h.guests} guests</div>
+                        </div>
+                    </div>`;
+        });
+        html += `</div>`;
+        container.innerHTML = html;
+        document.querySelectorAll('.home-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const id = card.getAttribute('data-id');
+                localStorage.setItem('knk_selected_home', id);
+                window.location.href = 'home.html';
+            });
+        });
+    }
+
+    function renderJobs() {
+        let filtered = [...jobsList];
+        if (jobFilters.category) filtered = filtered.filter(j => j.category.includes(jobFilters.category));
+        if (jobFilters.salary) { let min = parseInt(jobFilters.salary); filtered = filtered.filter(j => j.salary >= min); }
+        if (jobFilters.jobType) filtered = filtered.filter(j => j.type === jobFilters.jobType);
+        if (jobFilters.search) filtered = filtered.filter(j => j.title.toLowerCase().includes(jobFilters.search) || j.company.toLowerCase().includes(jobFilters.search));
+        
+        const container = document.getElementById('contentArea');
+        if (!filtered.length) { container.innerHTML = '<div class="empty-state">no jobs match your criteria</div>'; return; }
+        
+        let html = '';
+        filtered.forEach(j => {
+            html += `<div class="job-item" data-id="${j.id}">
+                        <div class="job-title">${escapeHtml(j.title)}</div>
+                        <div class="job-meta">
+                            <span>🏢 ${j.company}</span>
+                            <span>💰 ${j.budget}</span>
+                            <span>📍 ${j.location}</span>
+                            <span>⚡ ${j.type === 'remote' ? 'remote' : 'onsite'}</span>
+                        </div>
+                        <div style="font-size:0.65rem;">${escapeHtml(j.description.substring(0, 80))}${j.description.length > 80 ? '…' : ''}</div>
+                    </div>`;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll('.job-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const id = item.getAttribute('data-id');
+                localStorage.setItem('knk_selected_job', id);
+                window.location.href = 'job.html';
+            });
+        });
+    }
+
+    // ---------- FILTER UI BUILDER ----------
     function buildFilterUI() {
         const fd = document.getElementById('filterContainer');
+        if (!fd) return;
         if (currentTab === "services") {
             fd.innerHTML = `
                 <div class="search-bar-full"><input type="text" id="svcSearch" placeholder="search by name, skill..." value="${serviceFilters.search}"></div>
-                <div class="filter-group"><i class="fas fa-tag"></i><select id="catSelect"><option value="">category</option><option value="design">design</option><option value="development">dev</option><option value="marketing">marketing</option><option value="media">media</option></select></div>
-                <div class="filter-group"><i class="fas fa-map-pin"></i><select id="locSelect"><option value="">location</option><option value="nairobi">nairobi</option><option value="mombasa">mombasa</option><option value="kisumu">kisumu</option></select></div>
+                <div class="filter-group"><i class="fas fa-tag"></i><select id="catSelect"><option value="">category</option><option value="development">development</option><option value="design">design</option><option value="marketing">marketing</option><option value="writing">writing</option></select></div>
+                <div class="filter-group"><i class="fas fa-map-pin"></i><select id="locSelect"><option value="">location</option><option value="nairobi">nairobi</option><option value="mombasa">mombasa</option><option value="kigali">kigali</option></select></div>
                 <div class="filter-group"><i class="fas fa-star"></i><select id="ratingSelect"><option value="">rating</option><option value="4.5">4.5+</option><option value="4">4.0+</option></select></div>
                 <button id="applySvc">apply</button>
             `;
@@ -541,9 +745,9 @@
         else if (currentTab === "homes") {
             fd.innerHTML = `
                 <div class="search-bar-full"><input type="text" id="homeSearch" placeholder="search homes..." value="${homeFilters.search}"></div>
-                <div class="filter-group"><i class="fas fa-location-dot"></i><select id="homeLoc"><option value="">city</option><option value="nairobi">nairobi</option><option value="mombasa">mombasa</option></select></div>
+                <div class="filter-group"><i class="fas fa-location-dot"></i><select id="homeLoc"><option value="">city</option><option value="nairobi">nairobi</option><option value="mombasa">mombasa</option><option value="kigali">kigali</option></select></div>
                 <div class="filter-group"><i class="fas fa-users"></i><select id="guestSelect"><option value="">guests</option><option value="2">1-2</option><option value="4">3-4</option><option value="6">5+</option></select></div>
-                <div class="filter-group"><i class="fas fa-building"></i><select id="typeSelect"><option value="">type</option><option value="villa">villa</option><option value="studio">studio</option><option value="suite">suite</option></select></div>
+                <div class="filter-group"><i class="fas fa-building"></i><select id="typeSelect"><option value="">type</option><option value="apartment">apartment</option><option value="house">house</option><option value="villa">villa</option></select></div>
                 <button id="applyHome">filter</button>
             `;
             document.getElementById('applyHome')?.addEventListener('click', () => {
@@ -560,7 +764,7 @@
                 <div class="filter-group"><i class="fas fa-briefcase"></i><select id="jobCat"><option value="">category</option><option value="tech">tech</option><option value="marketing">marketing</option><option value="real estate">real estate</option></select></div>
                 <div class="filter-group"><i class="fas fa-dollar-sign"></i><select id="salaryRange"><option value="">salary</option><option value="2000">$2000+</option><option value="3000">$3000+</option></select></div>
                 <div class="filter-group"><i class="fas fa-globe"></i><select id="jobType"><option value="">type</option><option value="remote">remote</option><option value="onsite">onsite</option></select></div>
-                <button id="applyJob">apply</button>
+                <button id="applyJob">filter</button>
             `;
             document.getElementById('applyJob')?.addEventListener('click', () => {
                 jobFilters.category = document.getElementById('jobCat').value.toLowerCase();
@@ -572,69 +776,66 @@
         }
     }
 
-    function renderServices() {
-        let filtered = [...freelancers];
-        if (serviceFilters.category) filtered = filtered.filter(f => f.category === serviceFilters.category);
-        if (serviceFilters.location) filtered = filtered.filter(f => f.location.toLowerCase().includes(serviceFilters.location));
-        if (serviceFilters.rating) filtered = filtered.filter(f => f.rating >= parseFloat(serviceFilters.rating));
-        if (serviceFilters.search) filtered = filtered.filter(f => f.full_name.toLowerCase().includes(serviceFilters.search) || f.primary_skill.toLowerCase().includes(serviceFilters.search));
-        if (!filtered.length) { document.getElementById('contentArea').innerHTML = '<div class="empty-state">no results</div>'; return; }
-        let html = `<div class="section-title">freelancers · top rated</div><div class="horizontal-scroll">`;
-        filtered.forEach(f => {
-            html += `<div class="person-card" data-id="${f.id}"><div class="person-avatar">${f.full_name.charAt(0)}</div><div class="person-name">${escapeHtml(f.full_name)}</div><div class="person-title">${escapeHtml(f.primary_skill)}</div><div class="rating">${renderStars(f.rating)} ${f.rating}</div><div style="font-size:0.6rem;">📍 ${f.location}</div></div>`;
-        });
-        html += `</div>`;
-        document.getElementById('contentArea').innerHTML = html;
-        document.querySelectorAll('.person-card').forEach(c => c.addEventListener('click', () => showToast("🔍 profile view — coming soon")));
+    async function refreshCurrentTab() {
+        buildFilterUI();
+        const container = document.getElementById('contentArea');
+        container.innerHTML = '<div class="loader">loading data...</div>';
+        if (currentTab === "services") {
+            freelancersList = await loadFreelancers();
+            renderServices();
+        } else if (currentTab === "homes") {
+            homesList = await loadHomes();
+            renderHomes();
+        } else if (currentTab === "jobs") {
+            jobsList = await loadJobs();
+            renderJobs();
+        }
     }
 
-    function renderHomes() {
-        let filtered = [...homes];
-        if (homeFilters.location) filtered = filtered.filter(h => h.location.toLowerCase().includes(homeFilters.location));
-        if (homeFilters.guests) { let max = parseInt(homeFilters.guests); filtered = filtered.filter(h => h.guests <= max); }
-        if (homeFilters.type) filtered = filtered.filter(h => h.type === homeFilters.type);
-        if (homeFilters.search) filtered = filtered.filter(h => h.title.toLowerCase().includes(homeFilters.search) || h.location.toLowerCase().includes(homeFilters.search));
-        if (!filtered.length) { document.getElementById('contentArea').innerHTML = '<div class="empty-state">no homes match</div>'; return; }
-        let html = `<div class="homes-grid">`;
-        filtered.forEach(h => {
-            html += `<div class="home-card" data-id="${h.id}"><div class="home-img" style="background-image:url('${h.image_url}'); background-size:cover;"></div><div class="home-info"><strong>${escapeHtml(h.title)}</strong><div>📍 ${escapeHtml(h.location)}</div><div>💰 ${h.price} · ${h.guests} guests</div></div></div>`;
-        });
-        html += `</div>`;
-        document.getElementById('contentArea').innerHTML = html;
-        document.querySelectorAll('.home-card').forEach(c => c.addEventListener('click', () => showToast("🏡 contact host for booking")));
+    function switchTab(tab) {
+        currentTab = tab;
+        refreshCurrentTab();
     }
 
-    function renderJobs() {
-        let filtered = [...jobs];
-        if (jobFilters.category) filtered = filtered.filter(j => j.category === jobFilters.category);
-        if (jobFilters.salary) { let min = parseInt(jobFilters.salary); filtered = filtered.filter(j => j.salary >= min); }
-        if (jobFilters.jobType) filtered = filtered.filter(j => j.type === jobFilters.jobType);
-        if (jobFilters.search) filtered = filtered.filter(j => j.title.toLowerCase().includes(jobFilters.search) || j.company.toLowerCase().includes(jobFilters.search));
-        if (!filtered.length) { document.getElementById('contentArea').innerHTML = '<div class="empty-state">no jobs found</div>'; return; }
-        let html = '';
-        filtered.forEach(j => {
-            html += `<div class="job-item"><div class="job-title">${escapeHtml(j.title)}</div><div class="job-meta"><span>🏢 ${j.company}</span> <span>💰 ${j.budget}</span> <span>📍 ${j.location}</span> <span>⚡ ${j.type}</span></div><div style="font-size:0.65rem;">${j.description}</div></div>`;
+    // ---------- INITIALIZATION ----------
+    async function init() {
+        // Wait for Firebase to be available
+        let attempts = 0;
+        while (!window.firebaseDb && attempts < 50) {
+            await new Promise(r => setTimeout(r, 100));
+            attempts++;
+        }
+        if (!window.firebaseDb) {
+            document.getElementById('contentArea').innerHTML = '<div class="empty-state">⚠️ Firebase not loaded. Please check your connection.</div>';
+            return;
+        }
+        db = window.firebaseDb;
+        collectionFn = window.firebaseCollection;
+        getDocsFn = window.firebaseGetDocs;
+        queryFn = window.firebaseQuery;
+        whereFn = window.firebaseWhere;
+        docFn = window.firebaseDoc;
+        getDocFn = window.firebaseGetDoc;
+
+        // Tab listeners
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                switchTab(btn.getAttribute('data-tab'));
+            });
         });
-        document.getElementById('contentArea').innerHTML = html;
-        document.querySelectorAll('.job-item').forEach(i => i.addEventListener('click', () => showToast("📄 job details - apply soon")));
+
+        // Sidebar actions
+        document.getElementById('contactUsBtn')?.addEventListener('click', () => window.location.href = "contactus.html");
+        document.getElementById('becomeHostBtn')?.addEventListener('click', () => window.location.href = "settingsho.html");
+        document.getElementById('placeJobBtn')?.addEventListener('click', () => window.location.href = "auth.html");
+
+        // Initial load
+        await refreshCurrentTab();
     }
 
-    function refreshCurrentTab() { buildFilterUI(); if (currentTab === "services") renderServices(); else if (currentTab === "homes") renderHomes(); else renderJobs(); }
-    function switchTab(tab) { currentTab = tab; refreshCurrentTab(); }
-
-    // event listeners
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            switchTab(btn.getAttribute('data-tab'));
-        });
-    });
-    document.getElementById('contactUsBtn')?.addEventListener('click', () => window.location.href = "contactus.html");
-    document.getElementById('becomeHostBtn')?.addEventListener('click', () => window.location.href = "settingsho.html");
-    document.getElementById('placeJobBtn')?.addEventListener('click', () => window.location.href = "auth.html");
-
-    refreshCurrentTab();
+    init();
 </script>
 </body>
 </html>
