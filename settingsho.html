@@ -65,8 +65,11 @@
         button.btn-primary{background:#0a66c2;color:white;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;font-weight:600;}
         button.btn-secondary{background:#e2e8f0;color:#334155;border:none;padding:0.6rem 1.2rem;border-radius:2rem;cursor:pointer;}
         button.btn-danger{background:#dc2626;color:white;border:none;padding:0.4rem 0.8rem;border-radius:2rem;cursor:pointer;font-size:0.75rem;}
+        .tabs{display:flex;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid #e2e8f0;padding-bottom:0.5rem;}
+        .tab-btn{padding:0.5rem 1.2rem;border-radius:2rem;cursor:pointer;background:transparent;border:none;font-weight:600;transition:0.2s;}
+        .tab-btn.active{background:#0a66c2;color:white;}
         .homes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin-top:1rem;}
-        .home-card{border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden;background:white;}
+        .home-card{border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden;background:white;position:relative;}
         .home-img{height:180px;background-size:cover;background-position:center;background-color:#eef3fc;}
         .home-info{padding:0.8rem;}
         .home-title{font-weight:700;font-size:1rem;}
@@ -74,15 +77,16 @@
         .home-price{font-weight:700;color:#0a66c2;margin-top:0.3rem;}
         .home-details{font-size:0.7rem;margin-top:0.3rem;color:#64748b;}
         .card-actions{display:flex;gap:0.5rem;margin-top:0.5rem;justify-content:flex-end;}
+        .images-preview{display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem;}
+        .preview-img{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #cbd5e1;}
         .toggle-buttons{display:flex;gap:1rem;margin-bottom:1.5rem;}
         .toggle-btn{flex:1;text-align:center;padding:0.6rem;border-radius:2rem;cursor:pointer;background:#f1f5f9;font-weight:600;}
         .toggle-btn.active{background:#0a66c2;color:white;}
-        .amenities-group{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.3rem;}
-        .amenity-checkbox{display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;}
         .toast{position:fixed;bottom:20px;right:20px;background:#1f2937;color:white;padding:0.6rem 1.2rem;border-radius:40px;z-index:1000;}
         @media(max-width:800px){
             .container{padding:0 1rem;}
             .nav-center{position:relative;left:0;transform:none;}
+            .tabs{flex-wrap:wrap;}
         }
         .loader{display:inline-block;width:18px;height:18px;border:2px solid white;border-radius:50%;border-top-color:transparent;animation:spin 0.6s linear infinite;margin-right:8px;vertical-align:middle;}
         @keyframes spin{to{transform:rotate(360deg);}}
@@ -101,6 +105,7 @@
 </nav>
 
 <div class="container">
+    <!-- Auth Section (Login / Signup) -->
     <div id="authSection" class="card">
         <div class="toggle-buttons">
             <div class="toggle-btn active" id="showLoginBtn">Sign In</div>
@@ -122,45 +127,86 @@
         </div>
     </div>
 
-    <div id="homesSection" style="display:none;">
-        <div class="card">
-            <h2><i class="fas fa-plus-circle"></i> Add New Property</h2>
-            <form id="addHomeForm">
-                <div class="form-group"><label>Title *</label><input type="text" id="homeTitle" required placeholder="e.g., Modern 2BR Apartment"></div>
-                <div class="inline-row">
-                    <div class="form-group"><label>Property Type</label><select id="homeType"><option value="Apartment">Apartment</option><option value="House">House</option><option value="Villa">Villa</option><option value="Condo">Condo</option><option value="Land">Land</option><option value="Commercial">Commercial</option></select></div>
-                    <div class="form-group"><label>Location *</label><input type="text" id="homeLocation" required placeholder="Kigali, Gasabo"></div>
-                </div>
-                <div class="inline-row">
-                    <div class="form-group"><label>Price *</label><input type="text" id="homePrice" required placeholder="$45/night or $500/month"></div>
-                    <div class="form-group"><label>Area (sqm)</label><input type="number" id="homeArea" placeholder="e.g., 120"></div>
-                </div>
-                <div class="inline-row">
-                    <div class="form-group"><label>Bedrooms</label><input type="number" id="homeBedrooms" placeholder="2"></div>
-                    <div class="form-group"><label>Bathrooms</label><input type="number" id="homeBathrooms" placeholder="1"></div>
-                </div>
-                <div class="form-group"><label>Amenities (select multiple)</label>
-                    <div class="amenities-group" id="amenitiesGroup">
-                        <label class="amenity-checkbox"><input type="checkbox" value="Parking"> Parking</label>
-                        <label class="amenity-checkbox"><input type="checkbox" value="Pool"> Pool</label>
-                        <label class="amenity-checkbox"><input type="checkbox" value="Gym"> Gym</label>
-                        <label class="amenity-checkbox"><input type="checkbox" value="WiFi"> WiFi</label>
-                        <label class="amenity-checkbox"><input type="checkbox" value="Air Conditioning"> AC</label>
-                        <label class="amenity-checkbox"><input type="checkbox" value="Security"> Security</label>
-                        <label class="amenity-checkbox"><input type="checkbox" value="Furnished"> Furnished</label>
-                    </div>
-                </div>
-                <div class="form-group"><label>Description</label><textarea id="homeDesc" rows="3" placeholder="Describe the property..."></textarea></div>
-                <div class="form-group"><label>Nearby Landmarks</label><input type="text" id="homeLandmarks" placeholder="e.g., City Mall, Bus station"></div>
-                <div class="form-group"><label>Contact Phone (optional)</label><input type="tel" id="homePhone" placeholder="+250..."></div>
-                <div class="form-group"><label>Image URL</label><input type="url" id="homeImage" placeholder="https://... (optional)"></div>
-                <button type="submit" class="btn-primary">Add Property</button>
-            </form>
+    <!-- Main Dashboard (visible after login) -->
+    <div id="dashboardSection" style="display:none;">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="dashboard"><i class="fas fa-chart-line"></i> Dashboard</button>
+            <button class="tab-btn" data-tab="addproperty"><i class="fas fa-plus-circle"></i> Add Property</button>
+            <button class="tab-btn" data-tab="manageproperty"><i class="fas fa-edit"></i> Manage Property</button>
         </div>
 
-        <div class="card">
-            <h2><i class="fas fa-home"></i> My Listed Properties</h2>
-            <div id="homesListContainer"><p style="text-align:center; color:#5e6f8d;">Loading...</p></div>
+        <!-- Dashboard Tab -->
+        <div id="dashboardTab" class="tab-content active">
+            <div class="card">
+                <h2><i class="fas fa-chart-simple"></i> Dashboard Overview</h2>
+                <div class="stats-grid" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem; margin-bottom:1.5rem;">
+                    <div class="stat-card" style="background:#f8fafc; padding:1rem; border-radius:1rem; text-align:center;">
+                        <div class="stat-number" id="totalProperties" style="font-size:2rem; font-weight:800; color:#0a66c2;">0</div>
+                        <div>Total Properties</div>
+                    </div>
+                    <div class="stat-card" style="background:#f8fafc; padding:1rem; border-radius:1rem; text-align:center;">
+                        <div class="stat-number" id="totalViews" style="font-size:2rem; font-weight:800; color:#0a66c2;">0</div>
+                        <div>Total Views</div>
+                    </div>
+                </div>
+                <h3>Your Properties</h3>
+                <div id="dashboardHomesList"></div>
+            </div>
+        </div>
+
+        <!-- Add Property Tab -->
+        <div id="addpropertyTab" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-home"></i> Add New Property</h2>
+                <form id="addHomeForm">
+                    <div class="form-group"><label>Title *</label><input type="text" id="homeTitle" required placeholder="e.g., Modern 2BR Apartment"></div>
+                    <div class="inline-row">
+                        <div class="form-group"><label>Property Type</label><select id="homeType"><option value="Apartment">Apartment</option><option value="House">House</option><option value="Villa">Villa</option><option value="Condo">Condo</option><option value="Land">Land</option><option value="Commercial">Commercial</option></select></div>
+                        <div class="form-group"><label>Location *</label><input type="text" id="homeLocation" required placeholder="Kigali, Gasabo"></div>
+                    </div>
+                    <div class="inline-row">
+                        <div class="form-group"><label>Price *</label><input type="text" id="homePrice" required placeholder="$45/night or $500/month"></div>
+                        <div class="form-group"><label>Area (sqm)</label><input type="number" id="homeArea" placeholder="e.g., 120"></div>
+                    </div>
+                    <div class="inline-row">
+                        <div class="form-group"><label>Bedrooms</label><input type="number" id="homeBedrooms" placeholder="2"></div>
+                        <div class="form-group"><label>Bathrooms</label><input type="number" id="homeBathrooms" placeholder="1"></div>
+                    </div>
+                    <div class="form-group"><label>Description</label><textarea id="homeDesc" rows="3" placeholder="Describe the property..."></textarea></div>
+                    <div class="form-group"><label>Amenities (select multiple)</label>
+                        <div class="amenities-group" style="display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.3rem;">
+                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Parking"> Parking</label>
+                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Pool"> Pool</label>
+                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Gym"> Gym</label>
+                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="WiFi"> WiFi</label>
+                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Air Conditioning"> AC</label>
+                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Security"> Security</label>
+                            <label style="display:flex; align-items:center; gap:0.3rem;"><input type="checkbox" value="Furnished"> Furnished</label>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>Nearby Landmarks</label><input type="text" id="homeLandmarks" placeholder="e.g., City Mall, Bus station"></div>
+                    <div class="form-group"><label>Maps Link (optional)</label><input type="url" id="homeMapsLink" placeholder="https://maps.google.com/..."></div>
+                    <div class="form-group"><label>Contact Phone (optional)</label><input type="tel" id="homePhone" placeholder="+250..."></div>
+                    
+                    <!-- Image Upload Section (required, min 3) -->
+                    <div class="form-group">
+                        <label>Property Images * (minimum 3)</label>
+                        <input type="file" id="homeImages" multiple accept="image/*">
+                        <div id="imagesPreview" class="images-preview"></div>
+                        <small style="color:#64748b;">Select at least 3 images. First image will be used as cover.</small>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Add Property</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Manage Property Tab -->
+        <div id="managepropertyTab" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-list"></i> Manage Your Properties</h2>
+                <div id="manageHomesList"></div>
+            </div>
         </div>
     </div>
 </div>
@@ -185,8 +231,8 @@
         let collectionFn = null;
         
         let currentUserId = null;
-        let currentUserEmail = null;
         let currentUserName = null;
+        let allHomes = [];
         
         function showToast(msg, isErr=false){
             let t=document.createElement('div'); t.className='toast'; t.style.background=isErr?'#dc2626':'#1f2937'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),3000);
@@ -207,37 +253,66 @@
             } catch(e){ return null; }
         }
         
-        // Load homes from Firestore
         async function loadHomes(){
             if(!currentUserId) return;
             const q = queryFn(collectionFn(db, "realEstateHomes"), whereFn("userId", "==", currentUserId));
             const snapshot = await getDocsFn(q);
-            const homes = [];
+            allHomes = [];
             snapshot.forEach(docSnap => {
-                homes.push({ id: docSnap.id, ...docSnap.data() });
+                allHomes.push({ id: docSnap.id, ...docSnap.data() });
             });
-            renderHomesList(homes);
+            // Update dashboard and manage views
+            renderDashboard();
+            renderManageList();
         }
         
-        function renderHomesList(homes){
-            const container = document.getElementById('homesListContainer');
+        function renderDashboard(){
+            const container = document.getElementById('dashboardHomesList');
             if(!container) return;
-            if(homes.length === 0){
-                container.innerHTML = '<p style="text-align:center; color:#5e6f8d;">No properties added yet. Use the form above to list your first property.</p>';
+            document.getElementById('totalProperties').innerText = allHomes.length;
+            let totalViews = allHomes.reduce((sum, h) => sum + (h.views || 0), 0);
+            document.getElementById('totalViews').innerText = totalViews;
+            
+            if(allHomes.length === 0){
+                container.innerHTML = '<p style="text-align:center; color:#5e6f8d;">No properties yet. Click "Add Property" to list your first property.</p>';
                 return;
             }
             let html = `<div class="homes-grid">`;
-            homes.forEach(home => {
-                const amenities = home.amenities ? home.amenities.join(', ') : '';
+            allHomes.forEach(home => {
+                const coverImage = (home.images && home.images.length) ? home.images[0] : 'https://placehold.co/400x200?text=No+Image';
                 html += `
-                    <div class="home-card" data-id="${home.id}">
-                        <div class="home-img" style="background-image: url('${home.image_url || 'https://placehold.co/400x200?text=No+Image'}');"></div>
+                    <div class="home-card">
+                        <div class="home-img" style="background-image: url('${coverImage}');"></div>
                         <div class="home-info">
                             <div class="home-title">${escapeHtml(home.title)}</div>
                             <div class="home-location"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(home.location)}</div>
                             <div class="home-price">${escapeHtml(home.price)}</div>
-                            <div class="home-details">🏠 ${escapeHtml(home.propertyType || 'House')} · 🛏️ ${home.bedrooms || '?'} beds · 🛁 ${home.bathrooms || '?'} baths · 📐 ${home.area || '?'} sqm</div>
-                            ${amenities ? `<div class="home-details"><i class="fas fa-wifi"></i> ${escapeHtml(amenities)}</div>` : ''}
+                            <div class="home-details">👁️ ${home.views || 0} views</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+        
+        function renderManageList(){
+            const container = document.getElementById('manageHomesList');
+            if(!container) return;
+            if(allHomes.length === 0){
+                container.innerHTML = '<p style="text-align:center; color:#5e6f8d;">No properties added yet.</p>';
+                return;
+            }
+            let html = `<div class="homes-grid">`;
+            allHomes.forEach(home => {
+                const coverImage = (home.images && home.images.length) ? home.images[0] : 'https://placehold.co/400x200?text=No+Image';
+                html += `
+                    <div class="home-card">
+                        <div class="home-img" style="background-image: url('${coverImage}');"></div>
+                        <div class="home-info">
+                            <div class="home-title">${escapeHtml(home.title)}</div>
+                            <div class="home-location"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(home.location)}</div>
+                            <div class="home-price">${escapeHtml(home.price)}</div>
                             <div class="card-actions">
                                 <button class="btn-secondary edit-home" data-id="${home.id}">Edit</button>
                                 <button class="btn-danger delete-home" data-id="${home.id}">Delete</button>
@@ -251,16 +326,14 @@
             
             document.querySelectorAll('.edit-home').forEach(btn => {
                 btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
                     const id = btn.getAttribute('data-id');
-                    editHomeById(id, homes);
+                    editHomeById(id);
                 });
             });
             document.querySelectorAll('.delete-home').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
-                    e.stopPropagation();
                     const id = btn.getAttribute('data-id');
-                    if(confirm('Delete this property listing?')){
+                    if(confirm('Delete this property permanently?')){
                         await deleteDocFn(docRef(db, "realEstateHomes", id));
                         showToast('Property deleted');
                         await loadHomes();
@@ -269,9 +342,10 @@
             });
         }
         
-        function editHomeById(id, homes){
-            const home = homes.find(h => h.id === id);
+        function editHomeById(id){
+            const home = allHomes.find(h => h.id === id);
             if(!home) return;
+            // Fill the add property form with existing data for editing
             document.getElementById('homeTitle').value = home.title || '';
             document.getElementById('homeType').value = home.propertyType || 'Apartment';
             document.getElementById('homeLocation').value = home.location || '';
@@ -281,19 +355,44 @@
             document.getElementById('homeBathrooms').value = home.bathrooms || '';
             document.getElementById('homeDesc').value = home.description || '';
             document.getElementById('homeLandmarks').value = home.landmarks || '';
+            document.getElementById('homeMapsLink').value = home.mapsLink || '';
             document.getElementById('homePhone').value = home.phone || '';
-            document.getElementById('homeImage').value = home.image_url || '';
+            // Clear images preview and file input (user must re-upload if they want to change images)
+            document.getElementById('imagesPreview').innerHTML = '';
+            document.getElementById('homeImages').value = '';
             // Check amenities checkboxes
             const amenitiesList = home.amenities || [];
-            document.querySelectorAll('#amenitiesGroup input[type="checkbox"]').forEach(cb => {
+            document.querySelectorAll('.amenities-group input[type="checkbox"]').forEach(cb => {
                 cb.checked = amenitiesList.includes(cb.value);
             });
-            // Change form submit behavior to update
+            // Change submit behavior to update
             const form = document.getElementById('addHomeForm');
             const originalSubmit = form.onsubmit;
             form.onsubmit = async (e) => {
                 e.preventDefault();
-                const selectedAmenities = Array.from(document.querySelectorAll('#amenitiesGroup input[type="checkbox"]:checked')).map(cb => cb.value);
+                const imageFiles = document.getElementById('homeImages').files;
+                let imageUrls = home.images || [];
+                if(imageFiles.length > 0){
+                    if(imageFiles.length < 3){
+                        showToast('Please select at least 3 images', true);
+                        return;
+                    }
+                    imageUrls = [];
+                    for(let file of imageFiles){
+                        const base64 = await new Promise(resolve => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.readAsDataURL(file);
+                        });
+                        const url = await uploadToImgBB(base64);
+                        if(url) imageUrls.push(url);
+                    }
+                    if(imageUrls.length < 3){
+                        showToast('Failed to upload images. Please try again.', true);
+                        return;
+                    }
+                }
+                const selectedAmenities = Array.from(document.querySelectorAll('.amenities-group input[type="checkbox"]:checked')).map(cb => cb.value);
                 const updatedHome = {
                     userId: currentUserId,
                     title: document.getElementById('homeTitle').value.trim(),
@@ -306,39 +405,125 @@
                     description: document.getElementById('homeDesc').value,
                     amenities: selectedAmenities,
                     landmarks: document.getElementById('homeLandmarks').value,
+                    mapsLink: document.getElementById('homeMapsLink').value,
                     phone: document.getElementById('homePhone').value,
-                    image_url: document.getElementById('homeImage').value,
+                    images: imageUrls,
+                    views: home.views || 0,
                     updatedAt: new Date().toISOString()
                 };
                 await updateDocFn(docRef(db, "realEstateHomes", id), updatedHome);
                 showToast('Property updated');
                 form.reset();
                 form.onsubmit = originalSubmit;
+                document.getElementById('imagesPreview').innerHTML = '';
                 await loadHomes();
-                // Clear the image preview if any
-                const imageInput = document.getElementById('homeImage');
-                if(imageInput) imageInput.value = '';
+                // Switch to manage tab
+                switchTab('manageproperty');
             };
-            showToast('Editing: modify and click Add Property (will update)');
+            // Switch to add property tab and scroll
+            switchTab('addproperty');
+            showToast('Editing property. Modify and click Add Property to update.');
+        }
+        
+        // Add property
+        async function addHome(e){
+            e.preventDefault();
+            if(!currentUserId){
+                showToast('Please login first', true);
+                return;
+            }
+            const title = document.getElementById('homeTitle').value.trim();
+            const location = document.getElementById('homeLocation').value.trim();
+            const price = document.getElementById('homePrice').value.trim();
+            if(!title || !location || !price){
+                showToast('Title, location and price are required', true);
+                return;
+            }
+            const imageFiles = document.getElementById('homeImages').files;
+            if(imageFiles.length < 3){
+                showToast('Please select at least 3 images', true);
+                return;
+            }
+            // Upload images
+            showToast('Uploading images...');
+            const imageUrls = [];
+            for(let file of imageFiles){
+                const base64 = await new Promise(resolve => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.readAsDataURL(file);
+                });
+                const url = await uploadToImgBB(base64);
+                if(url) imageUrls.push(url);
+            }
+            if(imageUrls.length < 3){
+                showToast('Failed to upload images. Please try again.', true);
+                return;
+            }
+            const selectedAmenities = Array.from(document.querySelectorAll('.amenities-group input[type="checkbox"]:checked')).map(cb => cb.value);
+            const newHome = {
+                userId: currentUserId,
+                title: title,
+                propertyType: document.getElementById('homeType').value,
+                location: location,
+                price: price,
+                area: document.getElementById('homeArea').value,
+                bedrooms: document.getElementById('homeBedrooms').value,
+                bathrooms: document.getElementById('homeBathrooms').value,
+                description: document.getElementById('homeDesc').value,
+                amenities: selectedAmenities,
+                landmarks: document.getElementById('homeLandmarks').value,
+                mapsLink: document.getElementById('homeMapsLink').value,
+                phone: document.getElementById('homePhone').value,
+                images: imageUrls,
+                views: 0,
+                createdAt: new Date().toISOString()
+            };
+            await addDocFn(collectionFn(db, "realEstateHomes"), newHome);
+            showToast('Property added successfully');
+            document.getElementById('addHomeForm').reset();
+            document.querySelectorAll('.amenities-group input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('imagesPreview').innerHTML = '';
+            await loadHomes();
+            switchTab('dashboard');
+        }
+        
+        // Preview images
+        function setupImagePreview(){
+            const input = document.getElementById('homeImages');
+            const previewDiv = document.getElementById('imagesPreview');
+            input.addEventListener('change', () => {
+                previewDiv.innerHTML = '';
+                const files = Array.from(input.files);
+                files.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'preview-img';
+                        previewDiv.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
         }
         
         // Auth UI
         async function renderAuthUI(){
             if(currentUserId){
                 document.getElementById('authSection').style.display = 'none';
-                document.getElementById('homesSection').style.display = 'block';
+                document.getElementById('dashboardSection').style.display = 'block';
                 document.getElementById('userNameDisplay').innerText = currentUserName || 'Agent';
                 document.getElementById('logoutBtn').style.display = 'inline-block';
                 await loadHomes();
             } else {
                 document.getElementById('authSection').style.display = 'block';
-                document.getElementById('homesSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'none';
                 document.getElementById('userNameDisplay').innerText = '';
                 document.getElementById('logoutBtn').style.display = 'none';
             }
         }
         
-        // Signup
         async function handleSignup(){
             const name = document.getElementById('signupName').value.trim();
             const email = document.getElementById('signupEmail').value.trim();
@@ -360,7 +545,6 @@
                     createdAt: new Date().toISOString()
                 });
                 currentUserId = userId;
-                currentUserEmail = email;
                 currentUserName = name;
                 showToast('Account created successfully!');
                 renderAuthUI();
@@ -369,7 +553,6 @@
             }
         }
         
-        // Login
         async function handleLogin(){
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
@@ -386,7 +569,6 @@
                     return;
                 }
                 currentUserId = userId;
-                currentUserEmail = email;
                 currentUserName = agentDoc.data().name;
                 showToast(`Welcome back, ${currentUserName}`);
                 renderAuthUI();
@@ -398,51 +580,22 @@
         async function handleLogout(){
             await signOut(auth);
             currentUserId = null;
-            currentUserEmail = null;
             currentUserName = null;
             renderAuthUI();
             showToast('Logged out');
         }
         
-        // Add home
-        async function addHome(e){
-            e.preventDefault();
-            if(!currentUserId){
-                showToast('Please login first', true);
-                return;
-            }
-            const title = document.getElementById('homeTitle').value.trim();
-            const location = document.getElementById('homeLocation').value.trim();
-            const price = document.getElementById('homePrice').value.trim();
-            if(!title || !location || !price){
-                showToast('Title, location and price are required', true);
-                return;
-            }
-            const selectedAmenities = Array.from(document.querySelectorAll('#amenitiesGroup input[type="checkbox"]:checked')).map(cb => cb.value);
-            const newHome = {
-                userId: currentUserId,
-                title: title,
-                propertyType: document.getElementById('homeType').value,
-                location: location,
-                price: price,
-                area: document.getElementById('homeArea').value,
-                bedrooms: document.getElementById('homeBedrooms').value,
-                bathrooms: document.getElementById('homeBathrooms').value,
-                description: document.getElementById('homeDesc').value,
-                amenities: selectedAmenities,
-                landmarks: document.getElementById('homeLandmarks').value,
-                phone: document.getElementById('homePhone').value,
-                image_url: document.getElementById('homeImage').value,
-                createdAt: new Date().toISOString()
-            };
-            await addDocFn(collectionFn(db, "realEstateHomes"), newHome);
-            showToast('Property added successfully');
-            document.getElementById('addHomeForm').reset();
-            document.querySelectorAll('#amenitiesGroup input[type="checkbox"]').forEach(cb => cb.checked = false);
-            await loadHomes();
+        // Tab switching
+        function switchTab(tabId){
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId+'Tab').classList.add('active');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.tab-btn[data-tab="${tabId}"]`).classList.add('active');
+            if(tabId === 'manageproperty') renderManageList();
+            if(tabId === 'dashboard') renderDashboard();
         }
         
-        // Initialize Firebase and UI
+        // Initialize
         async function init(){
             let attempts = 0;
             while(!window.realEstateAuth && attempts < 50){
@@ -469,13 +622,11 @@
             updateDocFn = window.realEstateUpdateDoc;
             collectionFn = window.realEstateCollection;
             
-            // Check for existing session
             auth.onAuthStateChanged(async (user) => {
                 if(user){
                     const agentDoc = await getDocFn(docRef(db, "realEstateAgents", user.uid));
                     if(agentDoc.exists()){
                         currentUserId = user.uid;
-                        currentUserEmail = user.email;
                         currentUserName = agentDoc.data().name;
                     }
                 } else {
@@ -484,11 +635,11 @@
                 renderAuthUI();
             });
             
-            // Form event listeners
             document.getElementById('doSignupBtn').addEventListener('click', handleSignup);
             document.getElementById('doLoginBtn').addEventListener('click', handleLogin);
             document.getElementById('logoutBtn').addEventListener('click', handleLogout);
             document.getElementById('addHomeForm').addEventListener('submit', addHome);
+            setupImagePreview();
             
             // Toggle between login/signup
             const showLoginBtn = document.getElementById('showLoginBtn');
@@ -506,6 +657,11 @@
                 showLoginBtn.classList.remove('active');
                 loginFormDiv.style.display = 'none';
                 signupFormDiv.style.display = 'block';
+            });
+            
+            // Tab buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchTab(btn.getAttribute('data-tab')));
             });
             
             // Home button
