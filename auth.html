@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="config.js"></script>
     <style>
+        /* (same styles as before – keep unchanged) */
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:#f4f2ef;color:#191919;min-height:100vh;display:flex;flex-direction:column;}
         .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:0.8rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
@@ -77,7 +78,7 @@
     let _companyLogoBase64 = '';
     let _workerAvatarBase64 = '';
 
-    // Categories & Skills DB
+    // Categories & Skills DB (same as before)
     const _categories = ["Food & Hospitality","Retail & Shops","Construction","Real Estate","Technology & IT Services","Digital Agencies","Marketing & Advertising","Events & Entertainment","Transportation & Logistics","Delivery Services","Health & Medical Services","Pharmacies","Fitness & Gyms","Beauty & Personal Care","Education & Training","Financial Services","Insurance","Legal Services","Agriculture & Farming","Manufacturing","Wholesale & Distribution","Cleaning Services","Repair & Maintenance","Security Services","Printing & Publishing","Media & Broadcasting","Travel & Tourism","Non-Profit Organizations","Government & Public Services","Consulting & Business Services"];
     
     const _skillsDB = {
@@ -118,7 +119,7 @@
         } catch(e){ return null; }
     }
 
-    // ==================== FORM RENDERING (unchanged, same as before) ====================
+    // ==================== FORM RENDERING (same as before) ====================
     function renderSignupFields(){
         const container = document.getElementById('signupDynamicFields');
         if(!container) return;
@@ -322,7 +323,7 @@
         }
     }
 
-    // ==================== FIXED SUPABASE HANDLERS (Upsert to avoid 409) ====================
+    // ==================== FIXED SUPABASE HANDLERS ====================
     async function handleSignin(e){
         e.preventDefault();
         const btn = document.getElementById('signinBtn');
@@ -353,19 +354,37 @@
                 const name = document.getElementById('compName')?.value.trim();
                 const email = document.getElementById('compEmail')?.value.trim();
                 const password = document.getElementById('compPass')?.value;
-                if(!name || !email || !password || _businessImages.length < 3 || !_selectedCategory) throw new Error("Missing required: name, email, password, category & 3+ images");
+                if(!name || !email || !password || _businessImages.length < 3 || !_selectedCategory) throw new Error("Missing required fields");
                 if(password.length < 6) throw new Error("Password must be at least 6 characters");
+                
                 const logoUrl = _companyLogoBase64 ? await uploadToImgBB(_companyLogoBase64) : null;
                 const bizUrls = [];
                 for(let img of _businessImages){ let url = await uploadToImgBB(img); if(url) bizUrls.push(url); }
                 if(bizUrls.length < 3) throw new Error("Failed to upload business images");
                 
-                const { data: auth, error: signErr } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: name, user_type: 'company' } } });
+                // 1. Sign up
+                const { data: auth, error: signErr } = await _supabase.auth.signUp({ 
+                    email, 
+                    password, 
+                    options: { data: { full_name: name, user_type: 'company' } } 
+                });
                 if(signErr) throw signErr;
-                if(!auth.user) throw new Error("Signup failed – check email confirmation settings");
+                if(!auth.user) throw new Error("Signup failed – email confirmation may be required");
+                
+                // 2. If email confirmation is disabled, we have a session. Set it explicitly.
+                if(auth.session) {
+                    await _supabase.auth.setSession(auth.session.access_token, auth.session.refresh_token);
+                } else {
+                    // If email confirmation is enabled, user must confirm before we can upsert profile.
+                    // In that case, we redirect to a "check your email" page.
+                    showToast("✅ Check your email to confirm your account. After confirmation, please sign in.", false);
+                    setLoading(btn, false, orig);
+                    return;
+                }
+                
                 const userId = auth.user.id;
                 
-                // UPSERT profile (insert or update) to avoid 409 conflict
+                // 3. Upsert profile (now authenticated)
                 const { error: profErr } = await _supabase.from('profiles').upsert({ 
                     id: userId, 
                     user_type: 'company', 
@@ -376,26 +395,46 @@
                 }, { onConflict: 'id' });
                 if(profErr) throw profErr;
                 
-                const { error: compErr } = await _supabase.from('companies').insert({ user_id: userId, company_name: name, category: _selectedCategory, business_images: bizUrls });
+                // 4. Insert into companies
+                const { error: compErr } = await _supabase.from('companies').insert({ 
+                    user_id: userId, 
+                    company_name: name, 
+                    category: _selectedCategory, 
+                    business_images: bizUrls 
+                });
                 if(compErr) throw compErr;
                 
                 localStorage.setItem('knk_current_user', JSON.stringify({ id: userId, email, type: 'company', name }));
                 showToast("🎉 Company account created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingsco.html"; }, 1000);
-            } else {
+                
+            } else { // Worker
                 const fullName = document.getElementById('workerNames')?.value.trim();
                 const email = document.getElementById('workerEmail')?.value.trim();
                 const password = document.getElementById('workerPass')?.value;
                 if(!fullName || !email || !password || !_selectedPrimarySkill) throw new Error("Full name, email, password and primary skill required");
                 if(password.length < 6) throw new Error("Password min 6 characters");
+                
                 const avatarUrl = _workerAvatarBase64 ? await uploadToImgBB(_workerAvatarBase64) : null;
                 
-                const { data: auth, error: signErr } = await _supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, user_type: 'worker' } } });
+                const { data: auth, error: signErr } = await _supabase.auth.signUp({ 
+                    email, 
+                    password, 
+                    options: { data: { full_name: fullName, user_type: 'worker' } } 
+                });
                 if(signErr) throw signErr;
-                if(!auth.user) throw new Error("Signup failed – check email confirmation settings");
+                if(!auth.user) throw new Error("Signup failed");
+                
+                if(auth.session) {
+                    await _supabase.auth.setSession(auth.session.access_token, auth.session.refresh_token);
+                } else {
+                    showToast("✅ Check your email to confirm your account. After confirmation, please sign in.", false);
+                    setLoading(btn, false, orig);
+                    return;
+                }
+                
                 const userId = auth.user.id;
                 
-                // UPSERT profile
                 const { error: profErr } = await _supabase.from('profiles').upsert({ 
                     id: userId, 
                     user_type: 'worker', 
@@ -425,7 +464,13 @@
                 showToast("✨ Freelancer profile created! Redirecting...");
                 setTimeout(() => { window.location.href = "settingswo.html"; }, 1000);
             }
-        } catch(err){ showToast(err.message, true); }
+        } catch(err){ 
+            if(err.message.includes("429")){
+                showToast("Too many signup attempts. Please wait 1 minute and try again.", true);
+            } else {
+                showToast(err.message, true);
+            }
+        }
         finally{ setLoading(btn, false, orig); }
     }
 
