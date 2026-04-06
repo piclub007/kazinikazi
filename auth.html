@@ -6,7 +6,6 @@
     <title>Kazi ni Kazi · Sign In or Join</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
@@ -14,7 +13,7 @@
         .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:clamp(0.6rem,3vw,1rem) clamp(1rem,5vw,2.5rem);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;position:sticky;top:0;z-index:100;}
         .logo-area{display:flex;align-items:center;gap:0.75rem;}
         .logo-area img{height:clamp(36px,6vw,44px);width:auto;object-fit:contain;}
-        .logo-text{font-size:clamp(1.2rem,5vw,1.6rem);font-weight:800;background:linear-gradient(135deg,#0a66c2,#00a3ff);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-0.5px;}
+        .logo-text{font-size:clamp(1.2rem,5vw,1.6rem);font-weight:800;background:linear-gradient(135deg,#0a66c2,#00a3ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
         .nav-buttons{display:flex;gap:clamp(0.5rem,3vw,1rem);}
         .btn-outline-nav,.btn-primary-nav{padding:clamp(0.4rem,1.5vw,0.6rem) clamp(1rem,3vw,1.5rem);border-radius:40px;font-weight:600;font-size:clamp(0.8rem,3vw,0.9rem);cursor:pointer;transition:all 0.2s;border:none;}
         .btn-outline-nav{background:transparent;border:1px solid #0a66c2;color:#0a66c2;}
@@ -82,9 +81,8 @@
     const SUPABASE_ANON_KEY = 'sb_publishable_SYsRbYQOnrYW6cAtIAHpDg_uLV2G_k2';
     const IMGBB_API_KEY = 'ba8023ca74166460c442e8e703d2a1b0';
     
-    let _supabase = null;  // Renamed to avoid conflict with global supabase
+    let _supabase = null;
     
-    // Initialize Supabase (using the global supabase from CDN)
     function initSupabase() {
         if (typeof supabase !== 'undefined' && !_supabase) {
             _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -96,12 +94,12 @@
     }
     
     // ---------- APP STATE ----------
-    let _currentView = 'signin';     // 'signin' or 'signup'
-    let _accountType = 'company';    // 'company' or 'worker'
+    let _currentView = 'signin';
+    let _accountType = 'company';
     let _selectedCategory = '';
-    let _generalSkills = [];          // array of {category, skill, level}
+    let _generalSkills = [];
     let _selectedPrimarySkill = '';
-    let _businessImages = [];         // array of base64 strings
+    let _businessImages = [];
     let _companyLogoBase64 = '';
     let _workerAvatarBase64 = '';
     
@@ -124,11 +122,19 @@
     
     const _skillLevels = ["Beginner", "Median", "Intermediate", "Professional"];
     
-    // Helper: upload image to ImgBB
+    // Helper: upload image to ImgBB (FIXED: strip base64 prefix)
     async function uploadToImgBB(base64Image) {
         try {
+            if (!base64Image) throw new Error("No image data");
+            // Remove the data:image/...;base64, prefix
+            let rawBase64 = base64Image;
+            if (base64Image.includes(',')) {
+                rawBase64 = base64Image.split(',')[1];
+            }
+            if (!rawBase64) throw new Error("Invalid base64 string");
+            
             const formData = new FormData();
-            formData.append('image', base64Image);
+            formData.append('image', rawBase64);
             formData.append('key', IMGBB_API_KEY);
             const response = await fetch('https://api.imgbb.com/1/upload', {
                 method: 'POST',
@@ -175,7 +181,7 @@
         });
     }
     
-    // Render main view (all forms)
+    // Render UI
     function render(){
         const container=document.getElementById('mainContainer');
         if(!container) return;
