@@ -42,10 +42,15 @@
         .global-search{flex:1;max-width:450px;position:relative;}
         .global-search input{width:100%;padding:0.5rem 1rem;border:1px solid #cbd5e1;border-radius:40px;font-size:0.8rem;outline:none;transition:0.2s;}
         .global-search input:focus{border-color:#0a66c2;box-shadow:0 0 0 2px rgba(10,102,194,0.1);}
-        .search-results{position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.1);max-height:300px;overflow-y:auto;z-index:200;display:none;}
+        .search-results{position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,0.1);max-height:350px;overflow-y:auto;z-index:200;display:none;}
         .search-results.show{display:block;}
-        .search-result-item{padding:0.6rem 1rem;cursor:pointer;border-bottom:1px solid #f1f5f9;font-size:0.75rem;}
+        .search-result-item{padding:0.6rem 1rem;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;gap:0.8rem;align-items:center;}
         .search-result-item:hover{background:#f8fafc;}
+        .result-avatar{width:40px;height:40px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#0a66c2;overflow:hidden;}
+        .result-avatar img{width:100%;height:100%;object-fit:cover;}
+        .result-info{flex:1;}
+        .result-title{font-weight:600;font-size:0.8rem;}
+        .result-sub{font-size:0.65rem;color:#475569;}
         .contact-link{border:1px solid #cbd5e1;padding:0.3rem 1rem;border-radius:30px;font-size:0.8rem;cursor:pointer;transition:0.2s;}
         .contact-link:hover{background:#f1f5f9;}
         .ticker{background:#f1f5f9;border-bottom:1px solid #e2e8f0;padding:0.4rem 1rem;overflow:hidden;white-space:nowrap;}
@@ -93,6 +98,9 @@
         .empty-state{text-align:center;padding:2rem;background:#fafcff;border-radius:1rem;margin:1rem 0;}
         .empty-state i{font-size:2.5rem;color:#cbd5e1;margin-bottom:1rem;}
         .btn-outline{background:transparent;border:1px solid #0a66c2;color:#0a66c2;padding:0.4rem 1rem;border-radius:30px;cursor:pointer;font-weight:500;margin-top:0.5rem;}
+        .footer-section{margin-top:2rem;text-align:center;border-top:1px solid #e2e8f0;padding:1.5rem 0 0.5rem;}
+        .footer-text{font-size:0.7rem;color:#64748b;}
+        .ad-space{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:1rem;margin:1rem auto 0;text-align:center;font-size:0.7rem;color:#475569;max-width:300px;margin-left:auto;margin-right:auto;}
         .toast{position:fixed;bottom:20px;right:20px;background:#1e293b;color:white;padding:0.4rem 1rem;border-radius:40px;z-index:1100;font-size:0.75rem;}
         @media (max-width:1000px){.container{grid-template-columns:1fr;}.sidebar-right{position:static;}}
         @media (max-width:768px){.navbar{flex-wrap:wrap;}.global-search{order:3;width:100%;max-width:none;margin-top:0.5rem;}}
@@ -124,7 +132,12 @@
             <div class="action-item" id="becomeHostBtn"><i class="fas fa-door-open"></i> <span>become a host</span></div>
             <div class="action-item" id="postJobBtn"><i class="fas fa-plus-circle"></i> <span>post a job / profile</span></div>
         </div>
-        <div style="font-size:0.65rem;text-align:center;margin-top:1rem;">© 2026 kazi — intelligent marketplace</div>
+    </div>
+</div>
+<div class="footer-section">
+    <div class="footer-text">© 2026 kazi ni kazi by Rwanda PI Club</div>
+    <div class="ad-space" id="adSpace">
+        <i class="fas fa-ad"></i> Advertisement space – contact us to promote your business
     </div>
 </div>
 
@@ -141,7 +154,7 @@
         let allFreelancers = [], allHomes = [], allJobs = [];
         let verifiedUsers = new Set();
         
-        // algorithm storage
+        // algorithm storage (localStorage)
         let userProfile = JSON.parse(localStorage.getItem('knk_algorithm_profile')) || {
             categoryClicks: {}, searchTerms: [], viewedIds: [], totalInteractions: 0
         };
@@ -244,7 +257,7 @@
             return sorted;
         }
 
-        // ---------- RENDER FUNCTIONS (no filters, just show all) ----------
+        // ---------- RENDER FUNCTIONS (no filters) ----------
         let globalSearchTerm = "";
         window.globalSearchTerm = "";
 
@@ -291,10 +304,6 @@
                 document.getElementById('becomeHostEmpty')?.addEventListener('click',()=>window.location.href='settingsho.html');
                 return;
             }
-            if(filtered.length===0){
-                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No homes available.</p></div>`;
-                return;
-            }
             let html = `<div class="homes-grid">`;
             filtered.forEach(h=>{
                 html += `<div class="home-card" data-id="${h.id}"><div class="home-img" style="background-image:url('${h.image}');"></div><div class="home-info"><strong>${escapeHtml(h.title)}</strong><div>📍 ${escapeHtml(h.location)}</div><div>💰 ${h.price} · 🛏️ ${h.bedrooms} 🛁 ${h.bathrooms}</div></div></div>`;
@@ -318,10 +327,6 @@
                 document.getElementById('postJobEmpty')?.addEventListener('click',()=>window.location.href='auth.html');
                 return;
             }
-            if(filtered.length===0){
-                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No jobs available.</p></div>`;
-                return;
-            }
             let html = `<div class="job-list">`;
             filtered.forEach(j=>{
                 let logoHtml = j.companyLogo ? `<img src="${j.companyLogo}" style="width:56px;height:56px;object-fit:cover;border-radius:12px;">` : `<div class="company-logo">${j.company.charAt(0)}</div>`;
@@ -339,7 +344,7 @@
             });
         }
 
-        // ---------- GLOBAL SEARCH (dropdown only, no main content change) ----------
+        // ---------- GLOBAL SEARCH with detailed results ----------
         let searchTimeout;
         function performGlobalSearch(){
             let term = document.getElementById('globalSearchInput').value.trim();
@@ -348,15 +353,42 @@
             let resultsDiv = document.getElementById('globalSearchResults');
             if(term.length<2){ resultsDiv.classList.remove('show'); return; }
             let combined = [];
-            if(currentTab==="services") combined = allFreelancers.filter(f=>f.full_name.toLowerCase().includes(term.toLowerCase()) || f.primary_skill.toLowerCase().includes(term.toLowerCase())).slice(0,5);
-            else if(currentTab==="homes") combined = allHomes.filter(h=>h.title.toLowerCase().includes(term.toLowerCase()) || h.location.toLowerCase().includes(term.toLowerCase())).slice(0,5);
-            else combined = allJobs.filter(j=>j.title.toLowerCase().includes(term.toLowerCase()) || j.company.toLowerCase().includes(term.toLowerCase())).slice(0,5);
+            if(currentTab==="services") {
+                combined = allFreelancers.filter(f=>f.full_name.toLowerCase().includes(term.toLowerCase()) || f.primary_skill.toLowerCase().includes(term.toLowerCase())).slice(0,5);
+            } else if(currentTab==="homes") {
+                combined = allHomes.filter(h=>h.title.toLowerCase().includes(term.toLowerCase()) || h.location.toLowerCase().includes(term.toLowerCase())).slice(0,5);
+            } else {
+                combined = allJobs.filter(j=>j.title.toLowerCase().includes(term.toLowerCase()) || j.company.toLowerCase().includes(term.toLowerCase())).slice(0,5);
+            }
             if(combined.length){
                 resultsDiv.innerHTML = combined.map(item=>{
-                    let display = item.full_name || item.title || item.title;
-                    let id = item.id;
-                    let type = currentTab === "services" ? "freelancer" : (currentTab === "homes" ? "home" : "job");
-                    return `<div class="search-result-item" data-type="${type}" data-id="${id}">${escapeHtml(display)}</div>`;
+                    let avatarHtml = '';
+                    let title = '';
+                    let subtitle = '';
+                    if(currentTab==="services"){
+                        let f = item;
+                        let initial = f.full_name.charAt(0).toUpperCase();
+                        avatarHtml = `<div class="result-avatar">${f.avatar ? `<img src="${f.avatar}">` : initial}</div>`;
+                        title = `${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle" style="color:#0a66c2;"></i>' : ''}`;
+                        subtitle = `${escapeHtml(f.primary_skill)} · ⭐ ${f.rating.toFixed(1)} · 📍 ${escapeHtml(f.location)}`;
+                    } else if(currentTab==="homes"){
+                        let h = item;
+                        avatarHtml = `<div class="result-avatar"><i class="fas fa-home"></i></div>`;
+                        title = escapeHtml(h.title);
+                        subtitle = `${escapeHtml(h.location)} · ${h.price} · 🛏️ ${h.bedrooms}`;
+                    } else {
+                        let j = item;
+                        avatarHtml = `<div class="result-avatar">${j.companyLogo ? `<img src="${j.companyLogo}">` : j.company.charAt(0)}</div>`;
+                        title = escapeHtml(j.title);
+                        subtitle = `${escapeHtml(j.company)} · ${j.budget} · 📍 ${j.location}`;
+                    }
+                    return `<div class="search-result-item" data-type="${currentTab === "services" ? "freelancer" : (currentTab === "homes" ? "home" : "job")}" data-id="${item.id}">
+                                ${avatarHtml}
+                                <div class="result-info">
+                                    <div class="result-title">${title}</div>
+                                    <div class="result-sub">${subtitle}</div>
+                                </div>
+                            </div>`;
                 }).join('');
                 resultsDiv.classList.add('show');
                 document.querySelectorAll('.search-result-item').forEach(el=>{
