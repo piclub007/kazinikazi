@@ -21,13 +21,14 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.__db = db;
-        window.__doc = doc;
-        window.__getDoc = getDoc;
-        window.__collection = collection;
-        window.__query = query;
-        window.__where = where;
-        window.__getDocs = getDocs;
+        
+        window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+        window.collection = collection;
+        window.query = query;
+        window.where = where;
+        window.getDocs = getDocs;
     </script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
@@ -56,13 +57,13 @@
 </div>
 <script>
     (function(){
-        const db = window.__db;
-        const docRef = window.__doc;
-        const getDocFn = window.__getDoc;
-        const collectionFn = window.__collection;
-        const queryFn = window.__query;
-        const whereFn = window.__where;
-        const getDocsFn = window.__getDocs;
+        const db = window.db;
+        const doc = window.doc;
+        const getDoc = window.getDoc;
+        const collection = window.collection;
+        const query = window.query;
+        const where = window.where;
+        const getDocs = window.getDocs;
         
         async function loadFreelancerProfile(){
             const freelancerId = localStorage.getItem('knk_selected_freelancer');
@@ -72,24 +73,26 @@
             }
             try{
                 // Fetch user data
-                const userDoc = await getDocFn(docRef(db, "users", freelancerId));
+                const userDoc = await getDoc(doc(db, "users", freelancerId));
                 if(!userDoc.exists()){
                     document.getElementById('profileContent').innerHTML = '<div class="profile-card">Freelancer not found.</div>';
                     return;
                 }
                 const user = userDoc.data();
                 // Fetch worker data
-                const workerQuery = queryFn(collectionFn(db, "workers"), whereFn("user_id", "==", freelancerId));
-                const workerSnap = await getDocsFn(workerQuery);
+                const workersRef = collection(db, "workers");
+                const workerQuery = query(workersRef, where("user_id", "==", freelancerId));
+                const workerSnap = await getDocs(workerQuery);
                 let worker = {};
                 if(!workerSnap.empty) worker = workerSnap.docs[0].data();
                 // Fetch verification status
-                const verifiedDoc = await getDocFn(docRef(db, "verifiedUsers", freelancerId));
+                const verifiedDoc = await getDoc(doc(db, "verifiedUsers", freelancerId));
                 const isVerified = verifiedDoc.exists() && verifiedDoc.data().verified === true;
                 
                 // Fetch reviews
-                const reviewsQuery = queryFn(collectionFn(db, "reviews"), whereFn("revieweeId", "==", freelancerId));
-                const reviewsSnap = await getDocsFn(reviewsQuery);
+                const reviewsRef = collection(db, "reviews");
+                const reviewsQuery = query(reviewsRef, where("revieweeId", "==", freelancerId));
+                const reviewsSnap = await getDocs(reviewsQuery);
                 let reviews = [];
                 reviewsSnap.forEach(d => reviews.push(d.data()));
                 const avgRating = reviews.length ? reviews.reduce((a,b)=>a+b.rating,0)/reviews.length : (worker.reputation_points ? Math.min(5, worker.reputation_points/100) : 3.5);
@@ -97,7 +100,7 @@
                 const generalSkills = worker.general_skills || [];
                 const html = `
                     <div class="profile-card">
-                        <div class="avatar">${user.avatar_url ? `<img src="${user.avatar_url}">` : user.full_name?.charAt(0) || '?'}</div>
+                        <div class="avatar">${user.avatar_url ? `<img src="${user.avatar_url}">` : (user.full_name ? user.full_name.charAt(0).toUpperCase() : '?')}</div>
                         <div class="name">${escapeHtml(user.full_name || 'Freelancer')} ${isVerified ? '<i class="fas fa-check-circle" style="color:#0a66c2;"></i>' : ''}</div>
                         <div class="skill">${escapeHtml(worker.primary_skill_name || 'Professional')}</div>
                         <div class="rating">${'★'.repeat(Math.floor(avgRating))}${'☆'.repeat(5-Math.floor(avgRating))} (${avgRating.toFixed(1)})</div>
