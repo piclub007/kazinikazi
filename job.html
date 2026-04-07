@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Kazi ni Kazi · Job Details</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbhxmAkHJtq3Zs17P4ewHsc8wi8-0M_XI",
+            authDomain: "developers-imw.firebaseapp.com",
+            databaseURL: "https://developers-imw-default-rtdb.firebaseio.com",
+            projectId: "developers-imw",
+            storageBucket: "developers-imw.firebasestorage.app",
+            messagingSenderId: "182400720989",
+            appId: "1:182400720989:web:180f2390f7563f1ec96db4",
+            measurementId: "G-R7RDM0PMY8"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
+        window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
+    </script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#f7f9fc;color:#0f172a;font-size:14px;line-height:1.5;padding:1rem;}
+        .container{max-width:800px;margin:0 auto;}
+        .back-btn{background:transparent;border:none;font-size:1rem;cursor:pointer;color:#0a66c2;margin-bottom:1rem;display:inline-flex;align-items:center;gap:0.3rem;}
+        .job-card{background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1.5rem;margin-bottom:1rem;}
+        .company-logo{width:60px;height:60px;background:#f1f5f9;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:bold;color:#0a66c2;margin-bottom:1rem;}
+        .title{font-size:1.3rem;font-weight:700;}
+        .company{color:#475569;margin-bottom:0.5rem;}
+        .budget{font-size:1.1rem;font-weight:700;color:#0a66c2;}
+        .info-row{display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid #e2e8f0;}
+        .info-label{font-weight:600;}
+        .section-title{font-weight:700;margin:1rem 0 0.5rem;}
+        .skill-tag{background:#eef2ff;padding:0.2rem 0.6rem;border-radius:30px;font-size:0.7rem;display:inline-block;margin:0.2rem;}
+        .apply-btn{background:#0a66c2;color:white;border:none;padding:0.6rem 1.5rem;border-radius:40px;font-weight:600;cursor:pointer;width:100%;margin-top:1rem;}
+        @media (max-width:600px){body{padding:0.8rem;}}
+    </style>
+</head>
+<body>
+<div class="container">
+    <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+    <div id="jobContent">Loading...</div>
+</div>
+<script>
+    (function(){
+        const db = window.db;
+        const doc = window.doc;
+        const getDoc = window.getDoc;
+        
+        async function loadJobDetails(){
+            const jobId = localStorage.getItem('knk_selected_job');
+            if(!jobId){
+                document.getElementById('jobContent').innerHTML = '<div class="job-card">No job selected. <button onclick="window.history.back()">Go back</button></div>';
+                return;
+            }
+            try{
+                const jobDoc = await getDoc(doc(db, "jobs", jobId));
+                if(!jobDoc.exists()){
+                    document.getElementById('jobContent').innerHTML = '<div class="job-card">Job not found.</div>';
+                    return;
+                }
+                const job = jobDoc.data();
+                const payout = job.payout || { amount:0, currency:"USD" };
+                const budget = `${payout.amount} ${payout.currency}`;
+                const skills = job.skills || [];
+                // Try to get company name from companyId if present
+                let companyName = job.company_name || "Company";
+                if(job.companyId){
+                    const companyDoc = await getDoc(doc(db, "users", job.companyId));
+                    if(companyDoc.exists()){
+                        companyName = companyDoc.data().company_name || companyName;
+                    }
+                }
+                const html = `
+                    <div class="job-card">
+                        <div class="company-logo">${companyName.charAt(0).toUpperCase()}</div>
+                        <div class="title">${escapeHtml(job.title)}</div>
+                        <div class="company">🏢 ${escapeHtml(companyName)}</div>
+                        <div class="budget">💰 ${budget}</div>
+                        <div class="info-row"><span class="info-label">📍 Location</span><span>${escapeHtml(job.location || 'Remote')}</span></div>
+                        <div class="info-row"><span class="info-label">📅 Posted</span><span>${job.createdAt ? new Date(job.createdAt).toLocaleDateString() : 'Recently'}</span></div>
+                        <div class="section-title">📝 Description</div>
+                        <p>${escapeHtml(job.description || 'No description provided.')}</p>
+                        <div class="section-title">🔧 Required Skills</div>
+                        <div>${skills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join('') || 'None specified'}</div>
+                        <div class="section-title">📋 Requirements</div>
+                        <p>${escapeHtml(job.requirements || 'No specific requirements listed.')}</p>
+                        <button class="apply-btn" id="applyJobBtn">Apply for this job</button>
+                    </div>
+                `;
+                document.getElementById('jobContent').innerHTML = html;
+                document.getElementById('applyJobBtn')?.addEventListener('click',()=>{
+                    alert("Application feature coming soon. Please sign in to apply.");
+                    window.location.href = 'auth.html';
+                });
+            } catch(e){
+                console.error(e);
+                document.getElementById('jobContent').innerHTML = '<div class="job-card">Error loading job details.</div>';
+            }
+        }
+        function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;');}
+        loadJobDetails();
+    })();
+</script>
+</body>
+</html>
