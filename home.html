@@ -21,9 +21,10 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        window.__db = db;
-        window.__doc = doc;
-        window.__getDoc = getDoc;
+        
+        window.db = db;
+        window.doc = doc;
+        window.getDoc = getDoc;
     </script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
@@ -54,9 +55,9 @@
 </div>
 <script>
     (function(){
-        const db = window.__db;
-        const docRef = window.__doc;
-        const getDocFn = window.__getDoc;
+        const db = window.db;
+        const doc = window.doc;
+        const getDoc = window.getDoc;
         
         async function loadHomeDetails(){
             const homeId = localStorage.getItem('knk_selected_home');
@@ -65,7 +66,7 @@
                 return;
             }
             try{
-                const homeDoc = await getDocFn(docRef(db, "realEstateHomes", homeId));
+                const homeDoc = await getDoc(doc(db, "realEstateHomes", homeId));
                 if(!homeDoc.exists()){
                     document.getElementById('homeContent').innerHTML = '<div class="property-card">Property not found.</div>';
                     return;
