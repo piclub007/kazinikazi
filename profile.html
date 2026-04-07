@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Kazi ni Kazi · Freelancer Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbhxmAkHJtq3Zs17P4ewHsc8wi8-0M_XI",
+            authDomain: "developers-imw.firebaseapp.com",
+            databaseURL: "https://developers-imw-default-rtdb.firebaseio.com",
+            projectId: "developers-imw",
+            storageBucket: "developers-imw.firebasestorage.app",
+            messagingSenderId: "182400720989",
+            appId: "1:182400720989:web:180f2390f7563f1ec96db4",
+            measurementId: "G-R7RDM0PMY8"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.__db = db;
+        window.__doc = doc;
+        window.__getDoc = getDoc;
+        window.__collection = collection;
+        window.__query = query;
+        window.__where = where;
+        window.__getDocs = getDocs;
+    </script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#f7f9fc;color:#0f172a;font-size:14px;line-height:1.5;padding:1rem;}
+        .container{max-width:800px;margin:0 auto;}
+        .back-btn{background:transparent;border:none;font-size:1rem;cursor:pointer;color:#0a66c2;margin-bottom:1rem;display:inline-flex;align-items:center;gap:0.3rem;}
+        .profile-card{background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1.5rem;margin-bottom:1rem;}
+        .avatar{width:100px;height:100px;border-radius:50%;margin:0 auto 1rem;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:600;color:#0a66c2;overflow:hidden;}
+        .avatar img{width:100%;height:100%;object-fit:cover;}
+        .name{font-size:1.4rem;font-weight:700;text-align:center;display:flex;align-items:center;justify-content:center;gap:0.3rem;}
+        .skill{text-align:center;color:#475569;margin:0.3rem 0;}
+        .rating{text-align:center;color:#fbbf24;margin:0.3rem 0;}
+        .info-row{display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid #e2e8f0;}
+        .info-label{font-weight:600;color:#334155;}
+        .info-value{color:#0f172a;}
+        .section-title{font-weight:700;font-size:1rem;margin:1rem 0 0.5rem;}
+        .skill-tag{background:#eef2ff;padding:0.3rem 0.7rem;border-radius:30px;font-size:0.7rem;display:inline-block;margin:0.2rem;}
+        .toast{position:fixed;bottom:20px;right:20px;background:#1e293b;color:white;padding:0.4rem 1rem;border-radius:40px;z-index:1100;font-size:0.75rem;}
+        @media (max-width:600px){body{padding:0.8rem;}}
+    </style>
+</head>
+<body>
+<div class="container">
+    <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
+    <div id="profileContent">Loading...</div>
+</div>
+<script>
+    (function(){
+        const db = window.__db;
+        const docRef = window.__doc;
+        const getDocFn = window.__getDoc;
+        const collectionFn = window.__collection;
+        const queryFn = window.__query;
+        const whereFn = window.__where;
+        const getDocsFn = window.__getDocs;
+        
+        async function loadFreelancerProfile(){
+            const freelancerId = localStorage.getItem('knk_selected_freelancer');
+            if(!freelancerId){
+                document.getElementById('profileContent').innerHTML = '<div class="profile-card">No freelancer selected. <button onclick="window.history.back()">Go back</button></div>';
+                return;
+            }
+            try{
+                // Fetch user data
+                const userDoc = await getDocFn(docRef(db, "users", freelancerId));
+                if(!userDoc.exists()){
+                    document.getElementById('profileContent').innerHTML = '<div class="profile-card">Freelancer not found.</div>';
+                    return;
+                }
+                const user = userDoc.data();
+                // Fetch worker data
+                const workerQuery = queryFn(collectionFn(db, "workers"), whereFn("user_id", "==", freelancerId));
+                const workerSnap = await getDocsFn(workerQuery);
+                let worker = {};
+                if(!workerSnap.empty) worker = workerSnap.docs[0].data();
+                // Fetch verification status
+                const verifiedDoc = await getDocFn(docRef(db, "verifiedUsers", freelancerId));
+                const isVerified = verifiedDoc.exists() && verifiedDoc.data().verified === true;
+                
+                // Fetch reviews
+                const reviewsQuery = queryFn(collectionFn(db, "reviews"), whereFn("revieweeId", "==", freelancerId));
+                const reviewsSnap = await getDocsFn(reviewsQuery);
+                let reviews = [];
+                reviewsSnap.forEach(d => reviews.push(d.data()));
+                const avgRating = reviews.length ? reviews.reduce((a,b)=>a+b.rating,0)/reviews.length : (worker.reputation_points ? Math.min(5, worker.reputation_points/100) : 3.5);
+                
+                const generalSkills = worker.general_skills || [];
+                const html = `
+                    <div class="profile-card">
+                        <div class="avatar">${user.avatar_url ? `<img src="${user.avatar_url}">` : user.full_name?.charAt(0) || '?'}</div>
+                        <div class="name">${escapeHtml(user.full_name || 'Freelancer')} ${isVerified ? '<i class="fas fa-check-circle" style="color:#0a66c2;"></i>' : ''}</div>
+                        <div class="skill">${escapeHtml(worker.primary_skill_name || 'Professional')}</div>
+                        <div class="rating">${'★'.repeat(Math.floor(avgRating))}${'☆'.repeat(5-Math.floor(avgRating))} (${avgRating.toFixed(1)})</div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="info-row"><span class="info-label">📍 Location</span><span class="info-value">${escapeHtml(user.address || 'Not specified')}</span></div>
+                        <div class="info-row"><span class="info-label">📧 Email</span><span class="info-value">${escapeHtml(user.email || '')}</span></div>
+                        <div class="info-row"><span class="info-label">💰 Earning range</span><span class="info-value">${escapeHtml(worker.earning_range || 'Not set')}</span></div>
+                        <div class="info-row"><span class="info-label">⭐ Reputation points</span><span class="info-value">${worker.reputation_points || 0}</span></div>
+                        <div class="info-row"><span class="info-label">📁 Completed projects</span><span class="info-value">${worker.completed_projects || 0}</span></div>
+                    </div>
+                    ${worker.portfolio_url ? `<div class="profile-card"><div class="info-row"><span class="info-label">🌐 Portfolio</span><span class="info-value"><a href="${worker.portfolio_url}" target="_blank">${worker.portfolio_url}</a></span></div></div>` : ''}
+                    <div class="profile-card">
+                        <div class="section-title">🔧 General Skills</div>
+                        <div>${generalSkills.map(s => `<span class="skill-tag">${escapeHtml(s.skill || s)}</span>`).join('') || 'None'}</div>
+                    </div>
+                    <div class="profile-card">
+                        <div class="section-title">📝 Recent Reviews</div>
+                        ${reviews.length ? reviews.map(r => `<div style="border-bottom:1px solid #eef2f6; padding:0.5rem 0;"><div class="stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div><div><strong>${escapeHtml(r.author || 'Client')}</strong> <span style="font-size:0.7rem;">${new Date(r.createdAt).toLocaleDateString()}</span></div><div>${escapeHtml(r.comment)}</div></div>`).join('') : '<p>No reviews yet.</p>'}
+                    </div>
+                `;
+                document.getElementById('profileContent').innerHTML = html;
+            } catch(e){
+                console.error(e);
+                document.getElementById('profileContent').innerHTML = '<div class="profile-card">Error loading profile. Please try again.</div>';
+            }
+        }
+        function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;');}
+        loadFreelancerProfile();
+    })();
+</script>
+</body>
+</html>
