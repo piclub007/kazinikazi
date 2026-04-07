@@ -57,6 +57,9 @@
         .tabs{display:flex;background:white;border-bottom:1px solid #e2e8f0;position:sticky;top:95px;z-index:99;}
         .tab-btn{flex:1;padding:0.6rem;text-align:center;font-weight:600;font-size:0.75rem;cursor:pointer;background:transparent;border:none;color:#475569;}
         .tab-btn.active{color:#0a66c2;border-bottom:2px solid #0a66c2;}
+        .action-row{display:flex;gap:0.8rem;padding:0.6rem 1rem;background:white;border-bottom:1px solid #e2e8f0;}
+        .action-mobile{flex:1;display:flex;align-items:center;justify-content:center;gap:0.4rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:40px;padding:0.5rem;font-size:0.7rem;font-weight:500;cursor:pointer;color:#0a66c2;}
+        .action-mobile i{font-size:0.8rem;}
         .content-area{padding:0.8rem;}
         .category-section{margin-bottom:1.5rem;}
         .category-title{font-weight:700;font-size:0.9rem;margin-bottom:0.6rem;}
@@ -78,7 +81,6 @@
         .company-logo{width:40px;height:40px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#0a66c2;overflow:hidden;}
         .job-details{flex:1;}
         .job-title{font-weight:600;font-size:0.75rem;}
-        .sidebar-right{display:none;} /* hide desktop sidebar on mobile */
         .footer-section{margin-top:1.5rem;text-align:center;border-top:1px solid #e2e8f0;padding:1rem 0.5rem;}
         .footer-text{font-size:0.6rem;color:#64748b;}
         .ad-space{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:0.6rem;margin:0.8rem auto 0;text-align:center;font-size:0.65rem;color:#475569;max-width:90%;}
@@ -86,7 +88,7 @@
         .empty-state{text-align:center;padding:1.5rem;background:#fafcff;border-radius:0.8rem;margin:1rem 0;}
         .btn-outline{background:transparent;border:1px solid #0a66c2;color:#0a66c2;padding:0.3rem 0.8rem;border-radius:30px;cursor:pointer;font-size:0.7rem;margin-top:0.5rem;}
         @media (min-width:769px){
-            body{display:none;} /* only for mobile screens */
+            body{display:none;}
         }
     </style>
 </head>
@@ -107,6 +109,10 @@
     <button class="tab-btn active" data-tab="services"><i class="fas fa-briefcase"></i> Services</button>
     <button class="tab-btn" data-tab="homes"><i class="fas fa-home"></i> Homes</button>
     <button class="tab-btn" data-tab="jobs"><i class="fas fa-chart-line"></i> Jobs</button>
+</div>
+<div class="action-row">
+    <div class="action-mobile" id="becomeHostMobile"><i class="fas fa-door-open"></i> Become a host</div>
+    <div class="action-mobile" id="postJobMobile"><i class="fas fa-plus-circle"></i> Post a job / profile</div>
 </div>
 <div id="contentArea" class="content-area"><div style="text-align:center;padding:2rem;">loading...</div></div>
 <div class="footer-section">
@@ -418,6 +424,10 @@
         function renderTicker(){
             document.getElementById('ticker').innerHTML = `<div class="ticker-content"><i class="fas fa-circle-info"></i> ${tickerMessages.join(' <i class="fas fa-circle"></i> ')}</div>`;
         }
+
+        // Action buttons
+        document.getElementById('becomeHostMobile')?.addEventListener('click',()=>window.location.href='settingsho.html');
+        document.getElementById('postJobMobile')?.addEventListener('click',()=>window.location.href='auth.html');
 
         window.addEventListener('load',async()=>{
             let attempts=0;
