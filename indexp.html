@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Kazi ni Kazi · Mobile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyBbhxmAkHJtq3Zs17P4ewHsc8wi8-0M_XI",
+            authDomain: "developers-imw.firebaseapp.com",
+            databaseURL: "https://developers-imw-default-rtdb.firebaseio.com",
+            projectId: "developers-imw",
+            storageBucket: "developers-imw.firebasestorage.app",
+            messagingSenderId: "182400720989",
+            appId: "1:182400720989:web:180f2390f7563f1ec96db4",
+            measurementId: "G-R7RDM0PMY8"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.__db = db;
+        window.__collection = collection;
+        window.__getDocs = getDocs;
+        window.__query = query;
+        window.__where = where;
+        window.__doc = doc;
+        window.__getDoc = getDoc;
+    </script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Inter',sans-serif;background:#f7f9fc;color:#0f172a;font-size:14px;line-height:1.5;overflow-x:hidden;}
+        .loading-bar{position:fixed;top:0;left:0;width:100%;height:3px;background:#e2e8f0;z-index:2000;visibility:hidden;}
+        .loading-bar .progress{width:0%;height:100%;background:#0a66c2;transition:width 0.3s;}
+        .loading-bar.active{visibility:visible;}
+        .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:0.6rem 1rem;display:flex;flex-direction:column;gap:0.6rem;position:sticky;top:0;z-index:100;}
+        .logo-area{display:flex;align-items:center;justify-content:space-between;}
+        .logo-area img{height:28px;}
+        .logo-text{font-weight:700;font-size:1rem;background:linear-gradient(135deg,#0a66c2,#00a3ff);-webkit-background-clip:text;background-clip:text;color:transparent;}
+        .contact-link{border:1px solid #cbd5e1;padding:0.2rem 0.8rem;border-radius:30px;font-size:0.7rem;cursor:pointer;}
+        .global-search{width:100%;position:relative;}
+        .global-search input{width:100%;padding:0.5rem 1rem;border:1px solid #cbd5e1;border-radius:40px;font-size:0.8rem;outline:none;}
+        .search-results{position:absolute;top:100%;left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:12px;max-height:300px;overflow-y:auto;z-index:200;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+        .search-results.show{display:block;}
+        .search-result-item{padding:0.6rem;cursor:pointer;border-bottom:1px solid #f1f5f9;display:flex;gap:0.6rem;align-items:center;}
+        .result-avatar{width:36px;height:36px;border-radius:50%;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#0a66c2;overflow:hidden;font-size:0.8rem;}
+        .result-info{flex:1;}
+        .result-title{font-weight:600;font-size:0.75rem;}
+        .result-sub{font-size:0.65rem;color:#475569;}
+        .ticker{background:#f1f5f9;border-bottom:1px solid #e2e8f0;padding:0.3rem 0.8rem;overflow:hidden;white-space:nowrap;}
+        .ticker-content{display:inline-block;animation:scrollTicker 35s linear infinite;font-size:0.65rem;color:#334155;}
+        .ticker-content i{margin:0 6px;color:#5e6f8d;}
+        @keyframes scrollTicker{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
+        .ticker:hover .ticker-content{animation-play-state:paused;}
+        .tabs{display:flex;background:white;border-bottom:1px solid #e2e8f0;position:sticky;top:95px;z-index:99;}
+        .tab-btn{flex:1;padding:0.6rem;text-align:center;font-weight:600;font-size:0.75rem;cursor:pointer;background:transparent;border:none;color:#475569;}
+        .tab-btn.active{color:#0a66c2;border-bottom:2px solid #0a66c2;}
+        .content-area{padding:0.8rem;}
+        .category-section{margin-bottom:1.5rem;}
+        .category-title{font-weight:700;font-size:0.9rem;margin-bottom:0.6rem;}
+        .horizontal-scroll{display:flex;overflow-x:auto;gap:0.8rem;padding-bottom:0.3rem;}
+        .freelancer-card{flex:0 0 160px;background:white;border:1px solid #e2e8f0;border-radius:0.8rem;padding:0.6rem;text-align:center;cursor:pointer;}
+        .avatar{width:60px;height:60px;border-radius:50%;margin:0 auto 0.4rem;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:600;color:#0a66c2;overflow:hidden;}
+        .avatar img{width:100%;height:100%;object-fit:cover;}
+        .name{font-weight:600;font-size:0.75rem;display:flex;align-items:center;justify-content:center;gap:0.2rem;}
+        .skill{font-size:0.65rem;color:#475569;}
+        .stars{font-size:0.65rem;color:#fbbf24;}
+        .homes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.8rem;}
+        .home-card{border:1px solid #e2e8f0;border-radius:0.8rem;overflow:hidden;cursor:pointer;}
+        .home-img{height:110px;background-size:cover;background-color:#eef2ff;}
+        .home-info{padding:0.5rem;}
+        .home-info strong{font-size:0.75rem;}
+        .home-info div{font-size:0.65rem;}
+        .job-list{display:flex;flex-direction:column;gap:0.8rem;}
+        .job-item{border:1px solid #e2e8f0;border-radius:0.8rem;padding:0.6rem;display:flex;gap:0.6rem;align-items:center;cursor:pointer;}
+        .company-logo{width:40px;height:40px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#0a66c2;overflow:hidden;}
+        .job-details{flex:1;}
+        .job-title{font-weight:600;font-size:0.75rem;}
+        .sidebar-right{display:none;} /* hide desktop sidebar on mobile */
+        .footer-section{margin-top:1.5rem;text-align:center;border-top:1px solid #e2e8f0;padding:1rem 0.5rem;}
+        .footer-text{font-size:0.6rem;color:#64748b;}
+        .ad-space{background:#f8fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:0.6rem;margin:0.8rem auto 0;text-align:center;font-size:0.65rem;color:#475569;max-width:90%;}
+        .toast{position:fixed;bottom:20px;right:20px;background:#1e293b;color:white;padding:0.3rem 0.8rem;border-radius:40px;z-index:1100;font-size:0.65rem;}
+        .empty-state{text-align:center;padding:1.5rem;background:#fafcff;border-radius:0.8rem;margin:1rem 0;}
+        .btn-outline{background:transparent;border:1px solid #0a66c2;color:#0a66c2;padding:0.3rem 0.8rem;border-radius:30px;cursor:pointer;font-size:0.7rem;margin-top:0.5rem;}
+        @media (min-width:769px){
+            body{display:none;} /* only for mobile screens */
+        }
+    </style>
+</head>
+<body>
+<div class="loading-bar" id="loadingBar"><div class="progress" id="loadingProgress"></div></div>
+<nav class="navbar">
+    <div class="logo-area">
+        <div><img src="images/logo.png" alt="logo" onerror="this.src='https://placehold.co/80x24'"><span class="logo-text"> kazi ni kazi</span></div>
+        <div class="contact-link" id="contactBtn">contact</div>
+    </div>
+    <div class="global-search">
+        <input type="text" id="globalSearchInput" placeholder="Search for freelancers, homes, jobs...">
+        <div id="globalSearchResults" class="search-results"></div>
+    </div>
+</nav>
+<div class="ticker" id="ticker"></div>
+<div class="tabs">
+    <button class="tab-btn active" data-tab="services"><i class="fas fa-briefcase"></i> Services</button>
+    <button class="tab-btn" data-tab="homes"><i class="fas fa-home"></i> Homes</button>
+    <button class="tab-btn" data-tab="jobs"><i class="fas fa-chart-line"></i> Jobs</button>
+</div>
+<div id="contentArea" class="content-area"><div style="text-align:center;padding:2rem;">loading...</div></div>
+<div class="footer-section">
+    <div class="footer-text">© 2026 kazi ni kazi by Rwanda PI Club</div>
+    <div class="ad-space" id="adSpace"><i class="fas fa-ad"></i> Ad space – promote your business</div>
+</div>
+
+<script>
+    (function(){
+        // Firebase & globals
+        let db, collectionFn, getDocsFn, queryFn, whereFn, docFn, getDocFn;
+        let currentTab = "services";
+        let allFreelancers = [], allHomes = [], allJobs = [];
+        let verifiedUsers = new Set();
+        
+        // algorithm storage
+        let userProfile = JSON.parse(localStorage.getItem('knk_algorithm_profile')) || {
+            categoryClicks: {}, searchTerms: [], viewedIds: [], totalInteractions: 0
+        };
+        function saveProfile() { localStorage.setItem('knk_algorithm_profile', JSON.stringify(userProfile)); }
+        function trackCategory(cat) { userProfile.categoryClicks[cat] = (userProfile.categoryClicks[cat]||0)+1; userProfile.totalInteractions++; saveProfile(); }
+        function trackSearch(term) { if(term){ userProfile.searchTerms.unshift(term); if(userProfile.searchTerms.length>20) userProfile.searchTerms.pop(); saveProfile(); } }
+        function trackView(type, id) { userProfile.viewedIds.unshift(`${type}:${id}`); if(userProfile.viewedIds.length>50) userProfile.viewedIds.pop(); saveProfile(); }
+
+        function showToast(msg) { let t=document.createElement('div');t.className='toast';t.innerText=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2000);}
+        function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;');}
+        function setLoading(show){ let bar=document.getElementById('loadingBar'), prog=document.getElementById('loadingProgress'); if(show){ bar.classList.add('active'); prog.style.width='30%'; setTimeout(()=>prog.style.width='70%',100); }else{ prog.style.width='100%'; setTimeout(()=>{ bar.classList.remove('active'); prog.style.width='0'; },300); } }
+
+        // ---------- DATA FETCH ----------
+        async function fetchFreelancers(){
+            const usersRef = collectionFn(db, "users");
+            const q = queryFn(usersRef, whereFn("user_type", "==", "worker"));
+            const snap = await getDocsFn(q);
+            let workers = [];
+            for(const userDoc of snap.docs){
+                const user = userDoc.data();
+                const workerQuery = queryFn(collectionFn(db, "workers"), whereFn("user_id", "==", userDoc.id));
+                const workerSnap = await getDocsFn(workerQuery);
+                let workerData = {};
+                if(!workerSnap.empty) workerData = workerSnap.docs[0].data();
+                const verifiedDoc = await getDocFn(docFn(db, "verifiedUsers", userDoc.id));
+                const isVerified = verifiedDoc.exists() && verifiedDoc.data().verified === true;
+                if(isVerified) verifiedUsers.add(userDoc.id);
+                workers.push({
+                    id: userDoc.id,
+                    full_name: user.full_name || "Freelancer",
+                    avatar: user.avatar_url || "",
+                    primary_skill: workerData.primary_skill_name || "Professional",
+                    category: workerData.primary_skill_category || "general",
+                    rating: workerData.reputation_points ? Math.min(5, workerData.reputation_points/100) : 3.5,
+                    location: user.address || "Remote",
+                    verified: isVerified
+                });
+            }
+            return workers;
+        }
+        async function fetchHomes(){
+            const snap = await getDocsFn(collectionFn(db, "realEstateHomes"));
+            let homes = [];
+            snap.forEach(d=>{
+                let data=d.data();
+                homes.push({
+                    id:d.id, title:data.title||"Property", location:data.location||"Unknown",
+                    price:data.price||"$0", guests:data.bedrooms?parseInt(data.bedrooms)*2:4,
+                    type:(data.propertyType||"house").toLowerCase(), image:(data.images&&data.images[0])||"https://placehold.co/400x200?text=Home",
+                    bedrooms:data.bedrooms||1, bathrooms:data.bathrooms||1
+                });
+            });
+            return homes;
+        }
+        async function fetchJobs(){
+            const snap = await getDocsFn(collectionFn(db, "jobs"));
+            let jobs = [];
+            for(const doc of snap.docs){
+                let data=doc.data();
+                let companyName = data.company_name || "Company";
+                let companyLogo = null;
+                if(data.companyId){
+                    const companyDoc = await getDocFn(docFn(db, "users", data.companyId));
+                    if(companyDoc.exists()){
+                        companyName = companyDoc.data().company_name || companyName;
+                        companyLogo = companyDoc.data().avatar_url || null;
+                    }
+                }
+                let payout = data.payout || { amount:0, currency:"USD" };
+                let usdAmount = payout.currency === "RWF" ? payout.amount/1200 : payout.amount;
+                jobs.push({
+                    id:doc.id, title:data.title||"Position", company:companyName, companyLogo:companyLogo,
+                    budget: `${payout.amount} ${payout.currency}`, usdAmount: usdAmount,
+                    location:data.location||"Remote", category:data.category||"general",
+                    description:data.description||"", skills:data.skills||[]
+                });
+            }
+            return jobs;
+        }
+
+        // ---------- CATEGORY ORDERING (algorithm) ----------
+        const allCategoryNames = ["Web & Software Development","Graphic & Visual Design","Writing & Content Creation","Digital Marketing & SEO",
+            "Video & Audio Production","Local & Physical Services","Event Planning & Lifestyle","Education & Tutoring",
+            "Administrative & Business Support","Sales & Lead Generation"];
+        function getOrderedCategories(filteredFreelancers){
+            let catCounts = {};
+            allCategoryNames.forEach(c=>catCounts[c]=0);
+            filteredFreelancers.forEach(f=>{ if(f.category && catCounts[f.category]!==undefined) catCounts[f.category]++; });
+            let sorted = allCategoryNames.filter(c=>catCounts[c]>0);
+            sorted.sort((a,b)=>{
+                let scoreA = userProfile.categoryClicks[a]||0;
+                let scoreB = userProfile.categoryClicks[b]||0;
+                if(scoreA !== scoreB) return scoreB - scoreA;
+                return catCounts[b] - catCounts[a];
+            });
+            if(userProfile.totalInteractions>5 && sorted.length){
+                let top = sorted[0];
+                return [top, ...sorted.filter(c=>c!==top)];
+            }
+            return sorted;
+        }
+
+        // ---------- RENDER FUNCTIONS ----------
+        let globalSearchTerm = "";
+
+        function renderServices(){
+            let filtered = [...allFreelancers];
+            if(allFreelancers.length===0){
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-user-plus"></i><p>No freelancers yet.</p><button class="btn-outline" id="joinFreelancerBtn">Become a freelancer</button></div>`;
+                document.getElementById('joinFreelancerBtn')?.addEventListener('click',()=>window.location.href='auth.html');
+                return;
+            }
+            let orderedCats = getOrderedCategories(filtered);
+            let html = "";
+            for(let cat of orderedCats){
+                let catFreelancers = filtered.filter(f=>f.category===cat);
+                if(catFreelancers.length===0) continue;
+                html += `<div class="category-section"><div class="category-title">${cat}</div><div class="horizontal-scroll">`;
+                catFreelancers.forEach(f=>{
+                    let initial = f.full_name.charAt(0).toUpperCase();
+                    html += `<div class="freelancer-card" data-id="${f.id}" data-category="${cat}"><div class="avatar">${f.avatar?`<img src="${f.avatar}">`:initial}</div><div class="name">${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div><div class="skill">${escapeHtml(f.primary_skill)}</div><div class="stars">${'★'.repeat(Math.floor(f.rating))}${'☆'.repeat(5-Math.floor(f.rating))}</div><div style="font-size:0.6rem;">📍 ${escapeHtml(f.location)}</div></div>`;
+                });
+                html += `</div></div>`;
+            }
+            if(html==="") html = "<div class='empty-state'><i class='fas fa-user-slash'></i><p>No freelancers found.</p></div>";
+            document.getElementById('contentArea').innerHTML = html;
+            attachFreelancerClicks();
+        }
+        function attachFreelancerClicks(){
+            document.querySelectorAll('.freelancer-card').forEach(card=>{
+                card.addEventListener('click',()=>{
+                    let id = card.getAttribute('data-id');
+                    let cat = card.getAttribute('data-category');
+                    trackCategory(cat);
+                    trackView('freelancer',id);
+                    localStorage.setItem('knk_selected_freelancer',id);
+                    window.location.href='profile.html';
+                });
+            });
+        }
+
+        function renderHomes(){
+            let filtered = [...allHomes];
+            if(allHomes.length===0){
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-home"></i><p>No homes listed.</p><button class="btn-outline" id="becomeHostEmpty">List your property</button></div>`;
+                document.getElementById('becomeHostEmpty')?.addEventListener('click',()=>window.location.href='settingsho.html');
+                return;
+            }
+            let html = `<div class="homes-grid">`;
+            filtered.forEach(h=>{
+                html += `<div class="home-card" data-id="${h.id}"><div class="home-img" style="background-image:url('${h.image}');"></div><div class="home-info"><strong>${escapeHtml(h.title)}</strong><div>📍 ${escapeHtml(h.location)}</div><div>💰 ${h.price} · 🛏️ ${h.bedrooms}</div></div></div>`;
+            });
+            html += `</div>`;
+            document.getElementById('contentArea').innerHTML = html;
+            document.querySelectorAll('.home-card').forEach(c=>{
+                c.addEventListener('click',()=>{
+                    let id = c.getAttribute('data-id');
+                    trackView('home',id);
+                    localStorage.setItem('knk_selected_home',id);
+                    window.location.href='home.html';
+                });
+            });
+        }
+
+        function renderJobs(){
+            let filtered = [...allJobs];
+            if(allJobs.length===0){
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-briefcase"></i><p>No jobs posted.</p><button class="btn-outline" id="postJobEmpty">Post a job</button></div>`;
+                document.getElementById('postJobEmpty')?.addEventListener('click',()=>window.location.href='auth.html');
+                return;
+            }
+            let html = `<div class="job-list">`;
+            filtered.forEach(j=>{
+                let logoHtml = j.companyLogo ? `<img src="${j.companyLogo}" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">` : `<div class="company-logo">${j.company.charAt(0)}</div>`;
+                html += `<div class="job-item" data-id="${j.id}">${logoHtml}<div class="job-details"><div class="job-title">${escapeHtml(j.title)}</div><div style="font-size:0.65rem;color:#475569;">🏢 ${escapeHtml(j.company)} · 💰 ${j.budget}</div><div style="font-size:0.6rem;">📍 ${j.location}</div></div></div>`;
+            });
+            html += `</div>`;
+            document.getElementById('contentArea').innerHTML = html;
+            document.querySelectorAll('.job-item').forEach(item=>{
+                item.addEventListener('click',()=>{
+                    let id = item.getAttribute('data-id');
+                    trackView('job',id);
+                    localStorage.setItem('knk_selected_job',id);
+                    window.location.href='job.html';
+                });
+            });
+        }
+
+        // ---------- GLOBAL SEARCH (detailed) ----------
+        let searchTimeout;
+        function performGlobalSearch(){
+            let term = document.getElementById('globalSearchInput').value.trim();
+            trackSearch(term);
+            let resultsDiv = document.getElementById('globalSearchResults');
+            if(term.length<2){ resultsDiv.classList.remove('show'); return; }
+            let combined = [];
+            if(currentTab==="services") combined = allFreelancers.filter(f=>f.full_name.toLowerCase().includes(term.toLowerCase()) || f.primary_skill.toLowerCase().includes(term.toLowerCase())).slice(0,5);
+            else if(currentTab==="homes") combined = allHomes.filter(h=>h.title.toLowerCase().includes(term.toLowerCase()) || h.location.toLowerCase().includes(term.toLowerCase())).slice(0,5);
+            else combined = allJobs.filter(j=>j.title.toLowerCase().includes(term.toLowerCase()) || j.company.toLowerCase().includes(term.toLowerCase())).slice(0,5);
+            if(combined.length){
+                resultsDiv.innerHTML = combined.map(item=>{
+                    let avatarHtml = '';
+                    let title = '';
+                    let subtitle = '';
+                    if(currentTab==="services"){
+                        let f = item;
+                        let initial = f.full_name.charAt(0).toUpperCase();
+                        avatarHtml = `<div class="result-avatar">${f.avatar ? `<img src="${f.avatar}">` : initial}</div>`;
+                        title = `${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle" style="color:#0a66c2;"></i>' : ''}`;
+                        subtitle = `${escapeHtml(f.primary_skill)} · ⭐ ${f.rating.toFixed(1)} · 📍 ${escapeHtml(f.location)}`;
+                    } else if(currentTab==="homes"){
+                        let h = item;
+                        avatarHtml = `<div class="result-avatar"><i class="fas fa-home"></i></div>`;
+                        title = escapeHtml(h.title);
+                        subtitle = `${escapeHtml(h.location)} · ${h.price} · 🛏️ ${h.bedrooms}`;
+                    } else {
+                        let j = item;
+                        avatarHtml = `<div class="result-avatar">${j.companyLogo ? `<img src="${j.companyLogo}">` : j.company.charAt(0)}</div>`;
+                        title = escapeHtml(j.title);
+                        subtitle = `${escapeHtml(j.company)} · ${j.budget} · 📍 ${j.location}`;
+                    }
+                    return `<div class="search-result-item" data-type="${currentTab === "services" ? "freelancer" : (currentTab === "homes" ? "home" : "job")}" data-id="${item.id}">
+                                ${avatarHtml}
+                                <div class="result-info">
+                                    <div class="result-title">${title}</div>
+                                    <div class="result-sub">${subtitle}</div>
+                                </div>
+                            </div>`;
+                }).join('');
+                resultsDiv.classList.add('show');
+                document.querySelectorAll('.search-result-item').forEach(el=>{
+                    el.addEventListener('click',()=>{
+                        let type = el.getAttribute('data-type');
+                        let id = el.getAttribute('data-id');
+                        localStorage.setItem(`knk_selected_${type}`, id);
+                        window.location.href = type === 'freelancer' ? 'profile.html' : (type === 'home' ? 'home.html' : 'job.html');
+                    });
+                });
+            } else resultsDiv.classList.remove('show');
+        }
+        document.getElementById('globalSearchInput').addEventListener('input',()=>{
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(performGlobalSearch,300);
+        });
+        document.addEventListener('click',(e)=>{ if(!e.target.closest('.global-search')) document.getElementById('globalSearchResults').classList.remove('show'); });
+
+        // ---------- LOAD DATA & SWITCH TABS ----------
+        async function loadAllData(){
+            setLoading(true);
+            try{
+                [allFreelancers, allHomes, allJobs] = await Promise.all([fetchFreelancers(), fetchHomes(), fetchJobs()]);
+            }catch(e){ console.error(e); showToast("Error loading data"); }
+            setLoading(false);
+            if(currentTab==="services") renderServices();
+            else if(currentTab==="homes") renderHomes();
+            else renderJobs();
+        }
+
+        // spotlight & ticker (simplified for mobile)
+        let spotlightItems = JSON.parse(localStorage.getItem('knk_spotlight_items')) || [
+            { image:"https://placehold.co/200x200/0a66c2/white?text=Welcome", description:"trusted freelancers, homes & jobs — 2026 edition", link:"#" },
+            { image:"https://placehold.co/200x200/eab308/white?text=Verified", description:"verified badge → higher trust & visibility", link:"#" },
+            { image:"https://placehold.co/200x200/10b981/white?text=Promote", description:"reach 12k+ active clients · featured listing", link:"#" }
+        ];
+        let currentSlide=0, slideInterval;
+        function renderSpotlight(){
+            let container = document.getElementById('spotlightContainer');
+            if(container){
+                container.innerHTML = spotlightItems.map((item,idx)=>`
+                    <div class="spotlight-slide ${idx===0?'active':''}" data-link="${item.link}">
+                        <img src="${item.image}" alt="spot">
+                        <p style="font-size:0.7rem;">${escapeHtml(item.description)}</p>
+                    </div>
+                `).join('');
+                let slides = document.querySelectorAll('.spotlight-slide');
+                slides.forEach((s,i)=>s.addEventListener('click',()=>{ let link=s.getAttribute('data-link'); if(link && link!='#') window.open(link,'_blank'); else showToast("spotlight link not set"); }));
+                if(slideInterval) clearInterval(slideInterval);
+                slideInterval = setInterval(()=>{
+                    let slidesArr = document.querySelectorAll('.spotlight-slide');
+                    if(slidesArr.length===0) return;
+                    slidesArr[currentSlide].classList.remove('active');
+                    currentSlide = (currentSlide+1)%slidesArr.length;
+                    slidesArr[currentSlide].classList.add('active');
+                },8000);
+            }
+        }
+
+        let tickerMessages = JSON.parse(localStorage.getItem('knk_ticker_messages')) || [
+            "2026 updates · verified freelancers · new remote jobs added daily",
+            "book homes with instant confirmation",
+            "verification drive — boost your profile"
+        ];
+        function renderTicker(){
+            document.getElementById('ticker').innerHTML = `<div class="ticker-content"><i class="fas fa-circle-info"></i> ${tickerMessages.join(' <i class="fas fa-circle"></i> ')}</div>`;
+        }
+
+        window.addEventListener('load',async()=>{
+            let attempts=0;
+            while(!window.__db && attempts<30){ await new Promise(r=>setTimeout(r,100)); attempts++; }
+            if(!window.__db){ showToast("Firebase not loaded"); return; }
+            db = window.__db; collectionFn = window.__collection; getDocsFn = window.__getDocs; queryFn = window.__query; whereFn = window.__where; docFn = window.__doc; getDocFn = window.__getDoc;
+            renderTicker();
+            renderSpotlight();
+            document.querySelectorAll('.tab-btn').forEach(btn=>{
+                btn.addEventListener('click',()=>{
+                    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTab = btn.getAttribute('data-tab');
+                    if(currentTab==="services") renderServices();
+                    else if(currentTab==="homes") renderHomes();
+                    else renderJobs();
+                });
+            });
+            document.getElementById('contactBtn').addEventListener('click',()=>window.location.href='contactus.html');
+            await loadAllData();
+        });
+    })();
+</script>
+</body>
+</html>
