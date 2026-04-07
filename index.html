@@ -58,17 +58,6 @@
         .tabs{display:flex;border-bottom:1px solid #e2e8f0;background:white;flex-shrink:0;}
         .tab-btn{flex:1;padding:0.8rem;text-align:center;font-weight:600;cursor:pointer;background:transparent;border:none;color:#475569;transition:0.1s;}
         .tab-btn.active{color:#0a66c2;border-bottom:2px solid #0a66c2;}
-        .filter-area{padding:1rem;background:#fafcff;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;gap:0.8rem;align-items:flex-end;flex-shrink:0;}
-        .filter-group{background:white;border:1px solid #e2e8f0;border-radius:40px;padding:0.3rem 0.8rem;display:flex;align-items:center;gap:0.5rem;flex:1 1 180px;position:relative;}
-        .filter-group i{color:#64748b;font-size:0.8rem;}
-        .filter-group select,.filter-group input[type="text"]{width:100%;border:none;background:transparent;font-size:0.8rem;outline:none;font-family:inherit;}
-        .filter-group input[type="number"]{width:70px;}
-        .price-range{display:flex;gap:0.5rem;}
-        .guests-panel{position:absolute;background:white;border:1px solid #e2e8f0;border-radius:16px;padding:1rem;width:260px;z-index:25;display:none;top:100%;right:0;}
-        .guest-row{display:flex;justify-content:space-between;margin-bottom:0.8rem;align-items:center;}
-        .guest-row button{background:#f1f5f9;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;}
-        .filter-area button{background:#0a66c2;color:white;border:none;padding:0.4rem 1.2rem;border-radius:30px;cursor:pointer;font-weight:500;}
-        .clear-filters{background:#e2e8f0 !important;color:#334155 !important;margin-left:0.2rem;}
         .content-area{padding:1.2rem;overflow-y:auto;flex:1;}
         .category-section{margin-bottom:2rem;}
         .category-title{font-weight:700;font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
@@ -127,7 +116,6 @@
             <button class="tab-btn" data-tab="homes"><i class="fas fa-home"></i> Homes</button>
             <button class="tab-btn" data-tab="jobs"><i class="fas fa-chart-line"></i> Jobs</button>
         </div>
-        <div id="filterArea" class="filter-area"></div>
         <div id="contentArea" class="content-area"><div style="text-align:center;padding:2rem;">loading marketplace...</div></div>
     </div>
     <div class="sidebar-right">
@@ -256,40 +244,15 @@
             return sorted;
         }
 
-        // ---------- RENDER FUNCTIONS (with proper filtering) ----------
+        // ---------- RENDER FUNCTIONS (no filters, just show all) ----------
         let globalSearchTerm = "";
         window.globalSearchTerm = "";
 
         function renderServices(){
             let filtered = [...allFreelancers];
-            // apply service filters
-            let catFilter = document.getElementById('svcCategorySelect')?.value;
-            let locFilter = document.getElementById('svcLocation')?.value;
-            let ratingFilter = document.getElementById('svcRating')?.value;
-            if(catFilter && catFilter !== "ALL") filtered = filtered.filter(f=>f.category===catFilter);
-            if(locFilter) filtered = filtered.filter(f=>f.location.toLowerCase().includes(locFilter.toLowerCase()));
-            if(ratingFilter) filtered = filtered.filter(f=>f.rating >= parseFloat(ratingFilter));
-            if(globalSearchTerm){
-                let term = globalSearchTerm.toLowerCase();
-                filtered = filtered.filter(f=>f.full_name.toLowerCase().includes(term) || f.primary_skill.toLowerCase().includes(term));
-            }
             if(allFreelancers.length===0){
                 document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-user-plus"></i><p>No freelancers have joined yet.</p><button class="btn-outline" id="joinFreelancerBtn">Become a freelancer</button></div>`;
                 document.getElementById('joinFreelancerBtn')?.addEventListener('click',()=>window.location.href='auth.html');
-                return;
-            }
-            if(filtered.length===0 && allFreelancers.length>0){
-                let random = [...allFreelancers];
-                for(let i=random.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [random[i],random[j]]=[random[j],random[i]]; }
-                random = random.slice(0,6);
-                let html = `<div class="empty-state" style="background:transparent; padding-bottom:1rem;"><i class="fas fa-search"></i><p>No results. Try different filters or see recommendations:</p></div><div class="horizontal-scroll">`;
-                random.forEach(f=>{
-                    let initial = f.full_name.charAt(0).toUpperCase();
-                    html += `<div class="freelancer-card" data-id="${f.id}" data-category="${f.category}"><div class="avatar">${f.avatar?`<img src="${f.avatar}">`:initial}</div><div class="name">${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div><div class="skill">${escapeHtml(f.primary_skill)}</div><div class="stars">${'★'.repeat(Math.floor(f.rating))}${'☆'.repeat(5-Math.floor(f.rating))} ${f.rating.toFixed(1)}</div><div style="font-size:0.65rem;">📍 ${escapeHtml(f.location)}</div></div>`;
-                });
-                html += `</div>`;
-                document.getElementById('contentArea').innerHTML = html;
-                attachFreelancerClicks();
                 return;
             }
             let orderedCats = getOrderedCategories(filtered);
@@ -304,7 +267,7 @@
                 });
                 html += `</div></div>`;
             }
-            if(html==="") html = "<div class='empty-state'><i class='fas fa-user-slash'></i><p>No freelancers found. Adjust your filters.</p></div>";
+            if(html==="") html = "<div class='empty-state'><i class='fas fa-user-slash'></i><p>No freelancers found.</p></div>";
             document.getElementById('contentArea').innerHTML = html;
             attachFreelancerClicks();
         }
@@ -323,27 +286,13 @@
 
         function renderHomes(){
             let filtered = [...allHomes];
-            let locFilter = document.getElementById('homeLocation')?.value;
-            let typeFilter = document.getElementById('homeType')?.value;
-            let minPrice = document.getElementById('minPrice')?.value;
-            let maxPrice = document.getElementById('maxPrice')?.value;
-            let guestsTotal = window._guestTotal || 0;
-            if(locFilter) filtered = filtered.filter(h=>h.location.toLowerCase().includes(locFilter.toLowerCase()));
-            if(typeFilter && typeFilter !== "all") filtered = filtered.filter(h=>h.type === typeFilter);
-            if(minPrice) filtered = filtered.filter(h=>{ let p = parseInt(h.price.replace(/[^0-9]/g,'')); return p >= parseInt(minPrice); });
-            if(maxPrice) filtered = filtered.filter(h=>{ let p = parseInt(h.price.replace(/[^0-9]/g,'')); return p <= parseInt(maxPrice); });
-            if(guestsTotal>0) filtered = filtered.filter(h=>h.guests >= guestsTotal);
-            if(globalSearchTerm){
-                let term = globalSearchTerm.toLowerCase();
-                filtered = filtered.filter(h=>h.title.toLowerCase().includes(term) || h.location.toLowerCase().includes(term));
-            }
             if(allHomes.length===0){
                 document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-home"></i><p>No homes listed yet.</p><button class="btn-outline" id="becomeHostEmpty">List your property</button></div>`;
                 document.getElementById('becomeHostEmpty')?.addEventListener('click',()=>window.location.href='settingsho.html');
                 return;
             }
             if(filtered.length===0){
-                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No homes match your filters. Try clearing them.</p></div>`;
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No homes available.</p></div>`;
                 return;
             }
             let html = `<div class="homes-grid">`;
@@ -364,27 +313,13 @@
 
         function renderJobs(){
             let filtered = [...allJobs];
-            let catFilter = document.getElementById('jobCategorySelect')?.value;
-            let salaryRange = document.getElementById('salaryRange')?.value;
-            let skillFilter = document.getElementById('skillInput')?.value;
-            if(catFilter && catFilter !== "ALL") filtered = filtered.filter(j=>j.category===catFilter);
-            if(salaryRange){
-                let [min,max] = salaryRange.split('-').map(Number);
-                if(max) filtered = filtered.filter(j=>j.usdAmount>=min && j.usdAmount<=max);
-                else filtered = filtered.filter(j=>j.usdAmount>=min);
-            }
-            if(skillFilter) filtered = filtered.filter(j=>j.skills.some(s=>s.toLowerCase().includes(skillFilter.toLowerCase())));
-            if(globalSearchTerm){
-                let term = globalSearchTerm.toLowerCase();
-                filtered = filtered.filter(j=>j.title.toLowerCase().includes(term) || j.company.toLowerCase().includes(term));
-            }
             if(allJobs.length===0){
                 document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-briefcase"></i><p>No jobs posted yet.</p><button class="btn-outline" id="postJobEmpty">Post a job</button></div>`;
                 document.getElementById('postJobEmpty')?.addEventListener('click',()=>window.location.href='auth.html');
                 return;
             }
             if(filtered.length===0){
-                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No jobs match your filters.</p></div>`;
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No jobs available.</p></div>`;
                 return;
             }
             let html = `<div class="job-list">`;
@@ -404,98 +339,12 @@
             });
         }
 
-        // ---------- FILTER UI BUILDERS (with working searchable selects using datalist) ----------
-        function buildServicesFilter(){
-            let html = `
-                <div class="filter-group"><i class="fas fa-tag"></i><select id="svcCategorySelect"><option value="ALL">Category (ALL)</option>${allCategoryNames.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-                <div class="filter-group"><i class="fas fa-map-marker-alt"></i><input list="locationsList" id="svcLocation" placeholder="District / Sector"><datalist id="locationsList">${allDistricts().map(d=>`<option value="${d}">`).join('')}</datalist></div>
-                <div class="filter-group"><i class="fas fa-star"></i><select id="svcRating"><option value="">Rating</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="4.5">4.5+</option></select></div>
-                <button id="applySvc">Apply</button>
-                <button id="clearSvc" class="clear-filters">Clear</button>`;
-            document.getElementById('filterArea').innerHTML = html;
-            document.getElementById('applySvc').addEventListener('click',()=>{ renderServices(); });
-            document.getElementById('clearSvc').addEventListener('click',()=>{
-                document.getElementById('svcCategorySelect').value="ALL";
-                document.getElementById('svcLocation').value="";
-                document.getElementById('svcRating').value="";
-                renderServices();
-            });
-        }
-
-        function allDistricts(){
-            return ["Gasabo","Kicukiro","Nyarugenge","Bugesera","Gatsibo","Kayonza","Kirehe","Ngoma","Nyagatare","Rwamagana","Burera","Gakenke","Gicumbi","Musanze","Rulindo","Gisagara","Huye","Kamonyi","Muhanga","Nyamagabe","Nyanza","Nyaruguru","Ruhango","Karongi","Ngororero","Nyabihu","Nyamasheke","Rubavu","Rusizi","Rutsiro"];
-        }
-
-        function buildHomesFilter(){
-            let html = `
-                <div class="filter-group"><i class="fas fa-map-marker-alt"></i><input list="homeDistricts" id="homeLocation" placeholder="District"><datalist id="homeDistricts">${allDistricts().map(d=>`<option value="${d}">`).join('')}</datalist></div>
-                <div class="filter-group" style="position:relative;"><i class="fas fa-users"></i><input type="text" id="guestInput" placeholder="Guests" readonly value="1 adult"><div id="guestPanel" class="guests-panel"></div></div>
-                <div class="filter-group price-range"><i class="fas fa-dollar-sign"></i><input type="number" id="minPrice" placeholder="Min price"><input type="number" id="maxPrice" placeholder="Max price"></div>
-                <div class="filter-group"><i class="fas fa-building"></i><select id="homeType"><option value="all">All types</option><option value="apartment">apartment</option><option value="land">land</option><option value="condo">condo</option><option value="villa">villa</option><option value="house">house</option><option value="commercial">commercial</option></select></div>
-                <button id="applyHome">Apply</button>
-                <button id="clearHome" class="clear-filters">Clear</button>`;
-            document.getElementById('filterArea').innerHTML = html;
-            // guest panel logic
-            let guestBtn = document.getElementById('guestInput');
-            let panel = document.getElementById('guestPanel');
-            let adults=1, children=0, pets=0;
-            window._guestTotal = adults+children+pets;
-            function updateGuestDisplay(){
-                guestBtn.value = `${adults} adult${adults!==1?'s':''} ${children?children+' child'+(children!==1?'ren':''):''} ${pets?pets+' pet'+(pets!==1?'s':''):''}`.trim();
-                window._guestTotal = adults+children+pets;
-            }
-            function renderGuestPanel(){
-                panel.innerHTML = `<div class="guest-row"><span>Adults</span><div><button id="adultMinus">-</button><span id="adultCount">${adults}</span><button id="adultPlus">+</button></div></div>
-                                   <div class="guest-row"><span>Children</span><div><button id="childMinus">-</button><span id="childCount">${children}</span><button id="childPlus">+</button></div></div>
-                                   <div class="guest-row"><span>Pets</span><div><button id="petMinus">-</button><span id="petCount">${pets}</span><button id="petPlus">+</button></div></div>
-                                   <button id="closeGuest">Done</button>`;
-                panel.style.display='block';
-                document.getElementById('adultMinus').onclick=()=>{ if(adults>0)adults--; updateGuestDisplay(); renderGuestPanel(); };
-                document.getElementById('adultPlus').onclick=()=>{ adults++; updateGuestDisplay(); renderGuestPanel(); };
-                document.getElementById('childMinus').onclick=()=>{ if(children>0)children--; updateGuestDisplay(); renderGuestPanel(); };
-                document.getElementById('childPlus').onclick=()=>{ children++; updateGuestDisplay(); renderGuestPanel(); };
-                document.getElementById('petMinus').onclick=()=>{ if(pets>0)pets--; updateGuestDisplay(); renderGuestPanel(); };
-                document.getElementById('petPlus').onclick=()=>{ pets++; updateGuestDisplay(); renderGuestPanel(); };
-                document.getElementById('closeGuest').onclick=()=>{ panel.style.display='none'; };
-            }
-            guestBtn.addEventListener('click',renderGuestPanel);
-            document.addEventListener('click',(e)=>{ if(!panel.contains(e.target) && e.target!==guestBtn) panel.style.display='none'; });
-            updateGuestDisplay();
-            document.getElementById('applyHome').addEventListener('click',()=>{ renderHomes(); });
-            document.getElementById('clearHome').addEventListener('click',()=>{
-                document.getElementById('homeLocation').value="";
-                document.getElementById('homeType').value="all";
-                document.getElementById('minPrice').value="";
-                document.getElementById('maxPrice').value="";
-                adults=1; children=0; pets=0; updateGuestDisplay();
-                renderHomes();
-            });
-        }
-
-        function buildJobsFilter(){
-            let html = `<div class="filter-group"><i class="fas fa-tag"></i><select id="jobCategorySelect"><option value="ALL">Category (ALL)</option>${allCategoryNames.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-                        <div class="filter-group"><i class="fas fa-dollar-sign"></i><select id="salaryRange"><option value="">Salary</option><option value="5-25">$5-$25</option><option value="30-50">$30-$50</option><option value="60-120">$60-$120</option><option value="130-300">$130-$300</option><option value="400-800">$400-$800</option><option value="1000-10000">$1000+</option></select></div>
-                        <div class="filter-group"><i class="fas fa-code"></i><input type="text" id="skillInput" placeholder="Skill"></div>
-                        <button id="applyJob">Apply</button>
-                        <button id="clearJob" class="clear-filters">Clear</button>`;
-            document.getElementById('filterArea').innerHTML = html;
-            document.getElementById('applyJob').addEventListener('click',()=>{ renderJobs(); });
-            document.getElementById('clearJob').addEventListener('click',()=>{
-                document.getElementById('jobCategorySelect').value="ALL";
-                document.getElementById('salaryRange').value="";
-                document.getElementById('skillInput').value="";
-                renderJobs();
-            });
-        }
-
-        // ---------- GLOBAL SEARCH (dropdown only, does not change main content) ----------
+        // ---------- GLOBAL SEARCH (dropdown only, no main content change) ----------
         let searchTimeout;
         function performGlobalSearch(){
             let term = document.getElementById('globalSearchInput').value.trim();
             globalSearchTerm = term;
             trackSearch(term);
-            // Update main content only when user clicks a result? Actually we also apply filter? No, requirement: "display the result without changing the display in main-content"
-            // So we only show dropdown, not change main content.
             let resultsDiv = document.getElementById('globalSearchResults');
             if(term.length<2){ resultsDiv.classList.remove('show'); return; }
             let combined = [];
@@ -533,9 +382,9 @@
                 [allFreelancers, allHomes, allJobs] = await Promise.all([fetchFreelancers(), fetchHomes(), fetchJobs()]);
             }catch(e){ console.error(e); showToast("Error loading data"); }
             setLoading(false);
-            if(currentTab==="services"){ buildServicesFilter(); renderServices(); }
-            else if(currentTab==="homes"){ buildHomesFilter(); renderHomes(); }
-            else{ buildJobsFilter(); renderJobs(); }
+            if(currentTab==="services") renderServices();
+            else if(currentTab==="homes") renderHomes();
+            else renderJobs();
         }
 
         // spotlight & ticker
@@ -586,9 +435,9 @@
                     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
                     btn.classList.add('active');
                     currentTab = btn.getAttribute('data-tab');
-                    if(currentTab==="services") buildServicesFilter(), renderServices();
-                    else if(currentTab==="homes") buildHomesFilter(), renderHomes();
-                    else buildJobsFilter(), renderJobs();
+                    if(currentTab==="services") renderServices();
+                    else if(currentTab==="homes") renderHomes();
+                    else renderJobs();
                 });
             });
             document.getElementById('contactBtn').addEventListener('click',()=>window.location.href='contactus.html');
