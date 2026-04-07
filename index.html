@@ -6,7 +6,6 @@
     <title>Kazi ni Kazi · Intelligent Marketplace</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
         import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
@@ -75,41 +74,45 @@
         .guest-row button{background:#f1f5f9;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;}
         .filter-area button{background:#0a66c2;color:white;border:none;padding:0.4rem 1.2rem;border-radius:30px;cursor:pointer;font-weight:500;}
         .clear-filters{background:#e2e8f0 !important;color:#334155 !important;margin-left:0.2rem;}
-        /* content area */
+        /* content area - larger cards */
         .content-area{padding:1.2rem;}
         .category-section{margin-bottom:2rem;}
-        .category-title{font-weight:700;font-size:1rem;margin-bottom:0.8rem;display:flex;align-items:center;gap:0.5rem;}
-        .horizontal-scroll{display:flex;overflow-x:auto;gap:1rem;padding-bottom:0.5rem;scrollbar-width:thin;}
-        .freelancer-card{flex:0 0 200px;background:white;border:1px solid #e2e8f0;border-radius:1rem;padding:0.8rem;text-align:center;cursor:pointer;transition:0.2s;}
-        .freelancer-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.05);}
-        .avatar{width:70px;height:70px;border-radius:50%;margin:0 auto 0.5rem;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:600;color:#0a66c2;overflow:hidden;}
+        .category-title{font-weight:700;font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
+        .horizontal-scroll{display:flex;overflow-x:auto;gap:1.2rem;padding-bottom:0.5rem;scrollbar-width:thin;}
+        .freelancer-card{flex:0 0 230px;background:white;border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;text-align:center;cursor:pointer;transition:0.2s;}
+        .freelancer-card:hover{transform:translateY(-4px);box-shadow:0 12px 24px rgba(0,0,0,0.08);border-color:#b9d0f0;}
+        .avatar{width:80px;height:80px;border-radius:50%;margin:0 auto 0.7rem;background:#eef2ff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:600;color:#0a66c2;overflow:hidden;}
         .avatar img{width:100%;height:100%;object-fit:cover;}
-        .name{font-weight:700;font-size:0.85rem;display:flex;align-items:center;justify-content:center;gap:0.2rem;}
+        .name{font-weight:700;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:0.2rem;}
         .verified-badge{color:#0a66c2;font-size:0.7rem;}
-        .skill{font-size:0.7rem;color:#475569;}
-        .stars{color:#fbbf24;font-size:0.7rem;}
+        .skill{font-size:0.75rem;color:#475569;margin:0.2rem 0;}
+        .stars{color:#fbbf24;font-size:0.75rem;margin:0.2rem 0;}
         /* homes grid */
-        .homes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem;}
+        .homes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.2rem;}
         .home-card{border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden;cursor:pointer;transition:0.2s;}
-        .home-card:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.05);}
-        .home-img{height:140px;background-size:cover;background-color:#eef2ff;}
-        .home-info{padding:0.6rem;}
+        .home-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.08);}
+        .home-img{height:160px;background-size:cover;background-color:#eef2ff;}
+        .home-info{padding:0.8rem;}
         /* jobs list */
-        .job-list{display:flex;flex-direction:column;gap:0.8rem;}
-        .job-item{border:1px solid #e2e8f0;border-radius:1rem;padding:0.8rem;cursor:pointer;display:flex;gap:1rem;align-items:center;transition:0.1s;}
+        .job-list{display:flex;flex-direction:column;gap:1rem;}
+        .job-item{border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;cursor:pointer;display:flex;gap:1rem;align-items:center;transition:0.1s;}
         .job-item:hover{background:#fafcff;border-left:3px solid #0a66c2;}
-        .company-logo{width:50px;height:50px;background:#f1f5f9;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#0a66c2;overflow:hidden;}
+        .company-logo{width:56px;height:56px;background:#f1f5f9;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#0a66c2;overflow:hidden;}
         .company-logo img{width:100%;height:100%;object-fit:cover;}
         .job-details{flex:1;}
+        .job-title{font-weight:700;font-size:0.9rem;}
         /* spotlight */
         .sidebar-right{background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1rem;position:sticky;top:80px;}
-        .spotlight-carousel{position:relative;height:220px;overflow:hidden;margin-bottom:1rem;}
+        .spotlight-carousel{position:relative;height:240px;overflow:hidden;margin-bottom:1rem;}
         .spotlight-slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity 0.5s;background:#f8fafc;border-radius:1rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem;cursor:pointer;}
         .spotlight-slide.active{opacity:1;}
-        .spotlight-slide img{width:80px;height:80px;border-radius:12px;object-fit:cover;margin-bottom:0.5rem;}
+        .spotlight-slide img{width:90px;height:90px;border-radius:16px;object-fit:cover;margin-bottom:0.8rem;}
         .action-links{margin-top:1rem;border-top:1px solid #e2e8f0;padding-top:1rem;}
-        .action-item{display:flex;align-items:center;gap:0.8rem;padding:0.6rem;border-radius:0.8rem;cursor:pointer;background:#f8fafc;margin-bottom:0.5rem;transition:0.1s;}
+        .action-item{display:flex;align-items:center;gap:0.8rem;padding:0.7rem;border-radius:0.8rem;cursor:pointer;background:#f8fafc;margin-bottom:0.6rem;transition:0.1s;}
         .action-item:hover{background:#eef2ff;}
+        .empty-state{text-align:center;padding:2rem;background:#fafcff;border-radius:1rem;margin:1rem 0;}
+        .empty-state i{font-size:2.5rem;color:#cbd5e1;margin-bottom:1rem;}
+        .btn-outline{background:transparent;border:1px solid #0a66c2;color:#0a66c2;padding:0.4rem 1rem;border-radius:30px;cursor:pointer;font-weight:500;margin-top:0.5rem;}
         .toast{position:fixed;bottom:20px;right:20px;background:#1e293b;color:white;padding:0.4rem 1rem;border-radius:40px;z-index:1100;font-size:0.75rem;}
         @media (max-width:1000px){.container{grid-template-columns:1fr;}.sidebar-right{position:static;}}
         @media (max-width:768px){.navbar{flex-wrap:wrap;}.global-search{order:3;width:100%;max-width:none;margin-top:0.5rem;}}
@@ -154,7 +157,7 @@
         let allFreelancers = [], allHomes = [], allJobs = [];
         let verifiedUsers = new Set();
         
-        // ---------- ALGORITHM (localStorage) ----------
+        // algorithm storage (localStorage)
         let userProfile = JSON.parse(localStorage.getItem('knk_algorithm_profile')) || {
             categoryClicks: {}, searchTerms: [], viewedIds: [], totalInteractions: 0
         };
@@ -163,7 +166,6 @@
         function trackSearch(term) { if(term){ userProfile.searchTerms.unshift(term); if(userProfile.searchTerms.length>20) userProfile.searchTerms.pop(); saveProfile(); } }
         function trackView(type, id) { userProfile.viewedIds.unshift(`${type}:${id}`); if(userProfile.viewedIds.length>50) userProfile.viewedIds.pop(); saveProfile(); }
 
-        // helpers
         function showToast(msg) { let t=document.createElement('div');t.className='toast';t.innerText=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
         function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;');}
         function setLoading(show){ let bar=document.getElementById('loadingBar'), prog=document.getElementById('loadingProgress'); if(show){ bar.classList.add('active'); prog.style.width='30%'; setTimeout(()=>prog.style.width='70%',100); }else{ prog.style.width='100%'; setTimeout(()=>{ bar.classList.remove('active'); prog.style.width='0'; },300); } }
@@ -251,7 +253,6 @@
                 if(scoreA !== scoreB) return scoreB - scoreA;
                 return catCounts[b] - catCounts[a];
             });
-            // recommended section: if enough interactions, put most clicked first
             if(userProfile.totalInteractions>5 && sorted.length){
                 let top = sorted[0];
                 return [top, ...sorted.filter(c=>c!==top)];
@@ -259,7 +260,7 @@
             return sorted;
         }
 
-        // ---------- RENDER FUNCTIONS ----------
+        // ---------- RENDER FUNCTIONS with FALLBACKS ----------
         let globalSearchTerm = "";
         window.globalSearchTerm = "";
 
@@ -279,6 +280,47 @@
                 let term = globalSearchTerm.toLowerCase();
                 filtered = filtered.filter(f=>f.full_name.toLowerCase().includes(term) || f.primary_skill.toLowerCase().includes(term));
             }
+            
+            // CASE 1: No freelancers at all in the database
+            if(allFreelancers.length === 0){
+                document.getElementById('contentArea').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-user-plus"></i>
+                        <p style="margin-bottom:0.5rem;">No freelancers have joined yet.</p>
+                        <button class="btn-outline" id="joinFreelancerBtn">Become a freelancer</button>
+                    </div>`;
+                document.getElementById('joinFreelancerBtn')?.addEventListener('click',()=>window.location.href='auth.html');
+                return;
+            }
+            
+            // CASE 2: Filters return empty but there are freelancers -> show random recommendations
+            if(filtered.length === 0 && allFreelancers.length > 0){
+                // pick 6 random freelancers as "You might like"
+                let random = [...allFreelancers];
+                for(let i=random.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [random[i],random[j]]=[random[j],random[i]]; }
+                random = random.slice(0,6);
+                let html = `<div class="empty-state" style="background:transparent; padding-bottom:1rem;">
+                                <i class="fas fa-search"></i>
+                                <p>No results for your filters. Here are some popular freelancers:</p>
+                            </div>`;
+                html += `<div class="horizontal-scroll">`;
+                random.forEach(f=>{
+                    let initial = f.full_name.charAt(0).toUpperCase();
+                    html += `<div class="freelancer-card" data-id="${f.id}" data-category="${f.category}">
+                                <div class="avatar">${f.avatar?`<img src="${f.avatar}">`:initial}</div>
+                                <div class="name">${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle verified-badge" title="Verified"></i>' : ''}</div>
+                                <div class="skill">${escapeHtml(f.primary_skill)}</div>
+                                <div class="stars">${'★'.repeat(Math.floor(f.rating))}${'☆'.repeat(5-Math.floor(f.rating))} ${f.rating.toFixed(1)}</div>
+                                <div style="font-size:0.65rem;">📍 ${escapeHtml(f.location)}</div>
+                            </div>`;
+                });
+                html += `</div>`;
+                document.getElementById('contentArea').innerHTML = html;
+                attachFreelancerClicks();
+                return;
+            }
+            
+            // CASE 3: Normal display with categories
             let orderedCats = getOrderedCategories(filtered);
             let html = "";
             for(let cat of orderedCats){
@@ -297,8 +339,12 @@
                 });
                 html += `</div></div>`;
             }
-            if(html==="") html = "<div style='text-align:center;padding:2rem;'>No freelancers match your filters</div>";
+            if(html==="") html = "<div class='empty-state'><i class='fas fa-user-slash'></i><p>No freelancers found. Try adjusting your filters.</p></div>";
             document.getElementById('contentArea').innerHTML = html;
+            attachFreelancerClicks();
+        }
+        
+        function attachFreelancerClicks(){
             document.querySelectorAll('.freelancer-card').forEach(card=>{
                 card.addEventListener('click',()=>{
                     let id = card.getAttribute('data-id');
@@ -331,6 +377,15 @@
             if(globalSearchTerm){
                 let term = globalSearchTerm.toLowerCase();
                 filtered = filtered.filter(h=>h.title.toLowerCase().includes(term) || h.location.toLowerCase().includes(term));
+            }
+            if(allHomes.length===0){
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-home"></i><p>No homes listed yet. Be the first to host!</p><button class="btn-outline" id="becomeHostEmpty">List your property</button></div>`;
+                document.getElementById('becomeHostEmpty')?.addEventListener('click',()=>window.location.href='settingsho.html');
+                return;
+            }
+            if(filtered.length===0){
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No homes match your filters. Try clearing them.</p></div>`;
+                return;
             }
             let html = `<div class="homes-grid">`;
             filtered.forEach(h=>{
@@ -372,9 +427,18 @@
                 let term = globalSearchTerm.toLowerCase();
                 filtered = filtered.filter(j=>j.title.toLowerCase().includes(term) || j.company.toLowerCase().includes(term));
             }
+            if(allJobs.length===0){
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-briefcase"></i><p>No jobs posted yet. Companies can post jobs.</p><button class="btn-outline" id="postJobEmpty">Post a job</button></div>`;
+                document.getElementById('postJobEmpty')?.addEventListener('click',()=>window.location.href='auth.html');
+                return;
+            }
+            if(filtered.length===0){
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No jobs match your filters. Try adjusting.</p></div>`;
+                return;
+            }
             let html = `<div class="job-list">`;
             filtered.forEach(j=>{
-                let logoHtml = j.companyLogo ? `<img src="${j.companyLogo}" style="width:50px;height:50px;object-fit:cover;border-radius:12px;">` : `<div class="company-logo">${j.company.charAt(0)}</div>`;
+                let logoHtml = j.companyLogo ? `<img src="${j.companyLogo}" style="width:56px;height:56px;object-fit:cover;border-radius:12px;">` : `<div class="company-logo">${j.company.charAt(0)}</div>`;
                 html += `<div class="job-item" data-id="${j.id}">
                             ${logoHtml}
                             <div class="job-details">
@@ -396,7 +460,7 @@
             });
         }
 
-        // ---------- FILTER UI BUILDERS (without internal search bars) ----------
+        // ---------- FILTER UI BUILDERS ----------
         let serviceFilters = { category:"ALL", location:"", rating:"" };
         let homeFilters = { location:"", type:"all", minPrice:"", maxPrice:"", adults:1, children:0, pets:0, guests:0 };
         let jobFilters = { category:"ALL", salaryRange:"", skill:"" };
@@ -431,7 +495,6 @@
                         <button id="applyHome">Apply</button>
                         <button id="clearHome" class="clear-filters">Clear</button>`;
             document.getElementById('filterArea').innerHTML = html;
-            // guest panel
             let guestBtn = document.getElementById('guestInput');
             let panel = document.getElementById('guestPanel');
             let adults=homeFilters.adults, children=homeFilters.children, pets=homeFilters.pets;
@@ -494,9 +557,8 @@
             let skillInput = document.getElementById('skillInput');
             catSelect.addEventListener('change',()=>{
                 let cat = catSelect.value;
-                if(cat !== "ALL" && skillsDB[cat]){
-                    skillInput.placeholder = `e.g., ${skillsDB[cat][0]}`;
-                } else skillInput.placeholder = "Skill";
+                if(cat !== "ALL" && skillsDB[cat]) skillInput.placeholder = `e.g., ${skillsDB[cat][0]}`;
+                else skillInput.placeholder = "Skill";
             });
             document.getElementById('applyJob').addEventListener('click',()=>{
                 jobFilters.category = catSelect.value;
@@ -522,7 +584,6 @@
             if(currentTab==="services") renderServices(serviceFilters);
             else if(currentTab==="homes") renderHomes(homeFilters);
             else renderJobs(jobFilters);
-            // show dropdown suggestions
             let resultsDiv = document.getElementById('globalSearchResults');
             if(term.length<2){ resultsDiv.classList.remove('show'); return; }
             let combined = [];
@@ -543,7 +604,6 @@
         });
         document.addEventListener('click',(e)=>{ if(!e.target.closest('.global-search')) document.getElementById('globalSearchResults').classList.remove('show'); });
 
-        // ---------- LOAD ALL DATA ----------
         async function loadAllData(){
             setLoading(true);
             try{
@@ -555,7 +615,7 @@
             else{ buildJobsFilter(); renderJobs(jobFilters); }
         }
 
-        // ---------- SPOTLIGHT CAROUSEL (admin editable via localStorage) ----------
+        // ---------- SPOTLIGHT CAROUSEL ----------
         let spotlightItems = JSON.parse(localStorage.getItem('knk_spotlight_items')) || [
             { image:"https://placehold.co/200x200/0a66c2/white?text=Welcome", description:"trusted freelancers, homes & jobs — 2026 edition", link:"#" },
             { image:"https://placehold.co/200x200/eab308/white?text=Verified", description:"verified badge → higher trust & visibility", link:"#" },
@@ -582,7 +642,7 @@
             },8000);
         }
 
-        // ---------- TICKER (admin editable via localStorage) ----------
+        // ---------- TICKER ----------
         let tickerMessages = JSON.parse(localStorage.getItem('knk_ticker_messages')) || [
             "2026 updates · verified freelancers · new remote jobs added daily",
             "book homes with instant confirmation",
@@ -592,7 +652,6 @@
             document.getElementById('ticker').innerHTML = `<div class="ticker-content"><i class="fas fa-circle-info"></i> ${tickerMessages.join(' <i class="fas fa-circle"></i> ')}</div>`;
         }
 
-        // ---------- INITIALIZE ----------
         window.addEventListener('load',async()=>{
             let attempts=0;
             while(!window.__db && attempts<30){ await new Promise(r=>setTimeout(r,100)); attempts++; }
