@@ -6,26 +6,6 @@
     <title>Kazi ni Kazi · Property Details</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
-        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-        const firebaseConfig = {
-            apiKey: "AIzaSyBbhxmAkHJtq3Zs17P4ewHsc8wi8-0M_XI",
-            authDomain: "developers-imw.firebaseapp.com",
-            databaseURL: "https://developers-imw-default-rtdb.firebaseio.com",
-            projectId: "developers-imw",
-            storageBucket: "developers-imw.firebasestorage.app",
-            messagingSenderId: "182400720989",
-            appId: "1:182400720989:web:180f2390f7563f1ec96db4",
-            measurementId: "G-R7RDM0PMY8"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        
-        window.db = db;
-        window.doc = doc;
-        window.getDoc = getDoc;
-    </script>
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:#f7f9fc;color:#0f172a;font-size:14px;line-height:1.5;padding:1rem;}
@@ -44,7 +24,6 @@
         .amenity-tag{background:#eef2ff;padding:0.2rem 0.6rem;border-radius:30px;font-size:0.7rem;}
         .maps-link{margin-top:1rem;}
         .maps-link a{color:#0a66c2;text-decoration:none;}
-        .toast{position:fixed;bottom:20px;right:20px;background:#1e293b;color:white;padding:0.4rem 1rem;border-radius:40px;z-index:1100;font-size:0.75rem;}
         @media (max-width:600px){body{padding:0.8rem;}.main-image{height:180px;}}
     </style>
 </head>
@@ -53,64 +32,76 @@
     <button class="back-btn" onclick="window.history.back()"><i class="fas fa-arrow-left"></i> Back</button>
     <div id="homeContent">Loading...</div>
 </div>
-<script>
-    (function(){
-        const db = window.db;
-        const doc = window.doc;
-        const getDoc = window.getDoc;
-        
-        async function loadHomeDetails(){
-            const homeId = localStorage.getItem('knk_selected_home');
-            if(!homeId){
-                document.getElementById('homeContent').innerHTML = '<div class="property-card">No property selected. <button onclick="window.history.back()">Go back</button></div>';
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyBbhxmAkHJtq3Zs17P4ewHsc8wi8-0M_XI",
+        authDomain: "developers-imw.firebaseapp.com",
+        databaseURL: "https://developers-imw-default-rtdb.firebaseio.com",
+        projectId: "developers-imw",
+        storageBucket: "developers-imw.firebasestorage.app",
+        messagingSenderId: "182400720989",
+        appId: "1:182400720989:web:180f2390f7563f1ec96db4",
+        measurementId: "G-R7RDM0PMY8"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    
+    async function loadHomeDetails(){
+        const homeId = localStorage.getItem('knk_selected_home');
+        const container = document.getElementById('homeContent');
+        if(!homeId){
+            container.innerHTML = '<div class="property-card">No property selected. <button onclick="window.history.back()">Go back</button></div>';
+            return;
+        }
+        try{
+            const homeDoc = await getDoc(doc(db, "realEstateHomes", homeId));
+            if(!homeDoc.exists()){
+                container.innerHTML = '<div class="property-card">Property not found.</div>';
                 return;
             }
-            try{
-                const homeDoc = await getDoc(doc(db, "realEstateHomes", homeId));
-                if(!homeDoc.exists()){
-                    document.getElementById('homeContent').innerHTML = '<div class="property-card">Property not found.</div>';
-                    return;
-                }
-                const home = homeDoc.data();
-                const images = home.images || [];
-                const mainImage = images.length ? images[0] : 'https://placehold.co/800x400?text=No+Image';
-                const amenities = home.amenities || [];
-                const mapsLink = home.mapsLink;
-                const phone = home.phone;
-                const html = `
-                    <div class="property-card">
-                        <div class="main-image" style="background-image:url('${mainImage}');"></div>
-                        <div class="title">${escapeHtml(home.title)}</div>
-                        <div class="location"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(home.location)}</div>
-                        <div class="price">${escapeHtml(home.price)}</div>
-                        <div class="info-grid">
-                            <div class="info-item"><div class="info-label">Property Type</div><div class="info-value">${escapeHtml(home.propertyType || 'House')}</div></div>
-                            <div class="info-item"><div class="info-label">Area</div><div class="info-value">${home.area ? home.area+' sqm' : 'Not specified'}</div></div>
-                            <div class="info-item"><div class="info-label">Bedrooms</div><div class="info-value">${home.bedrooms || '?'}</div></div>
-                            <div class="info-item"><div class="info-label">Bathrooms</div><div class="info-value">${home.bathrooms || '?'}</div></div>
-                        </div>
-                        <div><strong>Description</strong><br>${escapeHtml(home.description || 'No description provided.')}</div>
-                        ${amenities.length ? `<div class="amenities"><strong>Amenities:</strong> ${amenities.map(a => `<span class="amenity-tag">${escapeHtml(a)}</span>`).join('')}</div>` : ''}
-                        ${home.landmarks ? `<div><strong>Nearby landmarks:</strong> ${escapeHtml(home.landmarks)}</div>` : ''}
-                        ${mapsLink ? `<div class="maps-link"><i class="fas fa-map"></i> <a href="${mapsLink}" target="_blank">View on Google Maps</a></div>` : ''}
-                        ${phone ? `<div><i class="fas fa-phone"></i> Contact: ${escapeHtml(phone)}</div>` : ''}
+            const home = homeDoc.data();
+            const images = home.images || [];
+            const mainImage = images.length ? images[0] : 'https://placehold.co/800x400?text=No+Image';
+            const amenities = home.amenities || [];
+            const mapsLink = home.mapsLink;
+            const phone = home.phone;
+            
+            function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;');}
+            const html = `
+                <div class="property-card">
+                    <div class="main-image" style="background-image:url('${mainImage}');"></div>
+                    <div class="title">${escapeHtml(home.title)}</div>
+                    <div class="location"><i class="fas fa-map-marker-alt"></i> ${escapeHtml(home.location)}</div>
+                    <div class="price">${escapeHtml(home.price)}</div>
+                    <div class="info-grid">
+                        <div class="info-item"><div class="info-label">Property Type</div><div class="info-value">${escapeHtml(home.propertyType || 'House')}</div></div>
+                        <div class="info-item"><div class="info-label">Area</div><div class="info-value">${home.area ? home.area+' sqm' : 'Not specified'}</div></div>
+                        <div class="info-item"><div class="info-label">Bedrooms</div><div class="info-value">${home.bedrooms || '?'}</div></div>
+                        <div class="info-item"><div class="info-label">Bathrooms</div><div class="info-value">${home.bathrooms || '?'}</div></div>
                     </div>
-                    <div class="property-card">
-                        <div class="section-title">📸 More Images</div>
-                        <div style="display:flex; gap:0.5rem; overflow-x:auto; padding:0.5rem 0;">
-                            ${images.slice(1).map(img => `<img src="${img}" style="width:100px; height:80px; object-fit:cover; border-radius:8px;">`).join('') || '<p>No additional images</p>'}
-                        </div>
+                    <div><strong>Description</strong><br>${escapeHtml(home.description || 'No description provided.')}</div>
+                    ${amenities.length ? `<div class="amenities"><strong>Amenities:</strong> ${amenities.map(a => `<span class="amenity-tag">${escapeHtml(a)}</span>`).join('')}</div>` : ''}
+                    ${home.landmarks ? `<div><strong>Nearby landmarks:</strong> ${escapeHtml(home.landmarks)}</div>` : ''}
+                    ${mapsLink ? `<div class="maps-link"><i class="fas fa-map"></i> <a href="${mapsLink}" target="_blank">View on Google Maps</a></div>` : ''}
+                    ${phone ? `<div><i class="fas fa-phone"></i> Contact: ${escapeHtml(phone)}</div>` : ''}
+                </div>
+                <div class="property-card">
+                    <div class="section-title">📸 More Images</div>
+                    <div style="display:flex; gap:0.5rem; overflow-x:auto; padding:0.5rem 0;">
+                        ${images.slice(1).map(img => `<img src="${img}" style="width:100px; height:80px; object-fit:cover; border-radius:8px;">`).join('') || '<p>No additional images</p>'}
                     </div>
-                `;
-                document.getElementById('homeContent').innerHTML = html;
-            } catch(e){
-                console.error(e);
-                document.getElementById('homeContent').innerHTML = '<div class="property-card">Error loading property details.</div>';
-            }
+                </div>
+            `;
+            container.innerHTML = html;
+        } catch(e){
+            console.error(e);
+            container.innerHTML = '<div class="property-card">Error loading property details.</div>';
         }
-        function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;');}
-        loadHomeDetails();
-    })();
+    }
+    loadHomeDetails();
 </script>
 </body>
 </html>
