@@ -32,11 +32,9 @@
     <style>
         *{margin:0;padding:0;box-sizing:border-box;}
         body{font-family:'Inter',sans-serif;background:#f7f9fc;color:#0f172a;font-size:14px;line-height:1.5;overflow-x:hidden;}
-        /* loading bar */
         .loading-bar{position:fixed;top:0;left:0;width:100%;height:3px;background:#e2e8f0;z-index:2000;visibility:hidden;}
         .loading-bar .progress{width:0%;height:100%;background:#0a66c2;transition:width 0.3s;}
         .loading-bar.active{visibility:visible;}
-        /* navbar */
         .navbar{background:white;border-bottom:1px solid #e2e8f0;padding:0.8rem 2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;position:sticky;top:0;z-index:100;}
         .logo-area{display:flex;align-items:center;gap:0.5rem;}
         .logo-area img{height:32px;}
@@ -50,21 +48,18 @@
         .search-result-item:hover{background:#f8fafc;}
         .contact-link{border:1px solid #cbd5e1;padding:0.3rem 1rem;border-radius:30px;font-size:0.8rem;cursor:pointer;transition:0.2s;}
         .contact-link:hover{background:#f1f5f9;}
-        /* ticker */
         .ticker{background:#f1f5f9;border-bottom:1px solid #e2e8f0;padding:0.4rem 1rem;overflow:hidden;white-space:nowrap;}
         .ticker-content{display:inline-block;animation:scrollTicker 35s linear infinite;font-size:0.7rem;color:#334155;}
         .ticker-content i{margin:0 8px;color:#5e6f8d;}
         @keyframes scrollTicker{0%{transform:translateX(100%);}100%{transform:translateX(-100%);}}
         .ticker:hover .ticker-content{animation-play-state:paused;}
-        /* layout */
         .container{max-width:1440px;margin:1.5rem auto;padding:0 1.5rem;display:grid;grid-template-columns:1fr 320px;gap:2rem;}
-        .main-content{background:white;border-radius:1rem;border:1px solid #e2e8f0;overflow:hidden;}
-        .tabs{display:flex;border-bottom:1px solid #e2e8f0;background:white;}
+        .main-content{background:white;border-radius:1rem;border:1px solid #e2e8f0;overflow:hidden;display:flex;flex-direction:column;min-height:600px;}
+        .tabs{display:flex;border-bottom:1px solid #e2e8f0;background:white;flex-shrink:0;}
         .tab-btn{flex:1;padding:0.8rem;text-align:center;font-weight:600;cursor:pointer;background:transparent;border:none;color:#475569;transition:0.1s;}
         .tab-btn.active{color:#0a66c2;border-bottom:2px solid #0a66c2;}
-        /* filter area */
-        .filter-area{padding:1rem;background:#fafcff;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;gap:0.8rem;align-items:flex-end;}
-        .filter-group{background:white;border:1px solid #e2e8f0;border-radius:40px;padding:0.3rem 0.8rem;display:flex;align-items:center;gap:0.5rem;flex:1 1 180px;}
+        .filter-area{padding:1rem;background:#fafcff;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;gap:0.8rem;align-items:flex-end;flex-shrink:0;}
+        .filter-group{background:white;border:1px solid #e2e8f0;border-radius:40px;padding:0.3rem 0.8rem;display:flex;align-items:center;gap:0.5rem;flex:1 1 180px;position:relative;}
         .filter-group i{color:#64748b;font-size:0.8rem;}
         .filter-group select,.filter-group input[type="text"]{width:100%;border:none;background:transparent;font-size:0.8rem;outline:none;font-family:inherit;}
         .filter-group input[type="number"]{width:70px;}
@@ -74,8 +69,7 @@
         .guest-row button{background:#f1f5f9;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;}
         .filter-area button{background:#0a66c2;color:white;border:none;padding:0.4rem 1.2rem;border-radius:30px;cursor:pointer;font-weight:500;}
         .clear-filters{background:#e2e8f0 !important;color:#334155 !important;margin-left:0.2rem;}
-        /* content area - larger cards */
-        .content-area{padding:1.2rem;}
+        .content-area{padding:1.2rem;overflow-y:auto;flex:1;}
         .category-section{margin-bottom:2rem;}
         .category-title{font-weight:700;font-size:1.1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;}
         .horizontal-scroll{display:flex;overflow-x:auto;gap:1.2rem;padding-bottom:0.5rem;scrollbar-width:thin;}
@@ -87,13 +81,11 @@
         .verified-badge{color:#0a66c2;font-size:0.7rem;}
         .skill{font-size:0.75rem;color:#475569;margin:0.2rem 0;}
         .stars{color:#fbbf24;font-size:0.75rem;margin:0.2rem 0;}
-        /* homes grid */
         .homes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.2rem;}
         .home-card{border:1px solid #e2e8f0;border-radius:1rem;overflow:hidden;cursor:pointer;transition:0.2s;}
         .home-card:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.08);}
         .home-img{height:160px;background-size:cover;background-color:#eef2ff;}
         .home-info{padding:0.8rem;}
-        /* jobs list */
         .job-list{display:flex;flex-direction:column;gap:1rem;}
         .job-item{border:1px solid #e2e8f0;border-radius:1rem;padding:1rem;cursor:pointer;display:flex;gap:1rem;align-items:center;transition:0.1s;}
         .job-item:hover{background:#fafcff;border-left:3px solid #0a66c2;}
@@ -101,12 +93,11 @@
         .company-logo img{width:100%;height:100%;object-fit:cover;}
         .job-details{flex:1;}
         .job-title{font-weight:700;font-size:0.9rem;}
-        /* spotlight */
         .sidebar-right{background:white;border-radius:1rem;border:1px solid #e2e8f0;padding:1rem;position:sticky;top:80px;}
-        .spotlight-carousel{position:relative;height:240px;overflow:hidden;margin-bottom:1rem;}
+        .spotlight-carousel{position:relative;height:260px;overflow:hidden;margin-bottom:1rem;}
         .spotlight-slide{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;transition:opacity 0.5s;background:#f8fafc;border-radius:1rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem;cursor:pointer;}
         .spotlight-slide.active{opacity:1;}
-        .spotlight-slide img{width:90px;height:90px;border-radius:16px;object-fit:cover;margin-bottom:0.8rem;}
+        .spotlight-slide img{width:120px;height:120px;border-radius:12px;object-fit:cover;margin-bottom:0.8rem;}
         .action-links{margin-top:1rem;border-top:1px solid #e2e8f0;padding-top:1rem;}
         .action-item{display:flex;align-items:center;gap:0.8rem;padding:0.7rem;border-radius:0.8rem;cursor:pointer;background:#f8fafc;margin-bottom:0.6rem;transition:0.1s;}
         .action-item:hover{background:#eef2ff;}
@@ -151,13 +142,18 @@
 
 <script>
     (function(){
-        // ---------- FIREBASE & GLOBALS ----------
+        // mobile redirect
+        if (window.innerWidth <= 768) {
+            window.location.href = "indexp.html";
+        }
+        
+        // Firebase & globals
         let db, collectionFn, getDocsFn, queryFn, whereFn, docFn, getDocFn;
         let currentTab = "services";
         let allFreelancers = [], allHomes = [], allJobs = [];
         let verifiedUsers = new Set();
         
-        // algorithm storage (localStorage)
+        // algorithm storage
         let userProfile = JSON.parse(localStorage.getItem('knk_algorithm_profile')) || {
             categoryClicks: {}, searchTerms: [], viewedIds: [], totalInteractions: 0
         };
@@ -170,7 +166,7 @@
         function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g,m=>m==='&'?'&amp;':m==='<'?'&lt;':'&gt;');}
         function setLoading(show){ let bar=document.getElementById('loadingBar'), prog=document.getElementById('loadingProgress'); if(show){ bar.classList.add('active'); prog.style.width='30%'; setTimeout(()=>prog.style.width='70%',100); }else{ prog.style.width='100%'; setTimeout(()=>{ bar.classList.remove('active'); prog.style.width='0'; },300); } }
 
-        // ---------- DATA FETCH (Firebase) ----------
+        // ---------- DATA FETCH ----------
         async function fetchFreelancers(){
             const usersRef = collectionFn(db, "users");
             const q = queryFn(usersRef, whereFn("user_type", "==", "worker"));
@@ -238,7 +234,7 @@
             return jobs;
         }
 
-        // ---------- ALGORITHM: category ordering ----------
+        // ---------- CATEGORY ORDERING (algorithm) ----------
         const allCategoryNames = ["Web & Software Development","Graphic & Visual Design","Writing & Content Creation","Digital Marketing & SEO",
             "Video & Audio Production","Local & Physical Services","Event Planning & Lifestyle","Education & Tutoring",
             "Administrative & Business Support","Sales & Lead Generation"];
@@ -260,67 +256,42 @@
             return sorted;
         }
 
-        // ---------- RENDER FUNCTIONS with FALLBACKS ----------
+        // ---------- RENDER FUNCTIONS (with proper filtering) ----------
         let globalSearchTerm = "";
         window.globalSearchTerm = "";
 
-        function renderServices(filterState){
+        function renderServices(){
             let filtered = [...allFreelancers];
-            if(filterState.category && filterState.category!=="ALL"){
-                filtered = filtered.filter(f=>f.category===filterState.category);
-            }
-            if(filterState.location){
-                filtered = filtered.filter(f=>f.location.toLowerCase().includes(filterState.location.toLowerCase()));
-            }
-            if(filterState.rating){
-                let min = parseFloat(filterState.rating);
-                filtered = filtered.filter(f=>f.rating>=min);
-            }
+            // apply service filters
+            let catFilter = document.getElementById('svcCategorySelect')?.value;
+            let locFilter = document.getElementById('svcLocation')?.value;
+            let ratingFilter = document.getElementById('svcRating')?.value;
+            if(catFilter && catFilter !== "ALL") filtered = filtered.filter(f=>f.category===catFilter);
+            if(locFilter) filtered = filtered.filter(f=>f.location.toLowerCase().includes(locFilter.toLowerCase()));
+            if(ratingFilter) filtered = filtered.filter(f=>f.rating >= parseFloat(ratingFilter));
             if(globalSearchTerm){
                 let term = globalSearchTerm.toLowerCase();
                 filtered = filtered.filter(f=>f.full_name.toLowerCase().includes(term) || f.primary_skill.toLowerCase().includes(term));
             }
-            
-            // CASE 1: No freelancers at all in the database
-            if(allFreelancers.length === 0){
-                document.getElementById('contentArea').innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-user-plus"></i>
-                        <p style="margin-bottom:0.5rem;">No freelancers have joined yet.</p>
-                        <button class="btn-outline" id="joinFreelancerBtn">Become a freelancer</button>
-                    </div>`;
+            if(allFreelancers.length===0){
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-user-plus"></i><p>No freelancers have joined yet.</p><button class="btn-outline" id="joinFreelancerBtn">Become a freelancer</button></div>`;
                 document.getElementById('joinFreelancerBtn')?.addEventListener('click',()=>window.location.href='auth.html');
                 return;
             }
-            
-            // CASE 2: Filters return empty but there are freelancers -> show random recommendations
-            if(filtered.length === 0 && allFreelancers.length > 0){
-                // pick 6 random freelancers as "You might like"
+            if(filtered.length===0 && allFreelancers.length>0){
                 let random = [...allFreelancers];
                 for(let i=random.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [random[i],random[j]]=[random[j],random[i]]; }
                 random = random.slice(0,6);
-                let html = `<div class="empty-state" style="background:transparent; padding-bottom:1rem;">
-                                <i class="fas fa-search"></i>
-                                <p>No results for your filters. Here are some popular freelancers:</p>
-                            </div>`;
-                html += `<div class="horizontal-scroll">`;
+                let html = `<div class="empty-state" style="background:transparent; padding-bottom:1rem;"><i class="fas fa-search"></i><p>No results. Try different filters or see recommendations:</p></div><div class="horizontal-scroll">`;
                 random.forEach(f=>{
                     let initial = f.full_name.charAt(0).toUpperCase();
-                    html += `<div class="freelancer-card" data-id="${f.id}" data-category="${f.category}">
-                                <div class="avatar">${f.avatar?`<img src="${f.avatar}">`:initial}</div>
-                                <div class="name">${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle verified-badge" title="Verified"></i>' : ''}</div>
-                                <div class="skill">${escapeHtml(f.primary_skill)}</div>
-                                <div class="stars">${'★'.repeat(Math.floor(f.rating))}${'☆'.repeat(5-Math.floor(f.rating))} ${f.rating.toFixed(1)}</div>
-                                <div style="font-size:0.65rem;">📍 ${escapeHtml(f.location)}</div>
-                            </div>`;
+                    html += `<div class="freelancer-card" data-id="${f.id}" data-category="${f.category}"><div class="avatar">${f.avatar?`<img src="${f.avatar}">`:initial}</div><div class="name">${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div><div class="skill">${escapeHtml(f.primary_skill)}</div><div class="stars">${'★'.repeat(Math.floor(f.rating))}${'☆'.repeat(5-Math.floor(f.rating))} ${f.rating.toFixed(1)}</div><div style="font-size:0.65rem;">📍 ${escapeHtml(f.location)}</div></div>`;
                 });
                 html += `</div>`;
                 document.getElementById('contentArea').innerHTML = html;
                 attachFreelancerClicks();
                 return;
             }
-            
-            // CASE 3: Normal display with categories
             let orderedCats = getOrderedCategories(filtered);
             let html = "";
             for(let cat of orderedCats){
@@ -329,21 +300,14 @@
                 html += `<div class="category-section"><div class="category-title"><i class="fas fa-users"></i> ${cat}</div><div class="horizontal-scroll">`;
                 catFreelancers.forEach(f=>{
                     let initial = f.full_name.charAt(0).toUpperCase();
-                    html += `<div class="freelancer-card" data-id="${f.id}" data-category="${cat}">
-                                <div class="avatar">${f.avatar?`<img src="${f.avatar}">`:initial}</div>
-                                <div class="name">${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle verified-badge" title="Verified"></i>' : ''}</div>
-                                <div class="skill">${escapeHtml(f.primary_skill)}</div>
-                                <div class="stars">${'★'.repeat(Math.floor(f.rating))}${'☆'.repeat(5-Math.floor(f.rating))} ${f.rating.toFixed(1)}</div>
-                                <div style="font-size:0.65rem;">📍 ${escapeHtml(f.location)}</div>
-                            </div>`;
+                    html += `<div class="freelancer-card" data-id="${f.id}" data-category="${cat}"><div class="avatar">${f.avatar?`<img src="${f.avatar}">`:initial}</div><div class="name">${escapeHtml(f.full_name)} ${f.verified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}</div><div class="skill">${escapeHtml(f.primary_skill)}</div><div class="stars">${'★'.repeat(Math.floor(f.rating))}${'☆'.repeat(5-Math.floor(f.rating))} ${f.rating.toFixed(1)}</div><div style="font-size:0.65rem;">📍 ${escapeHtml(f.location)}</div></div>`;
                 });
                 html += `</div></div>`;
             }
-            if(html==="") html = "<div class='empty-state'><i class='fas fa-user-slash'></i><p>No freelancers found. Try adjusting your filters.</p></div>";
+            if(html==="") html = "<div class='empty-state'><i class='fas fa-user-slash'></i><p>No freelancers found. Adjust your filters.</p></div>";
             document.getElementById('contentArea').innerHTML = html;
             attachFreelancerClicks();
         }
-        
         function attachFreelancerClicks(){
             document.querySelectorAll('.freelancer-card').forEach(card=>{
                 card.addEventListener('click',()=>{
@@ -357,29 +321,24 @@
             });
         }
 
-        function renderHomes(filterState){
+        function renderHomes(){
             let filtered = [...allHomes];
-            if(filterState.location) filtered = filtered.filter(h=>h.location.toLowerCase().includes(filterState.location.toLowerCase()));
-            if(filterState.type && filterState.type!=="all") filtered = filtered.filter(h=>h.type===filterState.type);
-            if(filterState.minPrice){
-                let min = parseInt(filterState.minPrice);
-                filtered = filtered.filter(h=>{ let p = parseInt(h.price.replace(/[^0-9]/g,'')); return p>=min; });
-            }
-            if(filterState.maxPrice){
-                let max = parseInt(filterState.maxPrice);
-                filtered = filtered.filter(h=>{ let p = parseInt(h.price.replace(/[^0-9]/g,'')); return p<=max; });
-            }
-            if(filterState.guests){
-                let total = (filterState.adults||0)+(filterState.children||0)+(filterState.pets||0);
-                filtered = filtered.filter(h=>h.guests>=total);
-                filtered.sort((a,b)=>Math.abs(a.guests-total)-Math.abs(b.guests-total));
-            }
+            let locFilter = document.getElementById('homeLocation')?.value;
+            let typeFilter = document.getElementById('homeType')?.value;
+            let minPrice = document.getElementById('minPrice')?.value;
+            let maxPrice = document.getElementById('maxPrice')?.value;
+            let guestsTotal = window._guestTotal || 0;
+            if(locFilter) filtered = filtered.filter(h=>h.location.toLowerCase().includes(locFilter.toLowerCase()));
+            if(typeFilter && typeFilter !== "all") filtered = filtered.filter(h=>h.type === typeFilter);
+            if(minPrice) filtered = filtered.filter(h=>{ let p = parseInt(h.price.replace(/[^0-9]/g,'')); return p >= parseInt(minPrice); });
+            if(maxPrice) filtered = filtered.filter(h=>{ let p = parseInt(h.price.replace(/[^0-9]/g,'')); return p <= parseInt(maxPrice); });
+            if(guestsTotal>0) filtered = filtered.filter(h=>h.guests >= guestsTotal);
             if(globalSearchTerm){
                 let term = globalSearchTerm.toLowerCase();
                 filtered = filtered.filter(h=>h.title.toLowerCase().includes(term) || h.location.toLowerCase().includes(term));
             }
             if(allHomes.length===0){
-                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-home"></i><p>No homes listed yet. Be the first to host!</p><button class="btn-outline" id="becomeHostEmpty">List your property</button></div>`;
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-home"></i><p>No homes listed yet.</p><button class="btn-outline" id="becomeHostEmpty">List your property</button></div>`;
                 document.getElementById('becomeHostEmpty')?.addEventListener('click',()=>window.location.href='settingsho.html');
                 return;
             }
@@ -389,14 +348,7 @@
             }
             let html = `<div class="homes-grid">`;
             filtered.forEach(h=>{
-                html += `<div class="home-card" data-id="${h.id}">
-                            <div class="home-img" style="background-image:url('${h.image}');"></div>
-                            <div class="home-info">
-                                <strong>${escapeHtml(h.title)}</strong>
-                                <div>📍 ${escapeHtml(h.location)}</div>
-                                <div>💰 ${h.price} · 🛏️ ${h.bedrooms} 🛁 ${h.bathrooms}</div>
-                            </div>
-                        </div>`;
+                html += `<div class="home-card" data-id="${h.id}"><div class="home-img" style="background-image:url('${h.image}');"></div><div class="home-info"><strong>${escapeHtml(h.title)}</strong><div>📍 ${escapeHtml(h.location)}</div><div>💰 ${h.price} · 🛏️ ${h.bedrooms} 🛁 ${h.bathrooms}</div></div></div>`;
             });
             html += `</div>`;
             document.getElementById('contentArea').innerHTML = html;
@@ -410,43 +362,35 @@
             });
         }
 
-        function renderJobs(filterState){
+        function renderJobs(){
             let filtered = [...allJobs];
-            if(filterState.category && filterState.category!=="ALL"){
-                filtered = filtered.filter(j=>j.category===filterState.category);
-            }
-            if(filterState.salaryRange){
-                let [min,max] = filterState.salaryRange.split('-').map(Number);
+            let catFilter = document.getElementById('jobCategorySelect')?.value;
+            let salaryRange = document.getElementById('salaryRange')?.value;
+            let skillFilter = document.getElementById('skillInput')?.value;
+            if(catFilter && catFilter !== "ALL") filtered = filtered.filter(j=>j.category===catFilter);
+            if(salaryRange){
+                let [min,max] = salaryRange.split('-').map(Number);
                 if(max) filtered = filtered.filter(j=>j.usdAmount>=min && j.usdAmount<=max);
                 else filtered = filtered.filter(j=>j.usdAmount>=min);
             }
-            if(filterState.skill){
-                filtered = filtered.filter(j=>j.skills.some(s=>s.toLowerCase().includes(filterState.skill.toLowerCase())));
-            }
+            if(skillFilter) filtered = filtered.filter(j=>j.skills.some(s=>s.toLowerCase().includes(skillFilter.toLowerCase())));
             if(globalSearchTerm){
                 let term = globalSearchTerm.toLowerCase();
                 filtered = filtered.filter(j=>j.title.toLowerCase().includes(term) || j.company.toLowerCase().includes(term));
             }
             if(allJobs.length===0){
-                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-briefcase"></i><p>No jobs posted yet. Companies can post jobs.</p><button class="btn-outline" id="postJobEmpty">Post a job</button></div>`;
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-briefcase"></i><p>No jobs posted yet.</p><button class="btn-outline" id="postJobEmpty">Post a job</button></div>`;
                 document.getElementById('postJobEmpty')?.addEventListener('click',()=>window.location.href='auth.html');
                 return;
             }
             if(filtered.length===0){
-                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No jobs match your filters. Try adjusting.</p></div>`;
+                document.getElementById('contentArea').innerHTML = `<div class="empty-state"><i class="fas fa-filter"></i><p>No jobs match your filters.</p></div>`;
                 return;
             }
             let html = `<div class="job-list">`;
             filtered.forEach(j=>{
                 let logoHtml = j.companyLogo ? `<img src="${j.companyLogo}" style="width:56px;height:56px;object-fit:cover;border-radius:12px;">` : `<div class="company-logo">${j.company.charAt(0)}</div>`;
-                html += `<div class="job-item" data-id="${j.id}">
-                            ${logoHtml}
-                            <div class="job-details">
-                                <div class="job-title">${escapeHtml(j.title)}</div>
-                                <div style="font-size:0.7rem;color:#475569;">🏢 ${escapeHtml(j.company)} · 💰 ${j.budget} · 📍 ${j.location}</div>
-                                <div style="font-size:0.7rem;">${escapeHtml(j.description.substring(0,80))}…</div>
-                            </div>
-                        </div>`;
+                html += `<div class="job-item" data-id="${j.id}">${logoHtml}<div class="job-details"><div class="job-title">${escapeHtml(j.title)}</div><div style="font-size:0.7rem;color:#475569;">🏢 ${escapeHtml(j.company)} · 💰 ${j.budget} · 📍 ${j.location}</div><div style="font-size:0.7rem;">${escapeHtml(j.description.substring(0,80))}…</div></div></div>`;
             });
             html += `</div>`;
             document.getElementById('contentArea').innerHTML = html;
@@ -460,45 +404,46 @@
             });
         }
 
-        // ---------- FILTER UI BUILDERS ----------
-        let serviceFilters = { category:"ALL", location:"", rating:"" };
-        let homeFilters = { location:"", type:"all", minPrice:"", maxPrice:"", adults:1, children:0, pets:0, guests:0 };
-        let jobFilters = { category:"ALL", salaryRange:"", skill:"" };
-
+        // ---------- FILTER UI BUILDERS (with working searchable selects using datalist) ----------
         function buildServicesFilter(){
-            let html = `<div class="filter-group"><i class="fas fa-tag"></i><select id="svcCategorySelect"><option value="ALL">Category (ALL)</option>${allCategoryNames.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
-                        <div class="filter-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="svcLocation" placeholder="District / Sector"></div>
-                        <div class="filter-group"><i class="fas fa-star"></i><select id="svcRating"><option value="">Rating</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="4.5">4.5+</option></select></div>
-                        <button id="applySvc">Apply</button>
-                        <button id="clearSvc" class="clear-filters">Clear</button>`;
+            let html = `
+                <div class="filter-group"><i class="fas fa-tag"></i><select id="svcCategorySelect"><option value="ALL">Category (ALL)</option>${allCategoryNames.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div>
+                <div class="filter-group"><i class="fas fa-map-marker-alt"></i><input list="locationsList" id="svcLocation" placeholder="District / Sector"><datalist id="locationsList">${allDistricts().map(d=>`<option value="${d}">`).join('')}</datalist></div>
+                <div class="filter-group"><i class="fas fa-star"></i><select id="svcRating"><option value="">Rating</option><option value="2">2+</option><option value="3">3+</option><option value="4">4+</option><option value="4.5">4.5+</option></select></div>
+                <button id="applySvc">Apply</button>
+                <button id="clearSvc" class="clear-filters">Clear</button>`;
             document.getElementById('filterArea').innerHTML = html;
-            document.getElementById('applySvc').addEventListener('click',()=>{
-                serviceFilters.category = document.getElementById('svcCategorySelect').value;
-                serviceFilters.location = document.getElementById('svcLocation').value;
-                serviceFilters.rating = document.getElementById('svcRating').value;
-                renderServices(serviceFilters);
-            });
+            document.getElementById('applySvc').addEventListener('click',()=>{ renderServices(); });
             document.getElementById('clearSvc').addEventListener('click',()=>{
                 document.getElementById('svcCategorySelect').value="ALL";
                 document.getElementById('svcLocation').value="";
                 document.getElementById('svcRating').value="";
-                serviceFilters={ category:"ALL", location:"", rating:"" };
-                renderServices(serviceFilters);
+                renderServices();
             });
         }
 
+        function allDistricts(){
+            return ["Gasabo","Kicukiro","Nyarugenge","Bugesera","Gatsibo","Kayonza","Kirehe","Ngoma","Nyagatare","Rwamagana","Burera","Gakenke","Gicumbi","Musanze","Rulindo","Gisagara","Huye","Kamonyi","Muhanga","Nyamagabe","Nyanza","Nyaruguru","Ruhango","Karongi","Ngororero","Nyabihu","Nyamasheke","Rubavu","Rusizi","Rutsiro"];
+        }
+
         function buildHomesFilter(){
-            let html = `<div class="filter-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="homeLocation" placeholder="District"></div>
-                        <div class="filter-group" style="position:relative;"><i class="fas fa-users"></i><input type="text" id="guestInput" placeholder="Guests" readonly value="1 adult"><div id="guestPanel" class="guests-panel"></div></div>
-                        <div class="filter-group price-range"><i class="fas fa-dollar-sign"></i><input type="number" id="minPrice" placeholder="Min price"><input type="number" id="maxPrice" placeholder="Max price"></div>
-                        <div class="filter-group"><i class="fas fa-building"></i><select id="homeType"><option value="all">All types</option><option value="apartment">apartment</option><option value="land">land</option><option value="condo">condo</option><option value="villa">villa</option><option value="house">house</option><option value="commercial">commercial</option></select></div>
-                        <button id="applyHome">Apply</button>
-                        <button id="clearHome" class="clear-filters">Clear</button>`;
+            let html = `
+                <div class="filter-group"><i class="fas fa-map-marker-alt"></i><input list="homeDistricts" id="homeLocation" placeholder="District"><datalist id="homeDistricts">${allDistricts().map(d=>`<option value="${d}">`).join('')}</datalist></div>
+                <div class="filter-group" style="position:relative;"><i class="fas fa-users"></i><input type="text" id="guestInput" placeholder="Guests" readonly value="1 adult"><div id="guestPanel" class="guests-panel"></div></div>
+                <div class="filter-group price-range"><i class="fas fa-dollar-sign"></i><input type="number" id="minPrice" placeholder="Min price"><input type="number" id="maxPrice" placeholder="Max price"></div>
+                <div class="filter-group"><i class="fas fa-building"></i><select id="homeType"><option value="all">All types</option><option value="apartment">apartment</option><option value="land">land</option><option value="condo">condo</option><option value="villa">villa</option><option value="house">house</option><option value="commercial">commercial</option></select></div>
+                <button id="applyHome">Apply</button>
+                <button id="clearHome" class="clear-filters">Clear</button>`;
             document.getElementById('filterArea').innerHTML = html;
+            // guest panel logic
             let guestBtn = document.getElementById('guestInput');
             let panel = document.getElementById('guestPanel');
-            let adults=homeFilters.adults, children=homeFilters.children, pets=homeFilters.pets;
-            function updateGuestDisplay(){ guestBtn.value = `${adults} adult${adults!==1?'s':''} ${children?children+' child'+(children!==1?'ren':''):''} ${pets?pets+' pet'+(pets!==1?'s':''):''}`.trim(); homeFilters.guests=adults+children+pets; homeFilters.adults=adults; homeFilters.children=children; homeFilters.pets=pets; }
+            let adults=1, children=0, pets=0;
+            window._guestTotal = adults+children+pets;
+            function updateGuestDisplay(){
+                guestBtn.value = `${adults} adult${adults!==1?'s':''} ${children?children+' child'+(children!==1?'ren':''):''} ${pets?pets+' pet'+(pets!==1?'s':''):''}`.trim();
+                window._guestTotal = adults+children+pets;
+            }
             function renderGuestPanel(){
                 panel.innerHTML = `<div class="guest-row"><span>Adults</span><div><button id="adultMinus">-</button><span id="adultCount">${adults}</span><button id="adultPlus">+</button></div></div>
                                    <div class="guest-row"><span>Children</span><div><button id="childMinus">-</button><span id="childCount">${children}</span><button id="childPlus">+</button></div></div>
@@ -511,27 +456,20 @@
                 document.getElementById('childPlus').onclick=()=>{ children++; updateGuestDisplay(); renderGuestPanel(); };
                 document.getElementById('petMinus').onclick=()=>{ if(pets>0)pets--; updateGuestDisplay(); renderGuestPanel(); };
                 document.getElementById('petPlus').onclick=()=>{ pets++; updateGuestDisplay(); renderGuestPanel(); };
-                document.getElementById('closeGuest').onclick=()=>{ panel.style.display='none'; homeFilters.adults=adults; homeFilters.children=children; homeFilters.pets=pets; homeFilters.guests=adults+children+pets; };
+                document.getElementById('closeGuest').onclick=()=>{ panel.style.display='none'; };
             }
             guestBtn.addEventListener('click',renderGuestPanel);
             document.addEventListener('click',(e)=>{ if(!panel.contains(e.target) && e.target!==guestBtn) panel.style.display='none'; });
-            document.getElementById('applyHome').addEventListener('click',()=>{
-                homeFilters.location = document.getElementById('homeLocation').value;
-                homeFilters.type = document.getElementById('homeType').value;
-                homeFilters.minPrice = document.getElementById('minPrice').value;
-                homeFilters.maxPrice = document.getElementById('maxPrice').value;
-                renderHomes(homeFilters);
-            });
+            updateGuestDisplay();
+            document.getElementById('applyHome').addEventListener('click',()=>{ renderHomes(); });
             document.getElementById('clearHome').addEventListener('click',()=>{
                 document.getElementById('homeLocation').value="";
                 document.getElementById('homeType').value="all";
                 document.getElementById('minPrice').value="";
                 document.getElementById('maxPrice').value="";
                 adults=1; children=0; pets=0; updateGuestDisplay();
-                homeFilters={ location:"", type:"all", minPrice:"", maxPrice:"", adults:1, children:0, pets:0, guests:1 };
-                renderHomes(homeFilters);
+                renderHomes();
             });
-            updateGuestDisplay();
         }
 
         function buildJobsFilter(){
@@ -541,49 +479,23 @@
                         <button id="applyJob">Apply</button>
                         <button id="clearJob" class="clear-filters">Clear</button>`;
             document.getElementById('filterArea').innerHTML = html;
-            const skillsDB = {
-                "Web & Software Development":["Frontend Developer","Backend Developer","Full-Stack Developer","Mobile App Developer","WordPress Developer","Software Engineer","Game Developer"],
-                "Graphic & Visual Design":["Graphic Designer","Logo Designer","Branding Designer","Illustrator","UI/UX Designer","Motion Graphics Designer","Animator"],
-                "Writing & Content Creation":["Copywriter","Blog Writer","Technical Writer","Scriptwriter","Translator","Proofreader/Editor","Social Media Content Creator"],
-                "Digital Marketing & SEO":["Social Media Manager","SEO Specialist","Digital Advertiser","Email Marketing Specialist","Content Marketing Strategist","Influencer Marketing Manager"],
-                "Video & Audio Production":["Video Editor","Videographer","Animator","Sound Engineer","Voice-over Artist","Podcast Producer","Video Producer"],
-                "Local & Physical Services":["Electrician","Plumber","Carpenter","Painter","Mason","Mechanic","House Cleaner"],
-                "Event Planning & Lifestyle":["Event Planner","Wedding Planner","DJ","MC","Photographer","Makeup Artist","Decorator"],
-                "Education & Tutoring":["Private Tutor","Coding Instructor","Music Teacher","Online Course Creator","Language Teacher","Test Prep Coach"],
-                "Administrative & Business Support":["Virtual Assistant","Data Entry Clerk","Accountant","HR Assistant","Customer Support","Project Manager"],
-                "Sales & Lead Generation":["Sales Representative","Lead Generation Specialist","Market Research Analyst","Telemarketer","Business Development"]
-            };
-            let catSelect = document.getElementById('jobCategorySelect');
-            let skillInput = document.getElementById('skillInput');
-            catSelect.addEventListener('change',()=>{
-                let cat = catSelect.value;
-                if(cat !== "ALL" && skillsDB[cat]) skillInput.placeholder = `e.g., ${skillsDB[cat][0]}`;
-                else skillInput.placeholder = "Skill";
-            });
-            document.getElementById('applyJob').addEventListener('click',()=>{
-                jobFilters.category = catSelect.value;
-                jobFilters.salaryRange = document.getElementById('salaryRange').value;
-                jobFilters.skill = skillInput.value;
-                renderJobs(jobFilters);
-            });
+            document.getElementById('applyJob').addEventListener('click',()=>{ renderJobs(); });
             document.getElementById('clearJob').addEventListener('click',()=>{
-                catSelect.value="ALL";
+                document.getElementById('jobCategorySelect').value="ALL";
                 document.getElementById('salaryRange').value="";
-                skillInput.value="";
-                jobFilters={ category:"ALL", salaryRange:"", skill:"" };
-                renderJobs(jobFilters);
+                document.getElementById('skillInput').value="";
+                renderJobs();
             });
         }
 
-        // ---------- GLOBAL SEARCH (300ms debounce) ----------
+        // ---------- GLOBAL SEARCH (dropdown only, does not change main content) ----------
         let searchTimeout;
         function performGlobalSearch(){
             let term = document.getElementById('globalSearchInput').value.trim();
             globalSearchTerm = term;
             trackSearch(term);
-            if(currentTab==="services") renderServices(serviceFilters);
-            else if(currentTab==="homes") renderHomes(homeFilters);
-            else renderJobs(jobFilters);
+            // Update main content only when user clicks a result? Actually we also apply filter? No, requirement: "display the result without changing the display in main-content"
+            // So we only show dropdown, not change main content.
             let resultsDiv = document.getElementById('globalSearchResults');
             if(term.length<2){ resultsDiv.classList.remove('show'); return; }
             let combined = [];
@@ -591,10 +503,20 @@
             else if(currentTab==="homes") combined = allHomes.filter(h=>h.title.toLowerCase().includes(term.toLowerCase()) || h.location.toLowerCase().includes(term.toLowerCase())).slice(0,5);
             else combined = allJobs.filter(j=>j.title.toLowerCase().includes(term.toLowerCase()) || j.company.toLowerCase().includes(term.toLowerCase())).slice(0,5);
             if(combined.length){
-                resultsDiv.innerHTML = combined.map(item=>`<div class="search-result-item">${escapeHtml(item.full_name||item.title||item.title)}</div>`).join('');
+                resultsDiv.innerHTML = combined.map(item=>{
+                    let display = item.full_name || item.title || item.title;
+                    let id = item.id;
+                    let type = currentTab === "services" ? "freelancer" : (currentTab === "homes" ? "home" : "job");
+                    return `<div class="search-result-item" data-type="${type}" data-id="${id}">${escapeHtml(display)}</div>`;
+                }).join('');
                 resultsDiv.classList.add('show');
                 document.querySelectorAll('.search-result-item').forEach(el=>{
-                    el.addEventListener('click',()=>{ resultsDiv.classList.remove('show'); });
+                    el.addEventListener('click',()=>{
+                        let type = el.getAttribute('data-type');
+                        let id = el.getAttribute('data-id');
+                        localStorage.setItem(`knk_selected_${type}`, id);
+                        window.location.href = type === 'freelancer' ? 'profile.html' : (type === 'home' ? 'home.html' : 'job.html');
+                    });
                 });
             } else resultsDiv.classList.remove('show');
         }
@@ -604,18 +526,19 @@
         });
         document.addEventListener('click',(e)=>{ if(!e.target.closest('.global-search')) document.getElementById('globalSearchResults').classList.remove('show'); });
 
+        // ---------- LOAD DATA & SWITCH TABS ----------
         async function loadAllData(){
             setLoading(true);
             try{
                 [allFreelancers, allHomes, allJobs] = await Promise.all([fetchFreelancers(), fetchHomes(), fetchJobs()]);
             }catch(e){ console.error(e); showToast("Error loading data"); }
             setLoading(false);
-            if(currentTab==="services"){ buildServicesFilter(); renderServices(serviceFilters); }
-            else if(currentTab==="homes"){ buildHomesFilter(); renderHomes(homeFilters); }
-            else{ buildJobsFilter(); renderJobs(jobFilters); }
+            if(currentTab==="services"){ buildServicesFilter(); renderServices(); }
+            else if(currentTab==="homes"){ buildHomesFilter(); renderHomes(); }
+            else{ buildJobsFilter(); renderJobs(); }
         }
 
-        // ---------- SPOTLIGHT CAROUSEL ----------
+        // spotlight & ticker
         let spotlightItems = JSON.parse(localStorage.getItem('knk_spotlight_items')) || [
             { image:"https://placehold.co/200x200/0a66c2/white?text=Welcome", description:"trusted freelancers, homes & jobs — 2026 edition", link:"#" },
             { image:"https://placehold.co/200x200/eab308/white?text=Verified", description:"verified badge → higher trust & visibility", link:"#" },
@@ -642,7 +565,6 @@
             },8000);
         }
 
-        // ---------- TICKER ----------
         let tickerMessages = JSON.parse(localStorage.getItem('knk_ticker_messages')) || [
             "2026 updates · verified freelancers · new remote jobs added daily",
             "book homes with instant confirmation",
@@ -664,9 +586,9 @@
                     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
                     btn.classList.add('active');
                     currentTab = btn.getAttribute('data-tab');
-                    if(currentTab==="services") buildServicesFilter(), renderServices(serviceFilters);
-                    else if(currentTab==="homes") buildHomesFilter(), renderHomes(homeFilters);
-                    else buildJobsFilter(), renderJobs(jobFilters);
+                    if(currentTab==="services") buildServicesFilter(), renderServices();
+                    else if(currentTab==="homes") buildHomesFilter(), renderHomes();
+                    else buildJobsFilter(), renderJobs();
                 });
             });
             document.getElementById('contactBtn').addEventListener('click',()=>window.location.href='contactus.html');
